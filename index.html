@@ -21,6 +21,7 @@ p{max-width:1400px;color:#bbb}
 .card div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item{padding:14px 20px;margin:8px 0;background:#1c1c1c}
 .muted{color:#888}
+video::cue{font-size:44px;background:rgba(0,0,0,.6)}
 video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9}
 </style>
 </head>
@@ -28,11 +29,11 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 <div id="top"></div>
 <div id="main"></div>
 <video id="video"></video>
-<div id="dbg" style="position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:10">v3 · no JS yet</div>
+<div id="dbg" style="position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:10">v4 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v3 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v3 · JS ok · ' + navigator.userAgent.slice(0, 120);
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v4 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v4 · JS ok · ' + navigator.userAgent.slice(0, 120);
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -48,15 +49,17 @@ function addons() { try { return JSON.parse(localStorage.addons) || DEFAULT_ADDO
 function saveAddons(a) { localStorage.addons = JSON.stringify(a); }
 function base(url) { return url.replace(/\/manifest\.json$/, '').replace(/\/$/, ''); }
 // Browsers can only play http(s) streams; torrent (infoHash) streams need the Stremio server
-function playable(streams) { return (streams || []).filter(function (s) { return s && s.url && /^https?:\/\//.test(s.url); }); }
+// Hindi-dubbed / dual-audio releases usually default to Hindi audio, so they are dropped (user wants English audio)
+function isHindi(s) { return /hindi|\bhin\b|org\.hind|dual[ .-]?audio/i.test([s.name, s.title, s.description, decodeURIComponent(s.url)].join(' ')); }
+function playable(streams) { return (streams || []).filter(function (s) { return s && s.url && /^https?:\/\//.test(s.url) && !isHindi(s); }); }
 console.assert(base('https://a.b/x/manifest.json') === 'https://a.b/x', 'base');
-console.assert(playable([{ url: 'https://v.mp4' }, { infoHash: 'abc' }, { url: 'magnet:x' }]).length === 1, 'playable');
+console.assert(playable([{ url: 'https://v.mp4' }, { infoHash: 'abc' }, { url: 'magnet:x' }, { url: 'https://x/Film.Hindi.English.mkv' }]).length === 1, 'playable');
 
 // XHR, not fetch: safest on old TV engines. Drops responses for a view the user already left.
 function get(url, cb) {
   var v = view, x = new XMLHttpRequest();
   x.open('GET', url);
-  x.timeout = 15000;
+  x.timeout = 60000; // 3body scrapes live and often needs ~20s
   x.onload = function () { if (v !== view) return; var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} cb(r); };
   x.onerror = x.ontimeout = function () { if (v === view) cb(null); };
   x.send();
@@ -163,17 +166,19 @@ function streams(type, id) {
     clear('Streams');
     var list = addons(), n = 0, found = 0, hidden = 0, first = null;
     if (!list.length) return msg('No addons yet. Open Settings and add a stream addon URL.');
-    var status = el('p', 'muted', 'Searching ' + list.length + ' addon(s)...');
+    var status = el('p', 'muted', 'Searching ' + list.length + ' addon(s)... (can take ~20 seconds)');
     main.appendChild(status);
+    loadSubs(type, id);
     list.forEach(function (a) {
       get(base(a) + '/stream/' + type + '/' + id + '.json', function (r) {
-        var all = (r && r.streams) || [], ok = playable(all);
+        if (!r) main.appendChild(el('p', 'muted', 'Addon did not answer: ' + base(a)));
+        var all = (r && r.streams) || [], ok = playable(all); // hidden count also covers Hindi releases
         hidden += all.length - ok.length;
         ok.forEach(function (s) {
           var i = item(main, (s.name || '') + '  ' + (s.title || s.description || ''), function () { play(s.url); });
           found++; if (!first) { first = i; setFocus(i); }
         });
-        if (++n === list.length) status.textContent = found + ' playable stream(s).' + (hidden ? ' ' + hidden + ' torrent-only stream(s) hidden (TV browser cannot play torrents).' : '');
+        if (++n === list.length) status.textContent = found + ' playable stream(s).' + (hidden ? ' ' + hidden + ' stream(s) hidden (torrent or Hindi audio).' : '');
       });
     });
   };
@@ -196,24 +201,79 @@ function settings() {
   setFocus(inp);
 }
 
+// ---------- subtitles ----------
+var subs = [], subIdx = -1;
+function isAr(s) { return /^(ara|ar|arabic)$/i.test(s.lang || ''); }
+function subRank(s) { return isAr(s) ? 0 : /^(eng|en|english)$/i.test(s.lang || '') ? 1 : 2; }
+function srtToVtt(t) { return 'WEBVTT\n\n' + t.replace(/^\uFEFF/, '').replace(/\r/g, '').replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2'); }
+console.assert(srtToVtt('1\r\n00:00:01,500 --> 00:00:02,000\r\nhi').indexOf('00:00:01.500 --> 00:00:02.000\nhi') > 0, 'srtToVtt');
+function loadSubs(type, id) {
+  subs = []; subIdx = -1;
+  addons().forEach(function (a) {
+    get(base(a) + '/subtitles/' + type + '/' + id + '.json', function (r) {
+      ((r && r.subtitles) || []).forEach(function (s) { if (s.url) subs.push(s); });
+      subs.sort(function (a, b) { return subRank(a) - subRank(b); }); // stable enough: Arabic, English, rest
+    });
+  });
+}
+function subNote(t) { dbg.textContent = t; dbg.style.color = '#fff'; dbg.style.fontSize = '30px'; }
+// Decode as UTF-8; many Arabic SRTs are Windows-1256, so fall back to that when UTF-8 is invalid
+function decodeSub(buf) {
+  if (!window.TextDecoder) return null;
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { return new TextDecoder('windows-1256').decode(buf); }
+}
+function setSub(i) {
+  var old = video.getElementsByTagName('track');
+  while (old.length) video.removeChild(old[0]);
+  subIdx = i;
+  if (i < 0 || !subs[i]) return subNote('Subtitles: off (' + subs.length + ' available)');
+  var s = subs[i], label = (s.lang || '?') + ' ' + (i + 1) + '/' + subs.length;
+  subNote('Subtitles: loading ' + label + '...');
+  var x = new XMLHttpRequest();
+  x.open('GET', s.url); x.responseType = 'arraybuffer'; x.timeout = 30000;
+  x.onload = function () {
+    if (subIdx !== i) return;
+    var text = decodeSub(x.response);
+    if (!text) return subNote('Subtitles not supported on this TV');
+    var t = document.createElement('track');
+    t.kind = 'subtitles'; t.srclang = s.lang || 'und'; t.label = label; t['default'] = true;
+    t.src = URL.createObjectURL(new Blob([srtToVtt(text)], { type: 'text/vtt' }));
+    video.appendChild(t);
+    if (video.textTracks && video.textTracks[0]) video.textTracks[0].mode = 'showing';
+    subNote('Subtitles: ' + label + '  (▲▼ to change)');
+  };
+  x.onerror = x.ontimeout = function () { if (subIdx === i) subNote('Subtitle ' + label + ' failed, press ▲ for next'); };
+  x.send();
+}
+
 // ---------- player ----------
 function play(url) {
   history.pushState(null, '');
   video.src = url; video.style.display = 'block';
   video.onclick = function () { video.paused ? video.play() : video.pause(); };
+  // Where the TV exposes audio tracks, force English
+  video.onloadedmetadata = function () {
+    var at = video.audioTracks, i, en = -1;
+    if (!at || at.length < 2) return;
+    for (i = 0; i < at.length; i++) if (/^en/i.test(at[i].language) || /english/i.test(at[i].label)) { en = i; break; }
+    if (en >= 0) for (i = 0; i < at.length; i++) at[i].enabled = i === en;
+  };
   video.onerror = function () { closePlayer(); alert('This stream format is not supported by the TV. Try another one.'); };
   video.play();
+  setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
 }
-function closePlayer() { video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
+function closePlayer() { subIdx = -1; var tr = video.getElementsByTagName('track'); while (tr.length) video.removeChild(tr[0]); video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
 
 // ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing) ----------
 var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, BrowserBack: 8 };
 var dbg = document.getElementById('dbg');
 document.onkeydown = function (ev) {
   var k = ev.keyCode || ev.which || KEYS[ev.key] || 0, playing = video.style.display === 'block';
-  dbg.textContent = 'v3 · key ' + k + (ev.key ? ' ' + ev.key : '');
+  if (!playing) dbg.textContent = 'v4 · key ' + k + (ev.key ? ' ' + ev.key : '');
   if (playing && k === 13) { video.paused ? video.play() : video.pause(); }
   else if (playing && (k === 37 || k === 39)) { video.currentTime += k === 39 ? 10 : -10; }
+  else if (playing && k === 38) { setSub(subIdx + 1 >= subs.length ? -1 : subIdx + 1); }
+  else if (playing && k === 40) { setSub(subIdx <= -1 ? subs.length - 1 : subIdx - 1); }
   else if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
   else if (k === 38) move(0, -1); else if (k === 40) move(0, 1);
   else if (k === 13) { if (cur && cur.onok) cur.onok(); }
