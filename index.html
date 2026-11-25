@@ -21,7 +21,7 @@ p{max-width:1400px;color:#bbb}
 .card div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item{padding:14px 20px;margin:8px 0;background:#1c1c1c}
 .muted{color:#888}
-video::cue{font-size:44px;background:rgba(0,0,0,.6)}
+#sub{display:none;position:fixed;left:5%;right:5%;bottom:70px;z-index:11;text-align:center;font-size:46px;line-height:1.3;color:#fff;white-space:pre-line;text-shadow:0 0 6px #000,2px 2px 3px #000}
 video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9}
 </style>
 </head>
@@ -29,11 +29,12 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 <div id="top"><span style="display:inline-block;margin-right:36px;font-size:40px;font-weight:bold;color:#e50914;vertical-align:middle">3bodyflix</span></div>
 <div id="main"></div>
 <video id="video"></video>
-<div id="dbg" style="position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:10">v4 · no JS yet</div>
+<div id="sub"></div>
+<div id="dbg" style="position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:10">v5 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v4 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v4 · JS ok · ' + navigator.userAgent.slice(0, 120);
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v5 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v5 · JS ok · ' + navigator.userAgent.slice(0, 120);
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -224,45 +225,62 @@ function settings() {
 var subs = [], subIdx = -1;
 function isAr(s) { return /^(ara|ar|arabic)$/i.test(s.lang || ''); }
 function subRank(s) { return isAr(s) ? 0 : /^(eng|en|english)$/i.test(s.lang || '') ? 1 : 2; }
-function srtToVtt(t) { return 'WEBVTT\n\n' + t.replace(/^\uFEFF/, '').replace(/\r/g, '').replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2'); }
-console.assert(srtToVtt('1\r\n00:00:01,500 --> 00:00:02,000\r\nhi').indexOf('00:00:01.500 --> 00:00:02.000\nhi') > 0, 'srtToVtt');
+// Subtitles are drawn in our own overlay, synced to currentTime: TV video planes often ignore <track>,
+// and old engines lack TextDecoder / Blob tracks.
+var cues = [], subTimer = null, subEl = document.getElementById('sub');
 function loadSubs(type, id) {
   subs = []; subIdx = -1;
   addons().forEach(function (a) {
     get(base(a) + '/subtitles/' + type + '/' + id + '.json', function (r) {
       ((r && r.subtitles) || []).forEach(function (s) { if (s.url) subs.push(s); });
-      subs.sort(function (a, b) { return subRank(a) - subRank(b); }); // stable enough: Arabic, English, rest
+      subs.sort(function (a, b) { return subRank(a) - subRank(b); }); // Arabic, English, rest
+      if (video.style.display === 'block' && subIdx < 0 && subs.length) setSub(0); // arrived after playback started
     });
   });
 }
 function subNote(t) { dbg.textContent = t; dbg.style.color = '#fff'; dbg.style.fontSize = '30px'; }
-// Decode as UTF-8; many Arabic SRTs are Windows-1256, so fall back to that when UTF-8 is invalid
-function decodeSub(buf) {
-  if (!window.TextDecoder) return null;
-  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { return new TextDecoder('windows-1256').decode(buf); }
+function secs(h, m, s, ms) { return (+h) * 3600 + (+m) * 60 + (+s) + (+('0.' + ms)); }
+function parseSrt(t) {
+  var out = [];
+  t.replace(/^\uFEFF/, '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (b) {
+    var m = b.match(/(\d+):(\d\d):(\d\d)[,.](\d+)\s*-->\s*(\d+):(\d\d):(\d\d)[,.](\d+)/);
+    if (!m) return;
+    var lines = b.split('\n'), i = 0;
+    while (i < lines.length && lines[i].indexOf('-->') < 0) i++;
+    out.push({ s: secs(m[1], m[2], m[3], m[4]), e: secs(m[5], m[6], m[7], m[8]), t: lines.slice(i + 1).join('\n').replace(/<[^>]+>/g, '') });
+  });
+  return out.sort(function (a, b) { return a.s - b.s; });
 }
+(function () { var c = parseSrt('1\r\n00:00:01,500 --> 00:01:02,000\r\n<i>hi</i>\r\n\r\n2\r\n00:01:03,000 --> 00:01:04,000\r\nyo'); console.assert(c.length === 2 && c[0].s === 1.5 && c[0].e === 62 && c[0].t === 'hi', 'parseSrt'); })();
+// UTF-8 first; if the file is not valid UTF-8 (U+FFFD appears) refetch as Windows-1256, common for Arabic SRTs
+function fetchSub(url, cb, cp) {
+  var x = new XMLHttpRequest();
+  x.open('GET', url); x.timeout = 30000;
+  if (x.overrideMimeType) x.overrideMimeType('text/plain; charset=' + (cp || 'utf-8'));
+  x.onload = function () { var t = x.responseText || ''; if (!cp && t.indexOf('\uFFFD') >= 0) return fetchSub(url, cb, 'windows-1256'); cb(t); };
+  x.onerror = x.ontimeout = function () { cb(null); };
+  x.send();
+}
+function showCue() {
+  var t = video.currentTime, c = null;
+  for (var i = 0; i < cues.length && cues[i].s <= t; i++) if (t < cues[i].e) c = cues[i];
+  subEl.textContent = c ? c.t : '';
+  subEl.style.display = c ? 'block' : 'none';
+}
+function stopSubs() { cues = []; if (subTimer) clearInterval(subTimer); subTimer = null; subEl.style.display = 'none'; }
 function setSub(i) {
-  var old = video.getElementsByTagName('track');
-  while (old.length) video.removeChild(old[0]);
+  stopSubs();
   subIdx = i;
   if (i < 0 || !subs[i]) return subNote(subs.length ? 'Subtitles: off (' + subs.length + ' available)' : '');
   var s = subs[i], label = (s.lang || '?') + ' ' + (i + 1) + '/' + subs.length;
   subNote('Subtitles: loading ' + label + '...');
-  var x = new XMLHttpRequest();
-  x.open('GET', s.url); x.responseType = 'arraybuffer'; x.timeout = 30000;
-  x.onload = function () {
+  fetchSub(s.url, function (text) {
     if (subIdx !== i) return;
-    var text = decodeSub(x.response);
-    if (!text) return subNote('Subtitles not supported on this TV');
-    var t = document.createElement('track');
-    t.kind = 'subtitles'; t.srclang = s.lang || 'und'; t.label = label; t['default'] = true;
-    t.src = URL.createObjectURL(new Blob([srtToVtt(text)], { type: 'text/vtt' }));
-    video.appendChild(t);
-    if (video.textTracks && video.textTracks[0]) video.textTracks[0].mode = 'showing';
+    cues = text ? parseSrt(text) : [];
+    if (!cues.length) return subNote('Subtitle ' + label + ' failed, press ▲ for next');
+    subTimer = setInterval(showCue, 200);
     subNote('Subtitles: ' + label + '  (▲▼ to change)');
-  };
-  x.onerror = x.ontimeout = function () { if (subIdx === i) subNote('Subtitle ' + label + ' failed, press ▲ for next'); };
-  x.send();
+  });
 }
 
 // ---------- player ----------
@@ -281,14 +299,14 @@ function play(url) {
   video.play();
   setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
 }
-function closePlayer() { subIdx = -1; var tr = video.getElementsByTagName('track'); while (tr.length) video.removeChild(tr[0]); video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
+function closePlayer() { subIdx = -1; stopSubs(); video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
 
 // ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing) ----------
 var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, BrowserBack: 8 };
 var dbg = document.getElementById('dbg');
 document.onkeydown = function (ev) {
   var k = ev.keyCode || ev.which || KEYS[ev.key] || 0, playing = video.style.display === 'block';
-  if (!playing) dbg.textContent = 'v4 · key ' + k + (ev.key ? ' ' + ev.key : '');
+  if (!playing) dbg.textContent = 'v5 · key ' + k + (ev.key ? ' ' + ev.key : '');
   if (playing && k === 13) { video.paused ? video.play() : video.pause(); }
   else if (playing && (k === 37 || k === 39)) { video.currentTime += k === 39 ? 10 : -10; }
   else if (playing && k === 38) { setSub(subIdx + 1 >= subs.length ? -1 : subIdx + 1); }
