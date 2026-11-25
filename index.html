@@ -28,13 +28,16 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 <div id="top"></div>
 <div id="main"></div>
 <video id="video"></video>
+<div id="dbg" style="position:fixed;right:10px;bottom:6px;font-size:18px;color:#666;z-index:10"></div>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
 var main = document.getElementById('main'), top_ = document.getElementById('top'), video = document.getElementById('video');
 var cur = null, stack = [], view = 0;
 
 // ---------- helpers ----------
-function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
+// tabIndex makes items reachable by the browser's own remote navigation too (VIDAA may not pass arrows to the page)
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; if (isF(e)) e.tabIndex = 0; return e; }
+function isF(e) { return e && typeof e.className === 'string' && /(^| )f( |$)/.test(e.className); }
 var DEFAULT_ADDONS = ['https://3body-self.vercel.app/manifest.json'];
 function addons() { try { return JSON.parse(localStorage.addons) || DEFAULT_ADDONS.slice(); } catch (e) { return DEFAULT_ADDONS.slice(); } }
 function saveAddons(a) { localStorage.addons = JSON.stringify(a); }
@@ -59,13 +62,21 @@ function item(parent, text, ok) { var i = el('div', 'item f', text); i.onok = ok
 
 // ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
 function focusables() { return [].slice.call(document.querySelectorAll('.f')).filter(function (e) { return e.offsetParent !== null; }); }
+function mark(e) { if (cur) cur.className = cur.className.replace(/ on\b/g, ''); cur = e; e.className += ' on'; }
 function setFocus(e) {
   if (!e) return;
-  if (cur) cur.className = cur.className.replace(/ on\b/g, '');
-  cur = e; e.className += ' on';
-  if (e.tagName === 'INPUT') e.focus(); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  mark(e);
+  try { e.focus(); } catch (x) {}
   e.scrollIntoView({ block: 'center' });
 }
+// Browser moved focus itself (native remote navigation) -> follow it
+document.addEventListener('focus', function (ev) { if (isF(ev.target) && ev.target !== cur) mark(ev.target); }, true);
+// Pointer/cursor mode or OK turned into a click by the browser
+document.addEventListener('click', function (ev) {
+  var t = ev.target;
+  while (t && !isF(t)) t = t.parentNode;
+  if (t && t.onok && t.tagName !== 'INPUT') { mark(t); t.onok(); }
+});
 function move(dx, dy) {
   if (!cur || !cur.offsetParent) return setFocus(focusables()[0]);
   var a = cur.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2, best = null, bd = 1e9;
@@ -81,11 +92,13 @@ function move(dx, dy) {
 }
 
 // ---------- views ----------
-function show(fn) { stack.push(fn); fn(); }
+// Each screen is a history entry, so the browser's own Back (which VIDAA may keep for itself) goes back inside the app
+function show(fn) { if (stack.length) history.pushState(null, ''); stack.push(fn); fn(); }
 function back() {
   if (video.style.display === 'block') return closePlayer();
   if (stack.length > 1) { stack.pop(); stack[stack.length - 1](); }
 }
+window.onpopstate = back;
 
 function grid(metas) {
   if (!metas || !metas.length) return msg('Nothing found.');
@@ -180,21 +193,26 @@ function settings() {
 
 // ---------- player ----------
 function play(url) {
+  history.pushState(null, '');
   video.src = url; video.style.display = 'block';
+  video.onclick = function () { video.paused ? video.play() : video.pause(); };
   video.onerror = function () { closePlayer(); alert('This stream format is not supported by the TV. Try another one.'); };
   video.play();
 }
 function closePlayer() { video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
 
 // ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing) ----------
+var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, BrowserBack: 8 };
+var dbg = document.getElementById('dbg');
 document.onkeydown = function (ev) {
-  var k = ev.keyCode, playing = video.style.display === 'block';
+  var k = ev.keyCode || ev.which || KEYS[ev.key] || 0, playing = video.style.display === 'block';
+  dbg.textContent = 'key ' + k + (ev.key ? ' ' + ev.key : '');
   if (playing && k === 13) { video.paused ? video.play() : video.pause(); }
   else if (playing && (k === 37 || k === 39)) { video.currentTime += k === 39 ? 10 : -10; }
   else if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
   else if (k === 38) move(0, -1); else if (k === 40) move(0, 1);
   else if (k === 13) { if (cur && cur.onok) cur.onok(); }
-  else if (k === 8 || k === 27 || k === 461 || k === 10009) { if (k === 8 && document.activeElement && document.activeElement.tagName === 'INPUT') return; back(); }
+  else if (k === 8 || k === 27 || k === 461 || k === 10009) { if (k === 8 && document.activeElement && document.activeElement.tagName === 'INPUT') return; history.back(); }
   else return;
   ev.preventDefault();
 };
