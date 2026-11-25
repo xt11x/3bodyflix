@@ -45,6 +45,16 @@ p{max-width:1400px;color:#bbb}
 .card .yr{color:#888;font-size:18px;margin-top:0}
 .feat{min-height:640px}
 .feat p{max-width:900px}
+.prog{height:6px;background:#444;border-radius:3px;margin-top:6px}
+.prog i{display:block;height:6px;background:#e50914;border-radius:3px}
+.sec{margin:26px 0 8px;font-size:30px;color:#ddd}
+.ch{display:inline-block;vertical-align:top;width:220px;margin:0 16px 20px 0;padding:4px;white-space:normal}
+.ch img{width:220px;height:124px;object-fit:contain;background:#1c1c1c;border-radius:6px;display:block}
+.ch div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.ch.on{border-color:#e50914;background:transparent}
+.prof{display:inline-block;width:220px;margin:0 24px 24px 0;padding:24px 10px;text-align:center;background:#1c1c1c;font-size:30px}
+.prof b{display:block;font-size:80px;margin-bottom:10px}
+.link{word-break:break-all;color:#9cf}
 .hero{position:relative;min-height:560px;margin:0 -40px;padding:50px 40px 20px;background-size:cover;background-position:center top}
 .hero .shade{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to right,#111 25%,rgba(17,17,17,.65) 60%,rgba(17,17,17,.25));background-color:rgba(17,17,17,.4)}
 .hero .in{position:relative;max-width:1150px}
@@ -91,6 +101,12 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 .mobile .rate,.mobile .rank{font-size:11px;top:6px;padding:1px 5px}
 .mobile .rate{right:6px}.mobile .rank{left:6px}
 .mobile .card .yr{font-size:11px}
+.mobile .sec{font-size:17px}
+.mobile .ch{width:110px;margin:0 8px 10px 0;padding:2px}
+.mobile .ch img{width:110px;height:62px}
+.mobile .ch div{font-size:12px}
+.mobile .prof{width:120px;padding:12px 6px;font-size:15px;margin:0 10px 10px 0}
+.mobile .prof b{font-size:40px}
 .mobile .meta{font-size:14px}
 .mobile .btn{padding:10px 22px}
 .mobile .chip{padding:6px 12px}
@@ -114,11 +130,11 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
   <span id="osdTime"></span>
 </div>
 <span class="f" id="closeBtn">✕</span>
-<div id="dbg">v7 · no JS yet</div>
+<div id="dbg">v8 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v7 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v7';
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v8 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v8';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -207,7 +223,9 @@ function move(dx, dy) {
 
 // ---------- views ----------
 // Each screen is a history entry, so the browser's own Back (which VIDAA may keep for itself) goes back inside the app
-function show(fn) { if (stack.length) history.pushState(null, ''); stack.push(fn); fn(); }
+// hash = shareable address of the screen (#/movie/tt..., #/series/tt...); other screens drop it
+function show(fn, hash) { if (stack.length) history.pushState(null, '', hash || location.pathname + location.search); stack.push(fn); fn(); }
+function openTitle(type, id) { show(detail(type, id), '#/' + type + '/' + id); }
 function back() {
   if (video.style.display === 'block') return closePlayer();
   if (stack.length > 1) { stack.pop(); stack[stack.length - 1](); }
@@ -222,7 +240,7 @@ function card(m, parent, rank) {
   if (m.releaseInfo) c.appendChild(el('div', 'yr', String(m.releaseInfo)));
   if (rating(m)) c.appendChild(el('span', 'rate', '★ ' + rating(m)));
   if (rank) c.appendChild(el('span', 'rank', '#' + rank));
-  c.onok = function () { show(detail(m.type, m.id)); };
+  c.onok = function () { openTitle(m.type, m.id); };
   parent.appendChild(c);
   return c;
 }
@@ -238,11 +256,8 @@ function grid(metas) {
 var META = base(DEFAULT_ADDONS[0]);
 var BEST = { movie: 'tmdb.critically-acclaimed-movies', series: 'tmdb.critically-acclaimed-series' };
 var ROWS = [
-  ['Best Movies of All Time', 'movie', BEST.movie, META, 'movie'],
-  ['Best Series of All Time', 'series', BEST.series, META, 'series'],
   ['Popular Movies', 'movie', 'top'],
   ['Popular Series', 'series', 'top'],
-  ['IMDb Top 250', 'movie', 'daily.imdb-top-250', META, 'imdb'],
   ['New & Trending Movies', 'movie', 'imdbRating'],
   ['New & Trending Series', 'series', 'imdbRating'],
   ['Action', 'movie', 'top/genre=Action'],
@@ -259,12 +274,22 @@ function home() {
     var m = ((res && res.metas) || []).filter(function (x) { return isHttp(x.background) && x.description; })[0];
     if (!m) return;
     var hb = heroBox(m, 'feat'), playB = el('div', 'btn f', '▶  Play'), infoB = el('div', 'chip f', 'ⓘ  Details');
-    playB.onok = function () { show(streams('movie', m.id, m.name)); };
-    infoB.onok = function () { show(detail('movie', m.id)); };
+    playB.onok = function () { show(streams('movie', m.id, m.name, m)); };
+    infoB.onok = function () { openTitle('movie', m.id); };
     hb.inner.appendChild(playB); hb.inner.appendChild(infoB);
     feat.appendChild(hb.hero);
     if (!(cur && main.contains(cur))) setFocus(playB);
   });
+  var cw = watched();
+  if (cw.length) {
+    var row = el('div', 'row'), strip = el('div', 'strip');
+    row.appendChild(el('h2', '', 'Continue Watching' + (profile ? ' — ' + profile : ''))); row.appendChild(strip); main.appendChild(row);
+    cw.forEach(function (x) {
+      var c = card({ name: x.label, poster: x.poster }, strip), bar = el('div', 'prog'), fill = el('i');
+      fill.style.width = Math.round(x.t / x.d * 100) + '%'; bar.appendChild(fill); c.appendChild(bar);
+      c.onok = function () { show(streams(x.type, x.vid, x.label, { id: x.metaId, type: x.mtype, name: x.name, poster: x.poster })); };
+    });
+  }
   ROWS.forEach(function (r) {
     var row = el('div', 'row'), strip = el('div', 'strip'), h = el('h2', '', r[0]);
     row.appendChild(h); row.appendChild(strip); main.appendChild(row);
@@ -305,6 +330,30 @@ function best(kind) {
   };
 }
 
+var GENRES = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western'];
+function catalogs() {
+  clear('Catalogs');
+  var first = null;
+  function sec(title, entries) {
+    main.appendChild(el('div', 'sec', title));
+    entries.forEach(function (e) { var c = el('div', 'chip f', e[0]); c.onok = e[1]; main.appendChild(c); first = first || c; });
+  }
+  sec('Top Lists', [
+    ['🏆 Best Movies of All Time', function () { show(best('movie')); }],
+    ['🏆 Best Series of All Time', function () { show(best('series')); }],
+    ['⭐ IMDb Top 250 Movies', function () { show(best('imdb')); }]
+  ]);
+  sec('Movie Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('movie', g)); }]; }));
+  sec('Series Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('series', g)); }]; }));
+  setFocus(first);
+}
+function genrePage(type, g) {
+  return function () {
+    clear(g + (type === 'movie' ? ' Movies' : ' Series'));
+    get(CINEMETA + '/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog.'); });
+  };
+}
+
 function catalog(type) {
   return function () {
     clear(type === 'movie' ? 'Movies' : 'Series');
@@ -312,18 +361,33 @@ function catalog(type) {
   };
 }
 
+// IMDb's suggestion service ranks titles by popularity (lower rank = more popular): The Walking Dead before spin-offs
+function imdbToMeta(x) {
+  var series = /^tv(Series|MiniSeries)$/.test(x.qid || '');
+  return { id: x.id, type: series ? 'series' : 'movie', name: x.l, releaseInfo: x.y ? String(x.y) : '',
+    poster: x.i && isHttp(x.i.imageUrl) ? x.i.imageUrl.replace(/\._V1_[^\/]*\.jpg$/, '._V1_SX300.jpg') : '' };
+}
 function search(q) {
   return function () {
     clear('Search: ' + q);
-    var n = 0, all = [];
+    var n = 0, top = [], rest = [], ql = q.toLowerCase(), c0 = /[a-z0-9]/.test(ql.charAt(0)) ? ql.charAt(0) : 'x';
+    function done() {
+      if (++n < 3) return;
+      var seen = {}, all = [];
+      top.concat(rest).forEach(function (m) { if (m && m.id && !seen[m.id]) { seen[m.id] = 1; all.push(m); } });
+      grid(all);
+    }
+    get('https://v2.sg.media-imdb.com/suggestion/' + c0 + '/' + encodeURIComponent(ql) + '.json', function (r) {
+      top = ((r && r.d) || []).filter(function (x) { return /^tt/.test(x.id) && /^(movie|tvSeries|tvMiniSeries|tvMovie)$/.test(x.qid || ''); })
+        .sort(function (a, b) { return (a.rank || 1e9) - (b.rank || 1e9); }).map(imdbToMeta);
+      done();
+    });
     ['movie', 'series'].forEach(function (t) {
-      get(CINEMETA + '/catalog/' + t + '/top/search=' + encodeURIComponent(q) + '.json', function (r) {
-        all = all.concat((r && r.metas) || []);
-        if (++n === 2) grid(all);
-      });
+      get(CINEMETA + '/catalog/' + t + '/top/search=' + encodeURIComponent(q) + '.json', function (r) { rest = rest.concat((r && r.metas) || []); done(); });
     });
   };
 }
+console.assert(imdbToMeta({ id: 'tt1', qid: 'tvSeries', l: 'X', y: 2010, i: { imageUrl: 'https://m.media-amazon.com/images/M/AB._V1_.jpg' } }).poster === 'https://m.media-amazon.com/images/M/AB._V1_SX300.jpg', 'imdbToMeta');
 
 function heroBox(m, cls) {
   var hero = el('div', 'hero' + (cls ? ' ' + cls : '')), inner = el('div', 'in');
@@ -345,12 +409,19 @@ function detail(type, id) {
       if (!m) return msg('Could not load details.');
       var hb = heroBox(m), inner = hb.inner;
       main.appendChild(hb.hero);
+      var link = location.origin + location.pathname + '#/' + type + '/' + m.id, shareB = el('div', 'chip f', '↗  Share'), linkP = el('p', 'link');
+      shareB.onok = function () {
+        linkP.textContent = link;
+        if (navigator.share) { try { navigator.share({ title: m.name, url: link }); } catch (e) {} }
+        else if (navigator.clipboard) { navigator.clipboard.writeText(link).then(function () { linkP.textContent = link + '  ✓ copied'; }, function () {}); }
+      };
       if (type === 'movie') {
         var b = el('div', 'btn f', '▶  Play');
-        b.onok = function () { show(streams('movie', m.id, m.name)); };
-        inner.appendChild(b);
+        b.onok = function () { show(streams('movie', m.id, m.name, m)); };
+        inner.appendChild(b); inner.appendChild(shareB); inner.appendChild(linkP);
         return setFocus(b);
       }
+      inner.appendChild(shareB); inner.appendChild(linkP);
       var eps = (m.videos || []).slice().sort(function (a, b) { return (a.season - b.season) || (a.episode - b.episode); });
       var seasons = [];
       eps.forEach(function (v) { if (seasons.indexOf(v.season) < 0) seasons.push(v.season); });
@@ -364,7 +435,7 @@ function detail(type, id) {
         eps.forEach(function (v) {
           if (v.season !== sn) return;
           item(epBox, 'E' + v.episode + '   ' + (v.name || v.title || ''), function () {
-            show(streams('series', v.id, m.name + ' · S' + v.season + ' E' + v.episode));
+            show(streams('series', v.id, m.name + ' · S' + v.season + ' E' + v.episode, m));
           });
         });
       }
@@ -380,8 +451,9 @@ function detail(type, id) {
   };
 }
 
-function streams(type, id, title) {
+function streams(type, id, title, meta) {
   return function () {
+    meta = meta || {};
     clear(title || 'Streams');
     var list = addons(), n = 0, hidden = 0, queue = [];
     if (!list.length) return msg('No addons yet. Open Settings and add a stream addon URL.');
@@ -401,7 +473,7 @@ function streams(type, id, title) {
           var rk = streamRank(s), it = el('div', 'item f'), tag = el('span', 'tag ' + (rk === 0 ? 'good' : rk >= 2 ? 'bad' : ''), fmtOf(s) + (isHevc(s) ? ' HEVC' : '') + (hints(s).notWebReady ? ' ⚠' : ''));
           it.appendChild(tag);
           it.appendChild(document.createTextNode(((s.name || '') + '  ' + (s.title || s.description || '')).replace(/\s+/g, ' ')));
-          it.onok = function () { playQueue(queue, i, title); };
+          it.onok = function () { nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster }; playQueue(queue, i, title); };
           box.appendChild(it);
         });
         if (queue.length) setFocus(box.firstChild);
@@ -411,20 +483,132 @@ function streams(type, id, title) {
   };
 }
 
-// Dev: the owner's own links, edited from dev.html and saved to dev.json in the repo
-function devList() {
-  clear('Dev');
-  get('dev.json?t=' + new Date().getTime(), function (r) {
-    var items = (r || []).filter(function (d) { return d && d.name && isHttp(d.url); });
-    if (!items.length) return msg('No links yet. Add them from the dev page.');
+// M3U / M3U8 playlist player: playlists are saved on this device (URL), or opened from a local file
+function m3uLists() { try { return JSON.parse(localStorage.m3u) || []; } catch (e) { return []; } }
+function parseM3U(t) {
+  var out = [], meta = null;
+  t.replace(/\r/g, '').split('\n').forEach(function (l) {
+    l = l.trim();
+    if (!l) return;
+    if (l.indexOf('#EXTINF') === 0) {
+      var tail = l.slice(l.lastIndexOf('"') + 1);
+      meta = { name: tail.slice(tail.indexOf(',') + 1).trim() || 'Untitled', logo: (/tvg-logo="([^"]*)"/.exec(l) || [])[1], group: (/group-title="([^"]*)"/.exec(l) || [])[1] || 'Other' };
+    } else if (l.charAt(0) !== '#') {
+      if (isHttp(l)) { meta = meta || { name: l.split('/').pop(), group: 'Other' }; meta.url = l; out.push(meta); }
+      meta = null;
+    }
+  });
+  return out;
+}
+(function () {
+  var r = parseM3U('#EXTM3U\r\n#EXTINF:-1 tvg-logo="https://l/a.png" group-title="G, 1",Chan A\r\nhttps://s/a.m3u8\n#EXTINF:-1,B\nhttps://s/b.mp4\nnot-a-url\n');
+  console.assert(r.length === 2 && r[0].name === 'Chan A' && r[0].group === 'G, 1' && r[0].logo === 'https://l/a.png' && r[1].name === 'B' && r[1].group === 'Other', 'parseM3U');
+})();
+function m3uHome() {
+  clear('M3U Player');
+  main.appendChild(el('p', 'muted', 'Add an M3U / M3U8 playlist link. The playlist is saved on this device only.'));
+  var inp = el('input', 'f'), add = el('button', 'f', 'Add');
+  inp.placeholder = 'https://…/playlist.m3u';
+  inp.onok = add.onok = function () {
+    var u = inp.value.trim();
+    if (!isHttp(u)) return alert('URL must start with http:// or https://');
+    var a = m3uLists(); if (!a.some(function (x) { return x.url === u; })) a.push({ url: u, name: u.split('/').pop().split('?')[0] || u });
+    localStorage.m3u = JSON.stringify(a); m3uHome();
+  };
+  main.appendChild(inp); main.appendChild(add);
+  if (window.FileReader) { // phones / PCs: open a playlist file directly
+    var file = el('input'); file.type = 'file'; file.accept = '.m3u,.m3u8,audio/x-mpegurl,application/vnd.apple.mpegurl,text/plain';
+    file.style.cssText = 'display:block;margin:14px 0;font-size:inherit;color:#bbb';
+    file.onchange = function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () { show(m3uView(f.name, parseM3U(String(rd.result)))); };
+      rd.readAsText(f);
+    };
+    main.appendChild(file);
+  }
+  var first = null;
+  m3uLists().forEach(function (x, i) {
+    var it = item(main, '▶  ' + x.name, function () { show(m3uLoad(x)); }), del = el('span', 'chip f', '✕ remove');
+    del.onok = function () { var a = m3uLists(); a.splice(i, 1); localStorage.m3u = JSON.stringify(a); m3uHome(); };
+    main.appendChild(del); first = first || it;
+  });
+  setFocus(first || inp);
+}
+function m3uLoad(x) {
+  return function () {
+    clear(x.name); msg('Loading playlist…');
+    var v = view, r = new XMLHttpRequest();
+    r.open('GET', x.url); r.timeout = 30000;
+    r.onload = function () { if (v === view) { stack[stack.length - 1] = m3uView(x.name, parseM3U(r.responseText || '')); stack[stack.length - 1](); } };
+    r.onerror = r.ontimeout = function () { if (v === view) msg('Could not load the playlist (offline, wrong link, or the server blocks browsers).'); };
+    r.send();
+  };
+}
+function m3uView(name, entries) {
+  return function () {
+    clear(name);
+    if (!entries.length) return msg('No playable entries found in this playlist.');
+    var groups = [], by = {};
+    entries.forEach(function (e) { if (!by[e.group]) { by[e.group] = []; groups.push(e.group); } by[e.group].push(e); });
     var first = null;
-    items.forEach(function (d) {
-      var c = card({ name: d.name, poster: d.image }, main);
-      c.onok = function () { subs = []; pq = null; play(d.url, d.name); };
-      first = first || c;
+    groups.forEach(function (g) {
+      var row = el('div', 'row'), strip = el('div', 'strip');
+      row.appendChild(el('h2', '', g + '  (' + by[g].length + ')')); row.appendChild(strip); main.appendChild(row);
+      by[g].forEach(function (e) {
+        var c = el('div', 'ch f'), img = el('img');
+        if (isHttp(e.logo)) img.src = e.logo;
+        c.appendChild(img); c.appendChild(el('div', '', e.name));
+        c.onok = function () { subs = []; pq = null; nowPlaying = null; play(e.url, e.name); };
+        strip.appendChild(c); first = first || c;
+      });
     });
     setFocus(first);
+  };
+}
+
+// ---------- profiles (saved on this device) + continue watching ----------
+var profile = localStorage.profile || '', nowPlaying = null, resumeAt = 0, lastSave = 0;
+function profilesList() { try { return JSON.parse(localStorage.profiles) || []; } catch (e) { return []; } }
+function pkey(k) { return 'p:' + profile + ':' + k; }
+function watched() { if (!profile) return []; try { return JSON.parse(localStorage[pkey('cw')]) || []; } catch (e) { return []; } }
+function saveProgress() {
+  if (!nowPlaying || !profile) return;
+  var d = video.duration, t = video.currentTime;
+  if (!isFinite(d) || d < 120 || t < 15) return; // skip live streams, trailers and accidental starts
+  var list = watched().filter(function (x) { return x.vid !== nowPlaying.vid; });
+  if (t / d < 0.95) { var e = {}; for (var k in nowPlaying) e[k] = nowPlaying[k]; e.t = t; e.d = d; e.at = new Date().getTime(); list.unshift(e); }
+  localStorage[pkey('cw')] = JSON.stringify(list.slice(0, 30));
+}
+function profilesPage() {
+  clear("Who's watching?");
+  var first = null;
+  profilesList().forEach(function (n, i) {
+    var c = el('div', 'prof f'); c.appendChild(el('b', '', '👤')); c.appendChild(document.createTextNode(n));
+    c.onok = function () { profile = n; localStorage.profile = n; updateProfileBtn(); stack = []; show(home); };
+    main.appendChild(c); first = first || c;
   });
+  main.appendChild(el('div', 'sec', 'Add profile'));
+  var inp = el('input', 'f'), add = el('button', 'f', 'Add');
+  inp.placeholder = 'Name';
+  inp.onok = add.onok = function () {
+    var n = inp.value.trim().slice(0, 20); if (!n) return;
+    var a = profilesList(); if (a.indexOf(n) < 0) a.push(n); localStorage.profiles = JSON.stringify(a); profilesPage();
+  };
+  main.appendChild(inp); main.appendChild(add);
+  profilesList().forEach(function (n, i) {
+    var del = el('span', 'chip f', '✕ ' + n);
+    del.onok = function () {
+      if (!confirm('Delete profile "' + n + '" and its watch history?')) return;
+      var a = profilesList(); a.splice(i, 1); localStorage.profiles = JSON.stringify(a);
+      localStorage.removeItem('p:' + n + ':cw');
+      if (profile === n) { profile = ''; localStorage.removeItem('profile'); updateProfileBtn(); }
+      profilesPage();
+    };
+    if (i === 0) main.appendChild(el('div', 'sec', 'Remove'));
+    main.appendChild(del);
+  });
+  setFocus(first || inp);
 }
 
 function settings() {
@@ -539,7 +723,10 @@ function play(url, title) {
   video.onerror = nextStream;
   video.onplaying = function () { clearTimeout(watchdog); };
   // Where the browser exposes audio tracks, force English
+  resumeAt = 0;
+  if (nowPlaying) watched().forEach(function (x) { if (x.vid === nowPlaying.vid) resumeAt = x.t; });
   video.onloadedmetadata = function () {
+    if (resumeAt > 0 && isFinite(video.duration)) { video.currentTime = Math.max(0, resumeAt - 5); resumeAt = 0; }
     var at = video.audioTracks, i, en = -1;
     if (!at || at.length < 2) return;
     for (i = 0; i < at.length; i++) if (/^en/i.test(at[i].language) || /english/i.test(at[i].label)) { en = i; break; }
@@ -550,6 +737,7 @@ function play(url, title) {
   osdShow();
 }
 function closePlayer() {
+  saveProgress(); nowPlaying = null;
   clearTimeout(watchdog); clearTimeout(osdTimer); pq = null; subIdx = -1; stopSubs();
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
   video.style.display = 'none'; osd.style.display = 'none'; closeBtn.style.display = 'none';
@@ -573,8 +761,13 @@ function seek(d) {
   osdShow();
 }
 function togglePlay() { if (video.paused) video.play(); else video.pause(); osdShow(); }
-video.ontimeupdate = function () { if (osd.style.display === 'block') osdUpdate(); };
-video.onpause = video.onplay = osdShow;
+video.ontimeupdate = function () {
+  if (osd.style.display === 'block') osdUpdate();
+  var now = new Date().getTime();
+  if (now - lastSave > 10000) { lastSave = now; saveProgress(); }
+};
+video.onpause = function () { saveProgress(); osdShow(); };
+video.onplay = osdShow;
 if (!MOBILE) video.onclick = togglePlay;
 $('osdRw').onok = function () { seek(-30); };
 $('osdFf').onok = function () { seek(30); };
@@ -614,18 +807,25 @@ function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.a
 topBtn('Home', function () { show(home); });
 topBtn('Movies', function () { show(catalog('movie')); });
 topBtn('Series', function () { show(catalog('series')); });
-topBtn('Top Movies', function () { show(best('movie')); });
-topBtn('Top Series', function () { show(best('series')); });
-topBtn('IMDb 250', function () { show(best('imdb')); });
-topBtn('Dev', function () { show(devList); });
+topBtn('Catalogs', function () { show(catalogs); });
+topBtn('M3U Player', function () { show(m3uHome); });
 var q = el('input', 'f'); q.placeholder = 'Search…';
 q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
 top_.appendChild(q);
+var profBtn = el('button', 'f', '');
+profBtn.onok = function () { show(profilesPage); };
+top_.appendChild(profBtn);
+function updateProfileBtn() { profBtn.textContent = '👤 ' + (profile || 'Profile'); }
+updateProfileBtn();
 topBtn('Settings', function () { show(settings); });
 
 // keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
 if (!MOBILE) main.style.top = top_.offsetHeight + 'px';
-show(home);
+// Start: a shared title link (#/movie/tt...) opens that title on top of Home; first visit asks who is watching
+var route = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
+if (route) history.replaceState(null, '', location.pathname + location.search);
+show(profile ? home : profilesPage);
+if (route) openTitle(route[1], route[2]);
 </script>
 </body>
 </html>
