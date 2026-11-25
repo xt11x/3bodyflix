@@ -129,6 +129,69 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 .mobile #osd{display:none !important}
 .mobile #closeBtn{font-size:20px;top:10px;left:10px;padding:4px 12px}
 .mobile #dbg{font-size:11px}
+/* ===== v10 design: floating pill nav, full-bleed hero, landscape rows ===== */
+body{background:#0e0e10;color:#f2f2f4;font-family:"Segoe UI",Roboto,Arial,sans-serif}
+#top{position:absolute;top:0;left:0;right:0;z-index:6;padding:22px 5vw 30px;background:linear-gradient(#0e0e10,rgba(14,14,16,.8) 55%,rgba(14,14,16,0))}
+#top .f{background:transparent;color:#9a9aa3;border-radius:12px;border-width:3px}
+#top .f.on{background:#34343b;color:#f2f2f4;border-color:#f2f2f4}
+#nav{display:inline-block;padding:6px;background:rgba(30,30,34,.85);border:1px solid #2c2c32;border-radius:16px;vertical-align:middle}
+#nav .f{margin-right:2px}
+#nav .f.act{background:#34343b;color:#f2f2f4}
+#topR{float:right}
+#top #q{width:380px;background-color:#1b1b1f}
+#main{padding:0 5vw}
+.hero{margin:0 -5vw;padding:60px 5vw 30px}
+.hero .shade{background:linear-gradient(90deg,#0e0e10 10%,rgba(14,14,16,0) 65%),linear-gradient(0deg,#0e0e10,rgba(14,14,16,0) 40%)}
+.feat{height:88vh;min-height:620px;padding:0 5vw}
+.feat .in{position:absolute;left:5vw;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);max-width:820px}
+.feat h1{font-size:84px;line-height:1;margin-bottom:22px}
+.topline{font-weight:bold;font-size:26px;margin-bottom:14px}
+.badge{display:inline-block;background:#e50914;color:#fff;font-weight:900;font-size:16px;padding:3px 8px;border-radius:5px;margin-right:12px;vertical-align:middle}
+.btn{background:#f2f2f4;color:#000;border-radius:10px;padding:14px 30px}
+.btn.on{background:#fff;border-color:#e50914}
+.btn.ghost{background:rgba(120,120,128,.45);color:#f2f2f4}
+.chip{background:#1b1b1f;border:3px solid #2c2c32;color:#bdbdc4;border-radius:10px}
+.chip.on{border-color:#e50914;color:#f2f2f4;background:#1b1b1f}
+.chip.sel{background:#e50914;border-color:#e50914;color:#fff}
+.dots{position:absolute;right:5vw;bottom:12vh;margin:0;z-index:2}
+.dots i{width:28px;height:4px;border-radius:2px;background:#555;margin-right:10px;vertical-align:middle}
+.dots i.a{background:#f2f2f4;width:42px}
+.pz{display:inline-block;width:46px;height:46px;line-height:40px;text-align:center;border-radius:50%;background:#222;border:3px solid #444;font-size:18px;vertical-align:middle;padding:0}
+.row h2{font-size:30px}
+.wc{display:inline-block;vertical-align:top;width:340px;margin:0 16px 0 0;padding:4px;white-space:normal;position:relative}
+.wc.big{width:620px}
+.wc .ph{position:relative;height:191px;border-radius:10px;overflow:hidden;background-color:#1b1b1f;background-size:cover;background-position:center}
+.wc.big .ph{height:349px}
+.wc .ph b{position:absolute;left:14px;bottom:10px;right:14px;font-size:24px;text-shadow:0 2px 6px #000}
+.wc .tb{position:absolute;top:0;left:14px;background:#e50914;color:#fff;font-weight:900;font-size:16px;padding:3px 8px;border-radius:0 0 5px 5px}
+.wc h3{font-size:22px;margin:8px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wc small{color:#9a9aa3;font-size:18px}
+.wc.on{border-color:#e50914;background:transparent}
+.wc .prog{margin-top:6px}
+.item{background:#1b1b1f;border-radius:10px}
+#foot{padding:40px 0;color:#9a9aa3;font-size:20px;border-top:1px solid #222;margin-top:30px}
+.mobile #top{position:-webkit-sticky;position:sticky;padding:8px 10px 10px;background:#0e0e10}
+.mobile #nav{padding:3px;border-radius:12px}
+.mobile #topR{float:none}
+.mobile #main{padding:0 10px 30px}
+.mobile .hero{margin:0 -10px;padding:20px 10px 10px}
+.mobile .feat{height:auto;min-height:62vh}
+.mobile .feat .in{position:relative;left:auto;top:auto;-webkit-transform:none;transform:none;padding-top:24vh}
+.mobile .feat h1{font-size:34px;margin-bottom:10px}
+.mobile .topline{font-size:14px}
+.mobile .wc{width:220px;margin-right:10px}
+.mobile .wc.big{width:82vw}
+.mobile .wc .ph{height:124px}
+.mobile .wc.big .ph{height:46vw}
+.mobile .wc h3{font-size:14px}
+.mobile .wc small{font-size:12px}
+.mobile .wc .ph b{font-size:15px}
+.mobile .badge,.mobile .wc .tb{font-size:11px}
+.mobile .dots{bottom:14px;right:12px}
+.mobile .dots i{width:16px;height:3px}
+.mobile .dots i.a{width:26px}
+.mobile .pz{width:30px;height:30px;line-height:24px;font-size:12px}
+.mobile #foot{font-size:12px}
 </style>
 </head>
 <body>
@@ -144,11 +207,11 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 </div>
 <div id="trailer"></div>
 <span class="f" id="closeBtn">✕</span>
-<div id="dbg">v9 · no JS yet</div>
+<div id="dbg">v10 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v9 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v9';
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v10 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v10';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -269,6 +332,20 @@ function card(m, parent, rank) {
   return c;
 }
 
+// Wide 16:9 card for home rows: backdrop image, title on it, rating/year/type below
+function wcard(m, parent, topN, big) {
+  var c = el('div', 'wc f' + (big ? ' big' : '')), ph = el('div', 'ph'), img = isHttp(m.background) ? m.background : m.poster;
+  if (isHttp(img)) ph.style.backgroundImage = 'url(' + JSON.stringify(img) + ')';
+  ph.appendChild(el('b', '', m.name));
+  if (topN) ph.appendChild(el('span', 'tb', 'TOP ' + topN));
+  c.appendChild(ph); c.appendChild(el('h3', '', m.name));
+  var bits = [rating(m) ? '\u2605 ' + rating(m) : '', m.releaseInfo, m.type === 'series' ? 'Show' : m.type === 'movie' ? 'Movie' : ''].filter(function (b) { return b; });
+  c.appendChild(el('small', '', bits.join(' \u00b7 ')));
+  c.onok = function () { openTitle(m.type, m.id); };
+  parent.appendChild(c);
+  return c;
+}
+
 function grid(metas) {
   if (!metas || !metas.length) return msg('Nothing found.');
   var first = null;
@@ -293,53 +370,58 @@ var ROWS = [
 function home() {
   clear();
   var feat = el('div'); main.appendChild(feat);
-  // Rotating banner: the 5 most popular movies that have a backdrop; pauses while the remote is on it
+  // Rotating banner: the 5 most popular movies with a backdrop. Pauses while the remote is on it or the user pressed pause.
   get(CINEMETA + '/catalog/movie/top.json', function (res) {
     var list = ((res && res.metas) || []).filter(function (x) { return isHttp(x.background) && x.description; }).slice(0, 5);
     if (!list.length) return;
-    var v = view, idx = 0;
+    var v = view, idx = 0, paused = false;
     function render(i, focus) {
-      var m = list[i], hb = heroBox(m, 'feat'), playB = el('div', 'btn f', '▶  Play'), infoB = el('div', 'chip f', 'ⓘ  Details'), dots = el('div', 'dots');
+      var m = list[i], hb = heroBox(m, 'feat'), inner = hb.inner;
+      if (!MOBILE) hb.hero.style.marginTop = -parseInt(main.style.paddingTop || '0', 10) + 'px'; // banner runs under the see-through header
+      var tl = el('div', 'topline'); tl.appendChild(el('span', 'badge', 'TOP')); tl.appendChild(document.createTextNode('#' + (i + 1) + ' in movies today'));
+      inner.insertBefore(tl, inner.childNodes[1]);
+      var playB = el('div', 'btn f', '\u25b6  Play'), infoB = el('div', 'btn ghost f', '\u24d8  More info');
       playB.onok = function () { show(streams('movie', m.id, m.name, m)); };
       infoB.onok = function () { openTitle('movie', m.id); };
-      hb.inner.appendChild(playB); hb.inner.appendChild(infoB);
+      inner.appendChild(playB); inner.appendChild(infoB);
+      var dots = el('div', 'dots'), pz = el('span', 'pz f', paused ? '\u25b6' : '\u275a\u275a');
       list.forEach(function (x, j) { var d = el('i', j === i ? 'a' : ''); d.onclick = function () { idx = j; render(j, false); }; dots.appendChild(d); });
-      hb.inner.appendChild(dots);
+      pz.onok = function () { paused = !paused; pz.textContent = paused ? '\u25b6' : '\u275a\u275a'; };
+      dots.appendChild(pz); hb.hero.appendChild(dots);
       feat.innerHTML = ''; feat.appendChild(hb.hero);
       if (focus) setFocus(playB);
     }
     render(0, !(cur && main.contains(cur)));
     var timer = setInterval(function () {
       if (view !== v) return clearInterval(timer);
-      if (cur && feat.contains(cur) || video.style.display === 'block' || trailerEl.style.display === 'block') return;
+      if (paused || cur && feat.contains(cur) || video.style.display === 'block' || trailerEl.style.display === 'block') return;
       idx = (idx + 1) % list.length; render(idx, false);
-    }, 8000);
+    }, 7000);
   });
+  function newRow(title) {
+    var row = el('div', 'row'), strip = el('div', 'strip');
+    row.appendChild(el('h2', '', title + ' \u203a')); row.appendChild(strip); main.appendChild(row);
+    return { row: row, strip: strip };
+  }
   var cw = watched();
   if (cw.length) {
-    var row = el('div', 'row'), strip = el('div', 'strip');
-    row.appendChild(el('h2', '', 'Continue Watching' + (profile ? ' — ' + profile : ''))); row.appendChild(strip); main.appendChild(row);
+    var r0 = newRow('Continue Watching' + (profile ? ' \u2014 ' + profile : ''));
     cw.forEach(function (x) {
-      var c = card({ name: x.label, poster: x.poster }, strip), bar = el('div', 'prog'), fill = el('i');
+      var c = wcard({ name: x.label, poster: x.poster, background: x.bg }, r0.strip), bar = el('div', 'prog'), fill = el('i');
       fill.style.width = Math.round(x.t / x.d * 100) + '%'; bar.appendChild(fill); c.appendChild(bar);
-      c.onok = function () { show(streams(x.type, x.vid, x.label, { id: x.metaId, type: x.mtype, name: x.name, poster: x.poster })); };
+      c.onok = function () { show(streams(x.type, x.vid, x.label, { id: x.metaId, type: x.mtype, name: x.name, poster: x.poster, background: x.bg })); };
     });
   }
-  ROWS.forEach(function (r) {
-    var row = el('div', 'row'), strip = el('div', 'strip'), h = el('h2', '', r[0]);
-    row.appendChild(h); row.appendChild(strip); main.appendChild(row);
-    if (r[4]) { // "see all" for the all-time lists
-      var all = el('span', 'chip f', 'See all ›');
-      all.style.fontSize = MOBILE ? '12px' : '22px'; all.style.marginLeft = '20px'; all.style.verticalAlign = 'middle';
-      all.onok = function () { show(best(r[4])); };
-      h.appendChild(all);
-    }
-    get((r[3] || CINEMETA) + '/catalog/' + r[1] + '/' + r[2] + '.json', function (res) {
-      var metas = ((res && res.metas) || []).slice(0, 20);
-      if (!metas.length) return main.removeChild(row); // drop rows the catalog does not offer
-      metas.forEach(function (m, i) { card(m, strip, r[4] ? i + 1 : 0); });
+  // [title, type, catalog path, how many, top-N badges]
+  [['Top 10 on 3BodyFlix', 'movie', 'top', 10, true]].concat(ROWS).forEach(function (r) {
+    var R = newRow(r[0]);
+    get(CINEMETA + '/catalog/' + r[1] + '/' + r[2] + '.json', function (res) {
+      var metas = ((res && res.metas) || []).slice(0, r[3] || 20);
+      if (!metas.length) return main.removeChild(R.row); // drop rows the catalog does not offer
+      metas.forEach(function (m, i) { wcard(m, R.strip, r[4] ? i + 1 : 0, r[4] && i === 0); });
     });
   });
+  var foot = el('div', '', '\u00a9 2026 3BodyFlix'); foot.id = 'foot'; main.appendChild(foot);
 }
 
 // Full ranked "best of all time" pages, fetched page by page (the addon serves 20 or 100 per page)
@@ -529,7 +611,7 @@ function streams(type, id, title, meta) {
           var rk = streamRank(s), it = el('div', 'item f'), tag = el('span', 'tag ' + (rk === 0 ? 'good' : rk >= 2 ? 'bad' : ''), fmtOf(s) + (isHevc(s) ? ' HEVC' : '') + (hints(s).notWebReady ? ' ⚠' : ''));
           it.appendChild(tag);
           it.appendChild(document.createTextNode(((s.name || '') + '  ' + (s.title || s.description || '')).replace(/\s+/g, ' ')));
-          it.onok = function () { nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster }; playQueue(queue, i, title); };
+          it.onok = function () { nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster, bg: meta.background }; playQueue(queue, i, title); };
           box.appendChild(it);
         });
         if (queue.length) setFocus(box.firstChild);
@@ -867,25 +949,36 @@ document.onkeydown = function (ev) {
 };
 
 // ---------- top bar ----------
-function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.appendChild(b); }
-topBtn('Home', function () { show(home); });
+var nav = el('span'), topR = el('span');
+nav.id = 'nav'; topR.id = 'topR';
+top_.appendChild(nav); top_.appendChild(topR);
+function topBtn(text, ok, parent) {
+  var b = el('button', 'f', text);
+  b.onok = function () {
+    if (b.parentNode === nav) { [].forEach.call(nav.childNodes, function (x) { x.className = x.className.replace(/ act\b/g, ''); }); b.className += ' act'; }
+    ok();
+  };
+  (parent || nav).appendChild(b);
+  return b;
+}
+topBtn('Home', function () { show(home); }).className += ' act';
 topBtn('Movies', function () { show(catalog('movie')); });
 topBtn('Series', function () { show(catalog('series')); });
 topBtn('Catalogs', function () { show(catalogs); });
 topBtn('M3U Player', function () { show(m3uHome); });
 var q = el('input', 'f'); q.id = 'q'; q.placeholder = 'Search movies & series…';
 q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
-top_.appendChild(q);
+topR.appendChild(q);
 var profBtn = el('button', 'f', '');
 profBtn.onok = function () { show(profilesPage); };
-top_.appendChild(profBtn);
+topR.appendChild(profBtn);
 function updateProfileBtn() { profBtn.textContent = '👤 ' + (profile || 'Profile'); }
 updateProfileBtn();
-topBtn('Settings', function () { show(settings); });
+topBtn('Settings', function () { show(settings); }, topR);
 if (MOBILE) top_.appendChild(q); // phones: search gets its own full-width line under the buttons
 
 // keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
-if (!MOBILE) main.style.top = top_.offsetHeight + 'px';
+if (!MOBILE) { main.style.top = '0'; main.style.paddingTop = top_.offsetHeight + 'px'; } // header floats over the content
 // Start: a shared title link (#/movie/tt...) opens that title on top of Home; first visit asks who is watching
 var route = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
 if (route) history.replaceState(null, '', location.pathname + location.search);
