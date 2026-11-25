@@ -184,6 +184,26 @@ function streams(type, id) {
   };
 }
 
+// Free, official public streams published by the broadcasters themselves
+var CHANNELS = [
+  ['الجزيرة', 'https://live-hls-web-aja.getaj.net/AJA/index.m3u8'],
+  ['الجزيرة مباشر', 'https://live-hls-web-ajm.getaj.net/AJM/index.m3u8'],
+  ['العربية', 'https://live.alarabiya.net/alarabiapublish/alarabiya.smil/playlist.m3u8'],
+  ['الحدث', 'https://live.alarabiya.net/alarabiapublish/alhadath.smil/playlist.m3u8'],
+  ['سكاي نيوز عربية', 'https://stream.skynewsarabia.com/hls/sna.m3u8'],
+  ['فرانس 24 عربي', 'https://static.france24.com/live/F24_AR_HI_HLS/live_web.m3u8'],
+  ['DW عربية', 'https://dwamdstream103.akamaized.net/hls/live/2015526/dwstream103/index.m3u8']
+];
+function liveTv() {
+  clear('Live TV');
+  var first = null;
+  CHANNELS.forEach(function (c) {
+    var i = item(main, '📺  ' + c[0], function () { subs = []; play(c[1]); });
+    first = first || i;
+  });
+  setFocus(first);
+}
+
 function settings() {
   clear('Settings — Addons');
   main.appendChild(el('p', 'muted', 'Paste a Stremio addon manifest URL (…/manifest.json). It must return direct http(s) streams.'));
@@ -226,7 +246,7 @@ function setSub(i) {
   var old = video.getElementsByTagName('track');
   while (old.length) video.removeChild(old[0]);
   subIdx = i;
-  if (i < 0 || !subs[i]) return subNote('Subtitles: off (' + subs.length + ' available)');
+  if (i < 0 || !subs[i]) return subNote(subs.length ? 'Subtitles: off (' + subs.length + ' available)' : '');
   var s = subs[i], label = (s.lang || '?') + ' ' + (i + 1) + '/' + subs.length;
   subNote('Subtitles: loading ' + label + '...');
   var x = new XMLHttpRequest();
@@ -286,6 +306,7 @@ document.onkeydown = function (ev) {
 function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.appendChild(b); }
 topBtn('Movies', function () { show(catalog('movie')); });
 topBtn('Series', function () { show(catalog('series')); });
+topBtn('Live TV', function () { show(liveTv); });
 var q = el('input', 'f'); q.placeholder = 'Search…';
 q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
 top_.appendChild(q);
