@@ -17,13 +17,13 @@ if (MOBILE) {
 <!-- ES5 + old CSS only: the VIDAA 2021 browser is an old engine (no flex gap, no arrow functions, no inset) -->
 <style>
 body{margin:0;background:#111;color:#eee;font-family:Arial,sans-serif;font-size:28px;overflow:hidden}
-#top{padding:16px 40px;background:#181818}
-#top .f{display:inline-block;margin-right:16px}
+#top{padding:16px 40px;background:#181818;white-space:nowrap}
+#top .f{display:inline-block;margin-right:12px;font-size:26px;padding:10px 18px}
 #logo{display:inline-block;margin-right:36px;font-size:40px;font-weight:bold;color:#e50914;vertical-align:middle}
 .f{outline:none;border:4px solid transparent;border-radius:10px;cursor:pointer}
 .f.on{border-color:#fff;background:#2a2a2a}
 button.f,input.f{background:#222;color:#eee;font-size:28px;padding:12px 24px}
-input.f{width:380px;cursor:text}
+input.f{width:300px;cursor:text}
 #main{position:absolute;top:100px;left:0;right:0;bottom:0;overflow-y:auto;padding:0 40px}
 h1{margin:20px 0 10px}
 p{max-width:1400px;color:#bbb}
@@ -36,10 +36,16 @@ p{max-width:1400px;color:#bbb}
 .strip .card{width:200px;margin:0 14px 0 0}
 .strip .card img{width:200px;height:296px}
 .card.on{border-color:#e50914;background:transparent}
-#hero{position:relative;min-height:560px;margin:0 -40px;padding:50px 40px 20px;background-size:cover;background-position:center top}
-#hero .shade{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to right,#111 25%,rgba(17,17,17,.65) 60%,rgba(17,17,17,.25));background-color:rgba(17,17,17,.4)}
-#hero .in{position:relative;max-width:1150px}
-#hero h1{font-size:60px;margin:0 0 10px}
+.card{position:relative}
+.rate{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.8);color:#f5c518;font-size:20px;font-weight:bold;padding:2px 9px;border-radius:6px}
+.rank{position:absolute;top:12px;left:12px;background:#e50914;color:#fff;font-size:20px;font-weight:bold;padding:2px 9px;border-radius:6px}
+.card .yr{color:#888;font-size:18px;margin-top:0}
+.feat{min-height:640px}
+.feat p{max-width:900px}
+.hero{position:relative;min-height:560px;margin:0 -40px;padding:50px 40px 20px;background-size:cover;background-position:center top}
+.hero .shade{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to right,#111 25%,rgba(17,17,17,.65) 60%,rgba(17,17,17,.25));background-color:rgba(17,17,17,.4)}
+.hero .in{position:relative;max-width:1150px}
+.hero h1{font-size:60px;margin:0 0 10px}
 .meta{color:#ddd;font-size:26px;margin:6px 0 14px}
 .btn{display:inline-block;padding:14px 34px;margin:0 14px 14px 0;background:#e50914;color:#fff;font-weight:bold}
 .btn.on{background:#ff2a35}
@@ -63,7 +69,7 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 /* phones / tablets */
 .mobile body{font-size:16px;overflow:auto}
 .mobile #top{padding:8px;white-space:nowrap;overflow-x:auto;position:-webkit-sticky;position:sticky;top:0;z-index:5}
-.mobile #top .f{margin-right:6px}
+.mobile #top .f{margin-right:6px;font-size:15px;padding:8px 12px}
 .mobile #logo{font-size:22px;margin-right:10px}
 .mobile button.f,.mobile input.f{font-size:15px;padding:8px 12px}
 .mobile input.f{width:130px}
@@ -75,8 +81,12 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 .mobile .card,.mobile .strip .card{width:110px;margin:0 8px 10px 0;padding:2px}
 .mobile .card img,.mobile .strip .card img{width:110px;height:163px}
 .mobile .card div{font-size:13px}
-.mobile #hero{min-height:0;margin:0 -10px;padding:20px 10px 10px}
-.mobile #hero h1{font-size:26px}
+.mobile .hero{min-height:0;margin:0 -10px;padding:20px 10px 10px}
+.mobile .hero h1{font-size:26px}
+.mobile .feat{min-height:0}
+.mobile .rate,.mobile .rank{font-size:11px;top:6px;padding:1px 5px}
+.mobile .rate{right:6px}.mobile .rank{left:6px}
+.mobile .card .yr{font-size:11px}
 .mobile .meta{font-size:14px}
 .mobile .btn{padding:10px 22px}
 .mobile .chip{padding:6px 12px}
@@ -100,11 +110,11 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
   <span id="osdTime"></span>
 </div>
 <span class="f" id="closeBtn">✕</span>
-<div id="dbg">v6 · no JS yet</div>
+<div id="dbg">v7 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v6 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v6';
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v7 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v7';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -200,10 +210,14 @@ function back() {
 }
 window.onpopstate = back;
 
-function card(m, parent) {
+function rating(m) { var r = parseFloat(m.imdbRating); return r > 0 ? r.toFixed(1) : ''; }
+function card(m, parent, rank) {
   var c = el('div', 'card f'), img = el('img');
   if (isHttp(m.poster)) img.src = m.poster;
   c.appendChild(img); c.appendChild(el('div', '', m.name));
+  if (m.releaseInfo) c.appendChild(el('div', 'yr', String(m.releaseInfo)));
+  if (rating(m)) c.appendChild(el('span', 'rate', '★ ' + rating(m)));
+  if (rank) c.appendChild(el('span', 'rank', '#' + rank));
   c.onok = function () { show(detail(m.type, m.id)); };
   parent.appendChild(c);
   return c;
@@ -216,11 +230,17 @@ function grid(metas) {
   setFocus(first);
 }
 
+// Rating-sorted "all time" lists come from the 3body addon (IMDb Top 250 + acclaimed lists with IMDb ratings)
+var META = base(DEFAULT_ADDONS[0]);
+var BEST = { movie: 'tmdb.critically-acclaimed-movies', series: 'tmdb.critically-acclaimed-series' };
 var ROWS = [
+  ['Best Movies of All Time', 'movie', BEST.movie, META, 'movie'],
+  ['Best Series of All Time', 'series', BEST.series, META, 'series'],
   ['Popular Movies', 'movie', 'top'],
   ['Popular Series', 'series', 'top'],
-  ['Top Rated Movies', 'movie', 'imdbRating'],
-  ['Top Rated Series', 'series', 'imdbRating'],
+  ['IMDb Top 250', 'movie', 'daily.imdb-top-250', META, 'imdb'],
+  ['New & Trending Movies', 'movie', 'imdbRating'],
+  ['New & Trending Series', 'series', 'imdbRating'],
   ['Action', 'movie', 'top/genre=Action'],
   ['Comedy', 'movie', 'top/genre=Comedy'],
   ['Animation', 'movie', 'top/genre=Animation'],
@@ -229,16 +249,56 @@ var ROWS = [
 ];
 function home() {
   clear();
-  ROWS.forEach(function (r, i) {
-    var row = el('div', 'row'), strip = el('div', 'strip');
-    row.appendChild(el('h2', '', r[0])); row.appendChild(strip); main.appendChild(row);
-    get(CINEMETA + '/catalog/' + r[1] + '/' + r[2] + '.json', function (res) {
+  var feat = el('div'); main.appendChild(feat);
+  // Featured banner: the most popular movie that has a backdrop
+  get(CINEMETA + '/catalog/movie/top.json', function (res) {
+    var m = ((res && res.metas) || []).filter(function (x) { return isHttp(x.background) && x.description; })[0];
+    if (!m) return;
+    var hb = heroBox(m, 'feat'), playB = el('div', 'btn f', '▶  Play'), infoB = el('div', 'chip f', 'ⓘ  Details');
+    playB.onok = function () { show(streams('movie', m.id, m.name)); };
+    infoB.onok = function () { show(detail('movie', m.id)); };
+    hb.inner.appendChild(playB); hb.inner.appendChild(infoB);
+    feat.appendChild(hb.hero);
+    if (!(cur && main.contains(cur))) setFocus(playB);
+  });
+  ROWS.forEach(function (r) {
+    var row = el('div', 'row'), strip = el('div', 'strip'), h = el('h2', '', r[0]);
+    row.appendChild(h); row.appendChild(strip); main.appendChild(row);
+    if (r[4]) { // "see all" for the all-time lists
+      var all = el('span', 'chip f', 'See all ›');
+      all.style.fontSize = MOBILE ? '12px' : '22px'; all.style.marginLeft = '20px'; all.style.verticalAlign = 'middle';
+      all.onok = function () { show(best(r[4])); };
+      h.appendChild(all);
+    }
+    get((r[3] || CINEMETA) + '/catalog/' + r[1] + '/' + r[2] + '.json', function (res) {
       var metas = ((res && res.metas) || []).slice(0, 20);
       if (!metas.length) return main.removeChild(row); // drop rows the catalog does not offer
-      metas.forEach(function (m) { card(m, strip); });
-      if (i === 0 && !(cur && main.contains(cur))) setFocus(strip.firstChild);
+      metas.forEach(function (m, i) { card(m, strip, r[4] ? i + 1 : 0); });
     });
   });
+}
+
+// Full ranked "best of all time" pages, fetched page by page (the addon serves 20 or 100 per page)
+function best(kind) {
+  return function () {
+    var imdb = kind === 'imdb', type = imdb ? 'movie' : kind, id = imdb ? 'daily.imdb-top-250' : BEST[kind];
+    var per = imdb ? 100 : 20, pages = imdb ? 3 : 5, got = [], n = 0;
+    clear(imdb ? 'IMDb Top 250 Movies' : 'Best ' + (kind === 'movie' ? 'Movies' : 'Series') + ' of All Time');
+    msg('Loading…');
+    for (var p = 0; p < pages; p++) (function (p) {
+      get(META + '/catalog/' + type + '/' + id + (p ? '/skip=' + p * per : '') + '.json', function (res) {
+        got[p] = (res && res.metas) || [];
+        if (++n < pages) return;
+        main.removeChild(main.lastChild);
+        var seen = {}, list = [];
+        got.forEach(function (pg) { pg.forEach(function (m) { if (!seen[m.id]) { seen[m.id] = 1; list.push(m); } }); });
+        if (!list.length) return msg('Could not load the list.');
+        var first = null;
+        list.slice(0, imdb ? 250 : 100).forEach(function (m, i) { var c = card(m, main, i + 1); first = first || c; });
+        setFocus(first);
+      });
+    })(p);
+  };
 }
 
 function catalog(type) {
@@ -261,20 +321,26 @@ function search(q) {
   };
 }
 
+function heroBox(m, cls) {
+  var hero = el('div', 'hero' + (cls ? ' ' + cls : '')), inner = el('div', 'in');
+  if (isHttp(m.background)) hero.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
+  hero.appendChild(el('div', 'shade')); hero.appendChild(inner);
+  inner.appendChild(el('h1', '', m.name));
+  var bits = [m.releaseInfo, m.runtime, (m.genres || []).slice(0, 3).join(', '), rating(m) ? '★ IMDb ' + rating(m) : ''].filter(function (b) { return b; });
+  inner.appendChild(el('div', 'meta', bits.join('   •   ')));
+  var d = m.description || '';
+  inner.appendChild(el('p', '', cls && d.length > 260 ? d.slice(0, 257) + '…' : d));
+  return { hero: hero, inner: inner };
+}
+
 function detail(type, id) {
   return function () {
     clear();
     get(CINEMETA + '/meta/' + type + '/' + id + '.json', function (r) {
       var m = r && r.meta;
       if (!m) return msg('Could not load details.');
-      var hero = el('div'), inner = el('div', 'in');
-      hero.id = 'hero';
-      if (isHttp(m.background)) hero.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
-      hero.appendChild(el('div', 'shade')); hero.appendChild(inner); main.appendChild(hero);
-      inner.appendChild(el('h1', '', m.name));
-      var bits = [m.releaseInfo, m.runtime, (m.genres || []).slice(0, 3).join(', '), m.imdbRating ? '★ IMDb ' + m.imdbRating : ''].filter(function (b) { return b; });
-      inner.appendChild(el('div', 'meta', bits.join('   •   ')));
-      inner.appendChild(el('p', '', m.description || ''));
+      var hb = heroBox(m), inner = hb.inner;
+      main.appendChild(hb.hero);
       if (type === 'movie') {
         var b = el('div', 'btn f', '▶  Play');
         b.onok = function () { show(streams('movie', m.id, m.name)); };
@@ -544,12 +610,17 @@ function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.a
 topBtn('Home', function () { show(home); });
 topBtn('Movies', function () { show(catalog('movie')); });
 topBtn('Series', function () { show(catalog('series')); });
+topBtn('Top Movies', function () { show(best('movie')); });
+topBtn('Top Series', function () { show(best('series')); });
+topBtn('IMDb 250', function () { show(best('imdb')); });
 topBtn('Dev', function () { show(devList); });
 var q = el('input', 'f'); q.placeholder = 'Search…';
 q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
 top_.appendChild(q);
 topBtn('Settings', function () { show(settings); });
 
+// keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
+if (!MOBILE) main.style.top = top_.offsetHeight + 'px';
 show(home);
 </script>
 </body>
