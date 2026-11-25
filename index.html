@@ -57,6 +57,13 @@ p{max-width:1400px;color:#bbb}
 .prof{display:inline-block;width:220px;margin:0 24px 24px 0;padding:24px 10px;text-align:center;background:#1c1c1c;font-size:30px}
 .prof b{display:block;font-size:80px;margin-bottom:10px}
 .link{word-break:break-all;color:#9cf}
+.dots{margin-top:18px}
+.dots i{display:inline-block;width:14px;height:14px;border-radius:7px;background:#555;margin-right:10px}
+.dots i.a{background:#e50914;width:34px}
+.crew{color:#bbb;font-size:24px;margin:4px 0}
+.crew b{color:#fff;font-weight:normal}
+#trailer{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:12;background:#000}
+#trailer iframe{width:100%;height:100%;border:0}
 .hero{position:relative;min-height:560px;margin:0 -40px;padding:50px 40px 20px;background-size:cover;background-position:center top}
 .hero .shade{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to right,#111 25%,rgba(17,17,17,.65) 60%,rgba(17,17,17,.25));background-color:rgba(17,17,17,.4)}
 .hero .in{position:relative;max-width:1150px}
@@ -110,6 +117,9 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 .mobile .ch div{font-size:12px}
 .mobile .prof{width:120px;padding:12px 6px;font-size:15px;margin:0 10px 10px 0}
 .mobile .prof b{font-size:40px}
+.mobile .crew{font-size:13px}
+.mobile .dots i{width:8px;height:8px;margin-right:6px}
+.mobile .dots i.a{width:20px}
 .mobile .meta{font-size:14px}
 .mobile .btn{padding:10px 22px}
 .mobile .chip{padding:6px 12px}
@@ -132,12 +142,13 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
   <span class="ctl f" id="osdRw">⏪ 30</span><span class="ctl f" id="osdPlay">❚❚</span><span class="ctl f" id="osdFf">30 ⏩</span>
   <span id="osdTime"></span>
 </div>
+<div id="trailer"></div>
 <span class="f" id="closeBtn">✕</span>
-<div id="dbg">v8 · no JS yet</div>
+<div id="dbg">v9 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v8 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v8';
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v9 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v9';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -229,7 +240,17 @@ function move(dx, dy) {
 // hash = shareable address of the screen (#/movie/tt..., #/series/tt...); other screens drop it
 function show(fn, hash) { if (stack.length) history.pushState(null, '', hash || location.pathname + location.search); stack.push(fn); fn(); }
 function openTitle(type, id) { show(detail(type, id), '#/' + type + '/' + id); }
+var trailerEl = $('trailer');
+function openTrailer(yt) {
+  history.pushState(null, '');
+  var f = el('iframe');
+  f.setAttribute('allow', 'autoplay; fullscreen'); f.setAttribute('allowfullscreen', '');
+  f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(yt) + '?autoplay=1&rel=0&playsinline=1';
+  trailerEl.innerHTML = ''; trailerEl.appendChild(f);
+  trailerEl.style.display = 'block'; closeBtn.style.display = 'block';
+}
 function back() {
+  if (trailerEl.style.display === 'block') { trailerEl.innerHTML = ''; trailerEl.style.display = 'none'; closeBtn.style.display = 'none'; return; }
   if (video.style.display === 'block') return closePlayer();
   if (stack.length > 1) { stack.pop(); stack[stack.length - 1](); }
 }
@@ -272,16 +293,27 @@ var ROWS = [
 function home() {
   clear();
   var feat = el('div'); main.appendChild(feat);
-  // Featured banner: the most popular movie that has a backdrop
+  // Rotating banner: the 5 most popular movies that have a backdrop; pauses while the remote is on it
   get(CINEMETA + '/catalog/movie/top.json', function (res) {
-    var m = ((res && res.metas) || []).filter(function (x) { return isHttp(x.background) && x.description; })[0];
-    if (!m) return;
-    var hb = heroBox(m, 'feat'), playB = el('div', 'btn f', '▶  Play'), infoB = el('div', 'chip f', 'ⓘ  Details');
-    playB.onok = function () { show(streams('movie', m.id, m.name, m)); };
-    infoB.onok = function () { openTitle('movie', m.id); };
-    hb.inner.appendChild(playB); hb.inner.appendChild(infoB);
-    feat.appendChild(hb.hero);
-    if (!(cur && main.contains(cur))) setFocus(playB);
+    var list = ((res && res.metas) || []).filter(function (x) { return isHttp(x.background) && x.description; }).slice(0, 5);
+    if (!list.length) return;
+    var v = view, idx = 0;
+    function render(i, focus) {
+      var m = list[i], hb = heroBox(m, 'feat'), playB = el('div', 'btn f', '▶  Play'), infoB = el('div', 'chip f', 'ⓘ  Details'), dots = el('div', 'dots');
+      playB.onok = function () { show(streams('movie', m.id, m.name, m)); };
+      infoB.onok = function () { openTitle('movie', m.id); };
+      hb.inner.appendChild(playB); hb.inner.appendChild(infoB);
+      list.forEach(function (x, j) { var d = el('i', j === i ? 'a' : ''); d.onclick = function () { idx = j; render(j, false); }; dots.appendChild(d); });
+      hb.inner.appendChild(dots);
+      feat.innerHTML = ''; feat.appendChild(hb.hero);
+      if (focus) setFocus(playB);
+    }
+    render(0, !(cur && main.contains(cur)));
+    var timer = setInterval(function () {
+      if (view !== v) return clearInterval(timer);
+      if (cur && feat.contains(cur) || video.style.display === 'block' || trailerEl.style.display === 'block') return;
+      idx = (idx + 1) % list.length; render(idx, false);
+    }, 8000);
   });
   var cw = watched();
   if (cw.length) {
@@ -412,6 +444,12 @@ function detail(type, id) {
       if (!m) return msg('Could not load details.');
       var hb = heroBox(m), inner = hb.inner;
       main.appendChild(hb.hero);
+      if (m.cast && m.cast.length) { var cp = el('div', 'crew', 'Starring: '); cp.appendChild(el('b', '', m.cast.slice(0, 5).join(', '))); inner.insertBefore(cp, inner.lastChild.nextSibling); }
+      if (m.director && m.director.length) { var dp = el('div', 'crew', 'Director: '); dp.appendChild(el('b', '', [].concat(m.director).slice(0, 2).join(', '))); inner.appendChild(dp); }
+      var yt = (m.trailerStreams && m.trailerStreams[0] && m.trailerStreams[0].ytId) || (m.trailers && m.trailers[0] && m.trailers[0].source);
+      var trailerB = null;
+      if (yt) { trailerB = el('div', 'chip f', '🎬  Trailer'); trailerB.onok = function () { openTrailer(yt); }; }
+      moreLikeThis(m, type);
       var link = location.origin + location.pathname + '#/' + type + '/' + m.id, shareB = el('div', 'chip f', '↗  Share'), linkP = el('p', 'link');
       shareB.onok = function () {
         linkP.textContent = link;
@@ -421,9 +459,10 @@ function detail(type, id) {
       if (type === 'movie') {
         var b = el('div', 'btn f', '▶  Play');
         b.onok = function () { show(streams('movie', m.id, m.name, m)); };
-        inner.appendChild(b); inner.appendChild(shareB); inner.appendChild(linkP);
+        inner.appendChild(b); if (trailerB) inner.appendChild(trailerB); inner.appendChild(shareB); inner.appendChild(linkP);
         return setFocus(b);
       }
+      if (trailerB) inner.appendChild(trailerB);
       inner.appendChild(shareB); inner.appendChild(linkP);
       var eps = (m.videos || []).slice().sort(function (a, b) { return (a.season - b.season) || (a.episode - b.episode); });
       var seasons = [];
@@ -452,6 +491,20 @@ function detail(type, id) {
       setFocus(chipsBox.firstChild);
     });
   };
+}
+
+// Similar titles: same main genre, most popular first, the title itself left out (added at the end of the page)
+function moreLikeThis(m, type) {
+  var g = (m.genres || [])[0];
+  if (!g) return;
+  var row = el('div', 'row'), strip = el('div', 'strip');
+  row.appendChild(el('h2', '', 'More Like This')); row.appendChild(strip);
+  get(CINEMETA + '/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '.json', function (r) {
+    var list = ((r && r.metas) || []).filter(function (x) { return x.id !== m.id; }).slice(0, 15);
+    if (!list.length) return;
+    list.forEach(function (x) { card(x, strip); });
+    main.appendChild(row);
+  });
 }
 
 function streams(type, id, title, meta) {
