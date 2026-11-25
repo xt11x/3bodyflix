@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>TV Stream</title>
+<!-- ES5 + old CSS only: the VIDAA 2021 browser is an old engine (no flex gap, no arrow functions, no inset) -->
+<style>
+body{margin:0;background:#111;color:#eee;font-family:Arial,sans-serif;font-size:28px;overflow:hidden}
+#top{padding:16px 40px;background:#181818}
+#top .f{display:inline-block;margin-right:16px}
+.f{outline:none;border:4px solid transparent;border-radius:10px}
+.f.on{border-color:#8a6cff;background:#2a2340}
+button.f,input.f{background:#222;color:#eee;font-size:28px;padding:12px 24px}
+input.f{width:420px}
+#main{position:absolute;top:100px;left:0;right:0;bottom:0;overflow-y:auto;padding:0 40px}
+h1{margin:20px 0 10px}
+p{max-width:1400px;color:#bbb}
+.card{display:inline-block;vertical-align:top;width:220px;margin:0 16px 20px 0;padding:4px}
+.card img{width:220px;height:325px;background:#333;border-radius:6px}
+.card div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item{padding:14px 20px;margin:8px 0;background:#1c1c1c}
+.muted{color:#888}
+video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9}
+</style>
+</head>
+<body>
+<div id="top"></div>
+<div id="main"></div>
+<video id="video"></video>
+<script>
+var CINEMETA = 'https://v3-cinemeta.strem.io';
+var main = document.getElementById('main'), top_ = document.getElementById('top'), video = document.getElementById('video');
+var cur = null, stack = [], view = 0;
+
+// ---------- helpers ----------
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
+function addons() { try { return JSON.parse(localStorage.addons) || []; } catch (e) { return []; } }
+function saveAddons(a) { localStorage.addons = JSON.stringify(a); }
+function base(url) { return url.replace(/\/manifest\.json$/, '').replace(/\/$/, ''); }
+// Browsers can only play http(s) streams; torrent (infoHash) streams need the Stremio server
+function playable(streams) { return (streams || []).filter(function (s) { return s && s.url && /^https?:\/\//.test(s.url); }); }
+console.assert(base('https://a.b/x/manifest.json') === 'https://a.b/x', 'base');
+console.assert(playable([{ url: 'https://v.mp4' }, { infoHash: 'abc' }, { url: 'magnet:x' }]).length === 1, 'playable');
+
+// XHR, not fetch: safest on old TV engines. Drops responses for a view the user already left.
+function get(url, cb) {
+  var v = view, x = new XMLHttpRequest();
+  x.open('GET', url);
+  x.timeout = 15000;
+  x.onload = function () { if (v !== view) return; var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} cb(r); };
+  x.onerror = x.ontimeout = function () { if (v === view) cb(null); };
+  x.send();
+}
+function clear(title) { view++; main.innerHTML = ''; main.scrollTop = 0; if (title) main.appendChild(el('h1', '', title)); }
+function msg(t) { main.appendChild(el('p', 'muted', t)); }
+function item(parent, text, ok) { var i = el('div', 'item f', text); i.onok = ok; parent.appendChild(i); return i; }
+
+// ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
+function focusables() { return [].slice.call(document.querySelectorAll('.f')).filter(function (e) { return e.offsetParent !== null; }); }
+function setFocus(e) {
+  if (!e) return;
+  if (cur) cur.className = cur.className.replace(/ on\b/g, '');
+  cur = e; e.className += ' on';
+  if (e.tagName === 'INPUT') e.focus(); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  e.scrollIntoView({ block: 'center' });
+}
+function move(dx, dy) {
+  if (!cur || !cur.offsetParent) return setFocus(focusables()[0]);
+  var a = cur.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2, best = null, bd = 1e9;
+  focusables().forEach(function (e) {
+    if (e === cur) return;
+    var b = e.getBoundingClientRect(), ddx = b.left + b.width / 2 - ax, ddy = b.top + b.height / 2 - ay;
+    if (dx && ddx * dx <= 0) return;
+    if (dy && ddy * dy <= 0) return;
+    var d = dx ? Math.abs(ddx) + Math.abs(ddy) * 3 : Math.abs(ddy) + Math.abs(ddx) * 3;
+    if (d < bd) { bd = d; best = e; }
+  });
+  setFocus(best);
+}
+
+// ---------- views ----------
+function show(fn) { stack.push(fn); fn(); }
+function back() {
+  if (video.style.display === 'block') return closePlayer();
+  if (stack.length > 1) { stack.pop(); stack[stack.length - 1](); }
+}
+
+function grid(metas) {
+  if (!metas || !metas.length) return msg('Nothing found.');
+  var first = null;
+  metas.forEach(function (m) {
+    var c = el('div', 'card f'), img = el('img');
+    img.src = m.poster || '';
+    c.appendChild(img); c.appendChild(el('div', '', m.name));
+    c.onok = function () { show(detail(m.type, m.id)); };
+    main.appendChild(c); first = first || c;
+  });
+  setFocus(first);
+}
+
+function catalog(type) {
+  return function () {
+    clear(type === 'movie' ? 'Popular Movies' : 'Popular Series');
+    get(CINEMETA + '/catalog/' + type + '/top.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog. Check internet.'); });
+  };
+}
+
+function search(q) {
+  return function () {
+    clear('Search: ' + q);
+    var n = 0, all = [];
+    ['movie', 'series'].forEach(function (t) {
+      get(CINEMETA + '/catalog/' + t + '/top/search=' + encodeURIComponent(q) + '.json', function (r) {
+        all = all.concat((r && r.metas) || []);
+        if (++n === 2) grid(all);
+      });
+    });
+  };
+}
+
+function detail(type, id) {
+  return function () {
+    clear();
+    get(CINEMETA + '/meta/' + type + '/' + id + '.json', function (r) {
+      var m = r && r.meta;
+      if (!m) return msg('Could not load details.');
+      main.appendChild(el('h1', '', m.name + (m.releaseInfo ? ' (' + m.releaseInfo + ')' : '')));
+      main.appendChild(el('p', '', (m.imdbRating ? 'IMDb ' + m.imdbRating + ' — ' : '') + (m.description || '')));
+      if (type === 'movie') return setFocus(item(main, '▶  Find streams', function () { show(streams('movie', m.id)); }));
+      var eps = (m.videos || []).slice().sort(function (a, b) { return (a.season - b.season) || (a.episode - b.episode); });
+      var first = null;
+      eps.forEach(function (v) {
+        var i = item(main, 'S' + v.season + ' E' + v.episode + '  ' + (v.name || v.title || ''), function () { show(streams('series', v.id)); });
+        first = first || i;
+      });
+      first ? setFocus(first) : msg('No episodes listed.');
+    });
+  };
+}
+
+function streams(type, id) {
+  return function () {
+    clear('Streams');
+    var list = addons(), n = 0, found = 0, hidden = 0, first = null;
+    if (!list.length) return msg('No addons yet. Open Settings and add a stream addon URL.');
+    var status = el('p', 'muted', 'Searching ' + list.length + ' addon(s)...');
+    main.appendChild(status);
+    list.forEach(function (a) {
+      get(base(a) + '/stream/' + type + '/' + id + '.json', function (r) {
+        var all = (r && r.streams) || [], ok = playable(all);
+        hidden += all.length - ok.length;
+        ok.forEach(function (s) {
+          var i = item(main, (s.name || '') + '  ' + (s.title || s.description || ''), function () { play(s.url); });
+          found++; if (!first) { first = i; setFocus(i); }
+        });
+        if (++n === list.length) status.textContent = found + ' playable stream(s).' + (hidden ? ' ' + hidden + ' torrent-only stream(s) hidden (TV browser cannot play torrents).' : '');
+      });
+    });
+  };
+}
+
+function settings() {
+  clear('Settings — Addons');
+  main.appendChild(el('p', 'muted', 'Paste a Stremio addon manifest URL (…/manifest.json). It must return direct http(s) streams.'));
+  var inp = el('input', 'f'); inp.placeholder = 'https://…/manifest.json';
+  var add = el('button', 'f', 'Add');
+  inp.onok = add.onok = function () {
+    var u = inp.value.trim();
+    if (!/^https?:\/\//.test(u)) return alert('URL must start with http:// or https://');
+    var a = addons(); if (a.indexOf(u) < 0) a.push(u); saveAddons(a); settings();
+  };
+  main.appendChild(inp); main.appendChild(add);
+  addons().forEach(function (u, idx) {
+    item(main, '✕  ' + u, function () { var a = addons(); a.splice(idx, 1); saveAddons(a); settings(); });
+  });
+  setFocus(inp);
+}
+
+// ---------- player ----------
+function play(url) {
+  video.src = url; video.style.display = 'block';
+  video.onerror = function () { closePlayer(); alert('This stream format is not supported by the TV. Try another one.'); };
+  video.play();
+}
+function closePlayer() { video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
+
+// ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing) ----------
+document.onkeydown = function (ev) {
+  var k = ev.keyCode, playing = video.style.display === 'block';
+  if (playing && k === 13) { video.paused ? video.play() : video.pause(); }
+  else if (playing && (k === 37 || k === 39)) { video.currentTime += k === 39 ? 10 : -10; }
+  else if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
+  else if (k === 38) move(0, -1); else if (k === 40) move(0, 1);
+  else if (k === 13) { if (cur && cur.onok) cur.onok(); }
+  else if (k === 8 || k === 27 || k === 461 || k === 10009) { if (k === 8 && document.activeElement && document.activeElement.tagName === 'INPUT') return; back(); }
+  else return;
+  ev.preventDefault();
+};
+
+// ---------- top bar ----------
+function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.appendChild(b); }
+topBtn('Movies', function () { show(catalog('movie')); });
+topBtn('Series', function () { show(catalog('series')); });
+var q = el('input', 'f'); q.placeholder = 'Search…';
+q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
+top_.appendChild(q);
+topBtn('Settings', function () { show(settings); });
+
+show(catalog('movie'));
+</script>
+</body>
+</html>
