@@ -543,8 +543,16 @@ function m3uLoad(x) {
     clear(x.name); msg('Loading playlist…');
     var v = view, r = new XMLHttpRequest();
     r.open('GET', x.url); r.timeout = 30000;
-    r.onload = function () { if (v === view) { stack[stack.length - 1] = m3uView(x.name, parseM3U(r.responseText || '')); stack[stack.length - 1](); } };
-    r.onerror = r.ontimeout = function () { if (v === view) msg('Could not load the playlist (offline, wrong link, or the server blocks browsers).'); };
+    // A direct HLS stream link (#EXT-X- tags) is a single video, not a channel list: play it as is
+    function direct() { clear(x.name); msg('Playing stream… press Back to return.'); subs = []; pq = null; nowPlaying = null; play(x.url, x.name); }
+    r.onload = function () {
+      if (v !== view) return;
+      var t = r.responseText || '';
+      if (/#EXT-X-/.test(t) && !/#EXTINF:[^\n]*,[^\n]*\n\s*https?:/i.test(t.replace(/\r/g, '')) || r.status >= 400 && /\.m3u8(\?|$)/i.test(x.url)) return direct();
+      stack[stack.length - 1] = m3uView(x.name, parseM3U(t)); stack[stack.length - 1]();
+    };
+    // The video element does not need CORS, so a .m3u8 link the browser refuses to read may still play
+    r.onerror = r.ontimeout = function () { if (v !== view) return; if (/\.m3u8(\?|$)/i.test(x.url)) return direct(); msg('Could not load the playlist (offline, wrong link, or the server blocks browsers).'); };
     r.send();
   };
 }
