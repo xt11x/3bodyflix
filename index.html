@@ -184,6 +184,25 @@ function streams(type, id) {
   };
 }
 
+// Dev: the owner's own links, edited from dev.html and saved to dev.json in the repo
+function isHttp(u) { return typeof u === 'string' && /^https?:\/\//.test(u); }
+function devList() {
+  clear('Dev');
+  get('dev.json?t=' + new Date().getTime(), function (r) {
+    var items = (r || []).filter(function (d) { return d && d.name && isHttp(d.url); });
+    if (!items.length) return msg('No links yet. Add them from the dev page.');
+    var first = null;
+    items.forEach(function (d) {
+      var c = el('div', 'card f'), img = el('img');
+      if (isHttp(d.image)) img.src = d.image;
+      c.appendChild(img); c.appendChild(el('div', '', d.name));
+      c.onok = function () { subs = []; play(d.url); };
+      main.appendChild(c); first = first || c;
+    });
+    setFocus(first);
+  });
+}
+
 function settings() {
   clear('Settings — Addons');
   main.appendChild(el('p', 'muted', 'Paste a Stremio addon manifest URL (…/manifest.json). It must return direct http(s) streams.'));
@@ -286,6 +305,7 @@ document.onkeydown = function (ev) {
 function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.appendChild(b); }
 topBtn('Movies', function () { show(catalog('movie')); });
 topBtn('Series', function () { show(catalog('series')); });
+topBtn('Dev', function () { show(devList); });
 var q = el('input', 'f'); q.placeholder = 'Search…';
 q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
 top_.appendChild(q);
