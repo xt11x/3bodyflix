@@ -35,7 +35,8 @@ var cur = null, stack = [], view = 0;
 
 // ---------- helpers ----------
 function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
-function addons() { try { return JSON.parse(localStorage.addons) || []; } catch (e) { return []; } }
+var DEFAULT_ADDONS = ['https://3body-self.vercel.app/manifest.json'];
+function addons() { try { return JSON.parse(localStorage.addons) || DEFAULT_ADDONS.slice(); } catch (e) { return DEFAULT_ADDONS.slice(); } }
 function saveAddons(a) { localStorage.addons = JSON.stringify(a); }
 function base(url) { return url.replace(/\/manifest\.json$/, '').replace(/\/$/, ''); }
 // Browsers can only play http(s) streams; torrent (infoHash) streams need the Stremio server
