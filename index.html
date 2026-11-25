@@ -4,57 +4,145 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=1920">
 <title>3bodyflix</title>
+<script>
+// Phones/tablets get a responsive touch layout; TVs (and desktop) keep the fixed 1920 canvas
+var UA = navigator.userAgent;
+var IS_TV = /TV|VIDAA|Hisense|Tizen|Web0S|webOS|HbbTV|AFT|BRAVIA|CrKey|SmartTV/i.test(UA);
+var MOBILE = !IS_TV && (/iPhone|iPad|iPod|Android|Mobile/i.test(UA) || (/Macintosh/.test(UA) && 'ontouchend' in document));
+if (MOBILE) {
+  document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1');
+  document.documentElement.className = 'mobile';
+}
+</script>
 <!-- ES5 + old CSS only: the VIDAA 2021 browser is an old engine (no flex gap, no arrow functions, no inset) -->
 <style>
 body{margin:0;background:#111;color:#eee;font-family:Arial,sans-serif;font-size:28px;overflow:hidden}
 #top{padding:16px 40px;background:#181818}
 #top .f{display:inline-block;margin-right:16px}
-.f{outline:none;border:4px solid transparent;border-radius:10px}
-.f.on{border-color:#8a6cff;background:#2a2340}
+#logo{display:inline-block;margin-right:36px;font-size:40px;font-weight:bold;color:#e50914;vertical-align:middle}
+.f{outline:none;border:4px solid transparent;border-radius:10px;cursor:pointer}
+.f.on{border-color:#fff;background:#2a2a2a}
 button.f,input.f{background:#222;color:#eee;font-size:28px;padding:12px 24px}
-input.f{width:420px}
+input.f{width:380px;cursor:text}
 #main{position:absolute;top:100px;left:0;right:0;bottom:0;overflow-y:auto;padding:0 40px}
 h1{margin:20px 0 10px}
 p{max-width:1400px;color:#bbb}
-.card{display:inline-block;vertical-align:top;width:220px;margin:0 16px 20px 0;padding:4px}
-.card img{width:220px;height:325px;background:#333;border-radius:6px}
-.card div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{margin:6px 0 10px}
+.row h2{margin:12px 0 6px;font-size:32px}
+.strip{position:relative;white-space:nowrap;overflow:hidden;padding:6px 0}
+.card{display:inline-block;vertical-align:top;width:220px;margin:0 16px 20px 0;padding:4px;white-space:normal}
+.card img{width:220px;height:325px;background:#333;border-radius:6px;display:block}
+.card div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.strip .card{width:200px;margin:0 14px 0 0}
+.strip .card img{width:200px;height:296px}
+.card.on{border-color:#e50914;background:transparent}
+#hero{position:relative;min-height:560px;margin:0 -40px;padding:50px 40px 20px;background-size:cover;background-position:center top}
+#hero .shade{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to right,#111 25%,rgba(17,17,17,.65) 60%,rgba(17,17,17,.25));background-color:rgba(17,17,17,.4)}
+#hero .in{position:relative;max-width:1150px}
+#hero h1{font-size:60px;margin:0 0 10px}
+.meta{color:#ddd;font-size:26px;margin:6px 0 14px}
+.btn{display:inline-block;padding:14px 34px;margin:0 14px 14px 0;background:#e50914;color:#fff;font-weight:bold}
+.btn.on{background:#ff2a35}
+.chip{display:inline-block;padding:10px 22px;margin:0 10px 10px 0;background:#262626}
+.chip.sel{background:#e50914;color:#fff}
 .item{padding:14px 20px;margin:8px 0;background:#1c1c1c}
+.tag{display:inline-block;font-size:20px;padding:2px 10px;margin-right:12px;border-radius:6px;background:#444;vertical-align:middle}
+.tag.good{background:#1d7a32}
+.tag.bad{background:#7a1d1d}
 .muted{color:#888}
-#sub{display:none;position:fixed;left:5%;right:5%;bottom:70px;z-index:11;text-align:center;font-size:46px;line-height:1.3;color:#fff;white-space:pre-line;text-shadow:0 0 6px #000,2px 2px 3px #000}
 video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9}
+#sub{display:none;position:fixed;left:5%;right:5%;bottom:70px;z-index:11;text-align:center;font-size:46px;line-height:1.3;color:#fff;white-space:pre-line;text-shadow:0 0 6px #000,2px 2px 3px #000;pointer-events:none}
+#osd{display:none;position:fixed;left:0;right:0;bottom:0;z-index:12;padding:60px 60px 40px;background:linear-gradient(to top,rgba(0,0,0,.92),rgba(0,0,0,0))}
+#osdTitle{font-size:34px;font-weight:bold}
+#osdBar{height:10px;background:#555;border-radius:5px;margin:18px 0;cursor:pointer}
+#osdFill{height:10px;background:#e50914;border-radius:5px;width:0}
+#osd .ctl{display:inline-block;font-size:36px;padding:6px 24px;margin-right:10px;background:rgba(255,255,255,.12)}
+#osdTime{float:right;font-size:30px;margin-top:14px}
+#closeBtn{display:none;position:fixed;top:20px;left:20px;z-index:13;font-size:34px;padding:6px 20px;background:rgba(0,0,0,.6);color:#fff}
+#dbg{position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:14;pointer-events:none}
+/* phones / tablets */
+.mobile body{font-size:16px;overflow:auto}
+.mobile #top{padding:8px;white-space:nowrap;overflow-x:auto;position:-webkit-sticky;position:sticky;top:0;z-index:5}
+.mobile #top .f{margin-right:6px}
+.mobile #logo{font-size:22px;margin-right:10px}
+.mobile button.f,.mobile input.f{font-size:15px;padding:8px 12px}
+.mobile input.f{width:130px}
+.mobile .f{border-width:2px}
+.mobile #main{position:static;padding:0 10px 30px}
+.mobile h1{font-size:22px}
+.mobile .row h2{font-size:18px}
+.mobile .strip{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mobile .card,.mobile .strip .card{width:110px;margin:0 8px 10px 0;padding:2px}
+.mobile .card img,.mobile .strip .card img{width:110px;height:163px}
+.mobile .card div{font-size:13px}
+.mobile #hero{min-height:0;margin:0 -10px;padding:20px 10px 10px}
+.mobile #hero h1{font-size:26px}
+.mobile .meta{font-size:14px}
+.mobile .btn{padding:10px 22px}
+.mobile .chip{padding:6px 12px}
+.mobile .item{padding:10px;font-size:15px}
+.mobile .tag{font-size:12px;padding:1px 6px;margin-right:6px}
+.mobile #sub{font-size:20px;bottom:70px}
+.mobile #osd{display:none !important}
+.mobile #closeBtn{font-size:20px;top:10px;left:10px;padding:4px 12px}
+.mobile #dbg{font-size:11px}
 </style>
 </head>
 <body>
-<div id="top"><span style="display:inline-block;margin-right:36px;font-size:40px;font-weight:bold;color:#e50914;vertical-align:middle">3bodyflix</span></div>
+<div id="top"><span id="logo">3bodyflix</span></div>
 <div id="main"></div>
-<video id="video"></video>
+<video id="video" playsinline webkit-playsinline></video>
 <div id="sub"></div>
-<div id="dbg" style="position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:10">v5 · no JS yet</div>
+<div id="osd">
+  <div id="osdTitle"></div>
+  <div id="osdBar"><div id="osdFill"></div></div>
+  <span class="ctl f" id="osdRw">⏪ 30</span><span class="ctl f" id="osdPlay">❚❚</span><span class="ctl f" id="osdFf">30 ⏩</span>
+  <span id="osdTime"></span>
+</div>
+<span class="f" id="closeBtn">✕</span>
+<div id="dbg">v6 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v5 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v5 · JS ok · ' + navigator.userAgent.slice(0, 120);
+window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v6 ERROR: ' + m + ' @' + l; };
+document.getElementById('dbg').textContent = 'v6';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
-var main = document.getElementById('main'), top_ = document.getElementById('top'), video = document.getElementById('video');
+function $(id) { return document.getElementById(id); }
+var main = $('main'), top_ = $('top'), video = $('video'), dbg = $('dbg'), subEl = $('sub'), osd = $('osd'), closeBtn = $('closeBtn');
 var cur = null, stack = [], view = 0;
+if (MOBILE) video.controls = true; // phones: native seek/fullscreen controls
 
 // ---------- helpers ----------
 // tabIndex makes items reachable by the browser's own remote navigation too (VIDAA may not pass arrows to the page)
 function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; if (isF(e)) e.tabIndex = 0; return e; }
 function isF(e) { return e && typeof e.className === 'string' && /(^| )f( |$)/.test(e.className); }
+function isHttp(u) { return typeof u === 'string' && /^https?:\/\//.test(u); }
 var DEFAULT_ADDONS = ['https://3body-self.vercel.app/manifest.json'];
 function addons() { try { return JSON.parse(localStorage.addons) || DEFAULT_ADDONS.slice(); } catch (e) { return DEFAULT_ADDONS.slice(); } }
 function saveAddons(a) { localStorage.addons = JSON.stringify(a); }
 function base(url) { return url.replace(/\/manifest\.json$/, '').replace(/\/$/, ''); }
-// Browsers can only play http(s) streams; torrent (infoHash) streams need the Stremio server
-// Hindi-dubbed / dual-audio releases usually default to Hindi audio, so they are dropped (user wants English audio)
-function isHindi(s) { return /hindi|\bhin\b|org\.hind|dual[ .-]?audio/i.test([s.name, s.title, s.description, decodeURIComponent(s.url)].join(' ')); }
-function playable(streams) { return (streams || []).filter(function (s) { return s && s.url && /^https?:\/\//.test(s.url) && !isHindi(s); }); }
+// Browsers can only play http(s) streams; torrent (infoHash) streams need the Stremio server.
+// Hindi-dubbed / dual-audio releases usually default to Hindi audio, so they are dropped (user wants English audio).
+function hints(s) { return s.behaviorHints || {}; }
+function fileName(s) { var u = s.url; try { u = decodeURIComponent(u); } catch (e) {} return (hints(s).filename || '') + ' ' + u.split('?')[0]; }
+function isHindi(s) { return /hindi|\bhin\b|org\.hind|dual[ .-]?audio/i.test([s.name, s.title, s.description, fileName(s)].join(' ')); }
+function playable(streams) { return (streams || []).filter(function (s) { return s && isHttp(s.url) && !isHindi(s); }); }
+function fmtOf(s) {
+  var f = (hints(s).filename || s.url.split('?')[0]).toLowerCase();
+  return /\.m3u8$/.test(f) ? 'HLS' : /\.(mp4|m4v)$/.test(f) ? 'MP4' : /\.mkv$/.test(f) ? 'MKV' : /\.webm$/.test(f) ? 'WEBM' : 'FILE';
+}
+function isHevc(s) { return /x265|hevc|h\.?265|10.?bit/i.test(fileName(s) + ' ' + (s.title || '')); }
+// TV browsers reliably play MP4/HLS (H.264). Ranked last: streams the addon flags notWebReady (Stremio needs its
+// transcoding server for those), HEVC/10-bit, MKV, and streams needing custom headers a browser cannot send.
+function streamRank(s) {
+  var f = fmtOf(s), h = hints(s);
+  return (h.proxyHeaders ? 8 : 0) + (h.notWebReady ? 4 : 0) + (isHevc(s) ? 2 : 0) + (f === 'MP4' || f === 'HLS' ? 0 : f === 'FILE' ? 1 : 2);
+}
 console.assert(base('https://a.b/x/manifest.json') === 'https://a.b/x', 'base');
 console.assert(playable([{ url: 'https://v.mp4' }, { infoHash: 'abc' }, { url: 'magnet:x' }, { url: 'https://x/Film.Hindi.English.mkv' }]).length === 1, 'playable');
+console.assert(streamRank({ url: 'https://a/b.mp4?x=1' }) < streamRank({ url: 'https://a/b.mkv' }) && streamRank({ url: 'https://a/b.mkv' }) < streamRank({ url: 'https://a/b.mp4', behaviorHints: { proxyHeaders: {} } }), 'streamRank');
+console.assert(streamRank({ url: 'https://a/x', behaviorHints: { filename: 'F.x264.mp4' } }) < streamRank({ url: 'https://a/y', behaviorHints: { notWebReady: true } }) && isHindi({ url: 'https://p/api/file/1', behaviorHints: { filename: 'M.HEVC.Hindi.English.mkv' } }), 'rank/hindi via filename');
 
 // XHR, not fetch: safest on old TV engines. Drops responses for a view the user already left.
 function get(url, cb) {
@@ -65,26 +153,29 @@ function get(url, cb) {
   x.onerror = x.ontimeout = function () { if (v === view) cb(null); };
   x.send();
 }
-function clear(title) { view++; main.innerHTML = ''; main.scrollTop = 0; if (title) main.appendChild(el('h1', '', title)); }
+function clear(title) { view++; main.innerHTML = ''; main.scrollTop = 0; if (MOBILE) window.scrollTo(0, 0); if (title) main.appendChild(el('h1', '', title)); }
 function msg(t) { main.appendChild(el('p', 'muted', t)); }
 function item(parent, text, ok) { var i = el('div', 'item f', text); i.onok = ok; parent.appendChild(i); return i; }
 
 // ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
-function focusables() { return [].slice.call(document.querySelectorAll('.f')).filter(function (e) { return e.offsetParent !== null; }); }
+function focusables() { return [].slice.call(document.querySelectorAll('.f')).filter(function (e) { return e.offsetParent !== null && e.parentNode !== osd && e !== closeBtn; }); }
 function mark(e) { if (cur) cur.className = cur.className.replace(/ on\b/g, ''); cur = e; e.className += ' on'; }
 function setFocus(e) {
   if (!e) return;
   mark(e);
+  if (MOBILE) return; // no focus ring jumping / keyboard popping on touch screens
   try { e.focus(); } catch (x) {}
   e.scrollIntoView({ block: 'center' });
+  var p = e.parentNode;
+  if (p && /(^| )strip( |$)/.test(p.className)) p.scrollLeft = Math.max(0, e.offsetLeft - 20);
 }
 // Browser moved focus itself (native remote navigation) -> follow it
 document.addEventListener('focus', function (ev) { if (isF(ev.target) && ev.target !== cur) mark(ev.target); }, true);
-// Pointer/cursor mode or OK turned into a click by the browser
+// Touch, pointer/cursor mode, or OK turned into a click by the browser
 document.addEventListener('click', function (ev) {
   var t = ev.target;
   while (t && !isF(t)) t = t.parentNode;
-  if (t && t.onok && t.tagName !== 'INPUT') { mark(t); t.onok(); }
+  if (t && t.onok && t.tagName !== 'INPUT') { mark(t); t.onok(ev); }
 });
 function move(dx, dy) {
   if (!cur || !cur.offsetParent) return setFocus(focusables()[0]);
@@ -109,22 +200,50 @@ function back() {
 }
 window.onpopstate = back;
 
+function card(m, parent) {
+  var c = el('div', 'card f'), img = el('img');
+  if (isHttp(m.poster)) img.src = m.poster;
+  c.appendChild(img); c.appendChild(el('div', '', m.name));
+  c.onok = function () { show(detail(m.type, m.id)); };
+  parent.appendChild(c);
+  return c;
+}
+
 function grid(metas) {
   if (!metas || !metas.length) return msg('Nothing found.');
   var first = null;
-  metas.forEach(function (m) {
-    var c = el('div', 'card f'), img = el('img');
-    img.src = m.poster || '';
-    c.appendChild(img); c.appendChild(el('div', '', m.name));
-    c.onok = function () { show(detail(m.type, m.id)); };
-    main.appendChild(c); first = first || c;
-  });
+  metas.forEach(function (m) { var c = card(m, main); first = first || c; });
   setFocus(first);
+}
+
+var ROWS = [
+  ['Popular Movies', 'movie', 'top'],
+  ['Popular Series', 'series', 'top'],
+  ['Top Rated Movies', 'movie', 'imdbRating'],
+  ['Top Rated Series', 'series', 'imdbRating'],
+  ['Action', 'movie', 'top/genre=Action'],
+  ['Comedy', 'movie', 'top/genre=Comedy'],
+  ['Animation', 'movie', 'top/genre=Animation'],
+  ['Crime Series', 'series', 'top/genre=Crime'],
+  ['Drama Series', 'series', 'top/genre=Drama']
+];
+function home() {
+  clear();
+  ROWS.forEach(function (r, i) {
+    var row = el('div', 'row'), strip = el('div', 'strip');
+    row.appendChild(el('h2', '', r[0])); row.appendChild(strip); main.appendChild(row);
+    get(CINEMETA + '/catalog/' + r[1] + '/' + r[2] + '.json', function (res) {
+      var metas = ((res && res.metas) || []).slice(0, 20);
+      if (!metas.length) return main.removeChild(row); // drop rows the catalog does not offer
+      metas.forEach(function (m) { card(m, strip); });
+      if (i === 0 && !(cur && main.contains(cur))) setFocus(strip.firstChild);
+    });
+  });
 }
 
 function catalog(type) {
   return function () {
-    clear(type === 'movie' ? 'Popular Movies' : 'Popular Series');
+    clear(type === 'movie' ? 'Movies' : 'Series');
     get(CINEMETA + '/catalog/' + type + '/top.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog. Check internet.'); });
   };
 }
@@ -148,45 +267,81 @@ function detail(type, id) {
     get(CINEMETA + '/meta/' + type + '/' + id + '.json', function (r) {
       var m = r && r.meta;
       if (!m) return msg('Could not load details.');
-      main.appendChild(el('h1', '', m.name + (m.releaseInfo ? ' (' + m.releaseInfo + ')' : '')));
-      main.appendChild(el('p', '', (m.imdbRating ? 'IMDb ' + m.imdbRating + ' — ' : '') + (m.description || '')));
-      if (type === 'movie') return setFocus(item(main, '▶  Find streams', function () { show(streams('movie', m.id)); }));
+      var hero = el('div'), inner = el('div', 'in');
+      hero.id = 'hero';
+      if (isHttp(m.background)) hero.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
+      hero.appendChild(el('div', 'shade')); hero.appendChild(inner); main.appendChild(hero);
+      inner.appendChild(el('h1', '', m.name));
+      var bits = [m.releaseInfo, m.runtime, (m.genres || []).slice(0, 3).join(', '), m.imdbRating ? '★ IMDb ' + m.imdbRating : ''].filter(function (b) { return b; });
+      inner.appendChild(el('div', 'meta', bits.join('   •   ')));
+      inner.appendChild(el('p', '', m.description || ''));
+      if (type === 'movie') {
+        var b = el('div', 'btn f', '▶  Play');
+        b.onok = function () { show(streams('movie', m.id, m.name)); };
+        inner.appendChild(b);
+        return setFocus(b);
+      }
       var eps = (m.videos || []).slice().sort(function (a, b) { return (a.season - b.season) || (a.episode - b.episode); });
-      var first = null;
-      eps.forEach(function (v) {
-        var i = item(main, 'S' + v.season + ' E' + v.episode + '  ' + (v.name || v.title || ''), function () { show(streams('series', v.id)); });
-        first = first || i;
+      var seasons = [];
+      eps.forEach(function (v) { if (seasons.indexOf(v.season) < 0) seasons.push(v.season); });
+      seasons.sort(function (a, b) { return (a === 0) - (b === 0) || a - b; }); // specials last
+      var chipsBox = el('div'), epBox = el('div');
+      inner.appendChild(chipsBox); main.appendChild(epBox);
+      function pick(sn, chip) {
+        [].forEach.call(chipsBox.childNodes, function (c) { c.className = c.className.replace(/ sel\b/g, ''); });
+        chip.className += ' sel';
+        epBox.innerHTML = '';
+        eps.forEach(function (v) {
+          if (v.season !== sn) return;
+          item(epBox, 'E' + v.episode + '   ' + (v.name || v.title || ''), function () {
+            show(streams('series', v.id, m.name + ' · S' + v.season + ' E' + v.episode));
+          });
+        });
+      }
+      seasons.forEach(function (sn) {
+        var c = el('div', 'chip f', sn === 0 ? 'Specials' : 'Season ' + sn);
+        c.onok = function () { pick(sn, c); setFocus(epBox.firstChild); };
+        chipsBox.appendChild(c);
       });
-      first ? setFocus(first) : msg('No episodes listed.');
+      if (!seasons.length) return msg('No episodes listed.');
+      pick(seasons[0], chipsBox.firstChild);
+      setFocus(chipsBox.firstChild);
     });
   };
 }
 
-function streams(type, id) {
+function streams(type, id, title) {
   return function () {
-    clear('Streams');
-    var list = addons(), n = 0, found = 0, hidden = 0, first = null;
+    clear(title || 'Streams');
+    var list = addons(), n = 0, hidden = 0, queue = [];
     if (!list.length) return msg('No addons yet. Open Settings and add a stream addon URL.');
-    var status = el('p', 'muted', 'Searching ' + list.length + ' addon(s)... (can take ~20 seconds)');
-    main.appendChild(status);
+    var status = el('p', 'muted', 'Searching ' + list.length + ' addon(s)... (can take ~20 seconds)'), box = el('div');
+    main.appendChild(status); main.appendChild(box);
     loadSubs(type, id);
     list.forEach(function (a) {
       get(base(a) + '/stream/' + type + '/' + id + '.json', function (r) {
         if (!r) main.appendChild(el('p', 'muted', 'Addon did not answer: ' + base(a)));
-        var all = (r && r.streams) || [], ok = playable(all); // hidden count also covers Hindi releases
+        var all = (r && r.streams) || [], ok = playable(all);
         hidden += all.length - ok.length;
-        ok.forEach(function (s) {
-          var i = item(main, (s.name || '') + '  ' + (s.title || s.description || ''), function () { play(s.url); });
-          found++; if (!first) { first = i; setFocus(i); }
+        queue = queue.concat(ok);
+        // stable sort: best format first, addon order kept within a rank
+        queue = queue.map(function (s, i) { return [s, i]; }).sort(function (x, y) { return streamRank(x[0]) - streamRank(y[0]) || x[1] - y[1]; }).map(function (p) { return p[0]; });
+        box.innerHTML = '';
+        queue.forEach(function (s, i) {
+          var rk = streamRank(s), it = el('div', 'item f'), tag = el('span', 'tag ' + (rk === 0 ? 'good' : rk >= 2 ? 'bad' : ''), fmtOf(s) + (isHevc(s) ? ' HEVC' : '') + (hints(s).notWebReady ? ' ⚠' : ''));
+          it.appendChild(tag);
+          it.appendChild(document.createTextNode(((s.name || '') + '  ' + (s.title || s.description || '')).replace(/\s+/g, ' ')));
+          it.onok = function () { playQueue(queue, i, title); };
+          box.appendChild(it);
         });
-        if (++n === list.length) status.textContent = found + ' playable stream(s).' + (hidden ? ' ' + hidden + ' stream(s) hidden (torrent or Hindi audio).' : '');
+        if (queue.length) setFocus(box.firstChild);
+        if (++n === list.length) status.textContent = queue.length + ' stream(s). Green = best chance on TV/phone, ⚠ = addon says browsers usually cannot play it. If one fails the next one starts automatically.' + (hidden ? ' ' + hidden + ' hidden (torrent or Hindi audio).' : '');
       });
     });
   };
 }
 
 // Dev: the owner's own links, edited from dev.html and saved to dev.json in the repo
-function isHttp(u) { return typeof u === 'string' && /^https?:\/\//.test(u); }
 function devList() {
   clear('Dev');
   get('dev.json?t=' + new Date().getTime(), function (r) {
@@ -194,11 +349,9 @@ function devList() {
     if (!items.length) return msg('No links yet. Add them from the dev page.');
     var first = null;
     items.forEach(function (d) {
-      var c = el('div', 'card f'), img = el('img');
-      if (isHttp(d.image)) img.src = d.image;
-      c.appendChild(img); c.appendChild(el('div', '', d.name));
-      c.onok = function () { subs = []; play(d.url); };
-      main.appendChild(c); first = first || c;
+      var c = card({ name: d.name, poster: d.image }, main);
+      c.onok = function () { subs = []; pq = null; play(d.url, d.name); };
+      first = first || c;
     });
     setFocus(first);
   });
@@ -211,7 +364,7 @@ function settings() {
   var add = el('button', 'f', 'Add');
   inp.onok = add.onok = function () {
     var u = inp.value.trim();
-    if (!/^https?:\/\//.test(u)) return alert('URL must start with http:// or https://');
+    if (!isHttp(u)) return alert('URL must start with http:// or https://');
     var a = addons(); if (a.indexOf(u) < 0) a.push(u); saveAddons(a); settings();
   };
   main.appendChild(inp); main.appendChild(add);
@@ -222,27 +375,24 @@ function settings() {
 }
 
 // ---------- subtitles ----------
-var subs = [], subIdx = -1;
-function isAr(s) { return /^(ara|ar|arabic)$/i.test(s.lang || ''); }
-function subRank(s) { return isAr(s) ? 0 : /^(eng|en|english)$/i.test(s.lang || '') ? 1 : 2; }
-// Subtitles are drawn in our own overlay, synced to currentTime: TV video planes often ignore <track>,
-// and old engines lack TextDecoder / Blob tracks.
-var cues = [], subTimer = null, subEl = document.getElementById('sub');
+// Drawn in our own overlay, synced to currentTime: TV video planes often ignore <track>, and old engines lack TextDecoder / Blob tracks.
+var subs = [], subIdx = -1, cues = [], subTimer = null;
+function subRank(s) { return /^(ara|ar|arabic)$/i.test(s.lang || '') ? 0 : /^(eng|en|english)$/i.test(s.lang || '') ? 1 : 2; }
 function loadSubs(type, id) {
   subs = []; subIdx = -1;
   addons().forEach(function (a) {
     get(base(a) + '/subtitles/' + type + '/' + id + '.json', function (r) {
-      ((r && r.subtitles) || []).forEach(function (s) { if (s.url) subs.push(s); });
+      ((r && r.subtitles) || []).forEach(function (s) { if (isHttp(s.url)) subs.push(s); });
       subs.sort(function (a, b) { return subRank(a) - subRank(b); }); // Arabic, English, rest
       if (video.style.display === 'block' && subIdx < 0 && subs.length) setSub(0); // arrived after playback started
     });
   });
 }
-function subNote(t) { dbg.textContent = t; dbg.style.color = '#fff'; dbg.style.fontSize = '30px'; }
+function subNote(t) { dbg.textContent = t; dbg.style.color = '#fff'; dbg.style.fontSize = MOBILE ? '13px' : '30px'; }
 function secs(h, m, s, ms) { return (+h) * 3600 + (+m) * 60 + (+s) + (+('0.' + ms)); }
 function parseSrt(t) {
   var out = [];
-  t.replace(/^\uFEFF/, '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (b) {
+  t.replace(/^﻿/, '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (b) {
     var m = b.match(/(\d+):(\d\d):(\d\d)[,.](\d+)\s*-->\s*(\d+):(\d\d):(\d\d)[,.](\d+)/);
     if (!m) return;
     var lines = b.split('\n'), i = 0;
@@ -257,7 +407,7 @@ function fetchSub(url, cb, cp) {
   var x = new XMLHttpRequest();
   x.open('GET', url); x.timeout = 30000;
   if (x.overrideMimeType) x.overrideMimeType('text/plain; charset=' + (cp || 'utf-8'));
-  x.onload = function () { var t = x.responseText || ''; if (!cp && t.indexOf('\uFFFD') >= 0) return fetchSub(url, cb, 'windows-1256'); cb(t); };
+  x.onload = function () { var t = x.responseText || ''; if (!cp && t.indexOf('�') >= 0) return fetchSub(url, cb, 'windows-1256'); cb(t); };
   x.onerror = x.ontimeout = function () { cb(null); };
   x.send();
 }
@@ -279,48 +429,119 @@ function setSub(i) {
     cues = text ? parseSrt(text) : [];
     if (!cues.length) return subNote('Subtitle ' + label + ' failed, press ▲ for next');
     subTimer = setInterval(showCue, 200);
-    subNote('Subtitles: ' + label + '  (▲▼ to change)');
+    subNote('Subtitles: ' + label + (MOBILE ? '' : '  (▲▼ to change)'));
   });
 }
 
 // ---------- player ----------
-function play(url) {
-  history.pushState(null, '');
-  video.src = url; video.style.display = 'block';
-  video.onclick = function () { video.paused ? video.play() : video.pause(); };
-  // Where the TV exposes audio tracks, force English
+var pq = null, watchdog = null, osdTimer = null;
+function fmtTime(s) {
+  if (!isFinite(s)) return 'LIVE';
+  s = Math.floor(s);
+  var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x;
+}
+console.assert(fmtTime(3725) === '1:02:05' && fmtTime(65) === '1:05', 'fmtTime');
+
+function playQueue(q, i, title) { pq = { q: q, i: i, title: title }; play(q[i].url, title); }
+// Unsupported formats either fire 'error' or just never start on some TVs: both move on to the next stream
+function nextStream() {
+  clearTimeout(watchdog);
+  if (pq && pq.i + 1 < pq.q.length) {
+    pq.i++;
+    subNote('Format not supported here — trying stream ' + (pq.i + 1) + '/' + pq.q.length + ' (' + fmtOf(pq.q[pq.i]) + ')');
+    startSrc(pq.q[pq.i].url);
+  } else {
+    history.back();
+    alert('No stream could be played on this device. Try another quality or title.');
+  }
+}
+function startSrc(url) {
+  video.src = url;
+  var p = video.play(); if (p && p['catch']) p['catch'](function () {}); // autoplay rejections are handled by the user pressing play
+  clearTimeout(watchdog);
+  watchdog = setTimeout(function () { if (video.readyState < 2 && video.style.display === 'block') nextStream(); }, 25000);
+}
+function play(url, title) {
+  if (video.style.display !== 'block') history.pushState(null, '');
+  video.style.display = 'block'; closeBtn.style.display = 'block';
+  $('osdTitle').textContent = title || '';
+  video.onerror = nextStream;
+  video.onplaying = function () { clearTimeout(watchdog); };
+  // Where the browser exposes audio tracks, force English
   video.onloadedmetadata = function () {
     var at = video.audioTracks, i, en = -1;
     if (!at || at.length < 2) return;
     for (i = 0; i < at.length; i++) if (/^en/i.test(at[i].language) || /english/i.test(at[i].label)) { en = i; break; }
     if (en >= 0) for (i = 0; i < at.length; i++) at[i].enabled = i === en;
   };
-  video.onerror = function () { closePlayer(); alert('This stream format is not supported by the TV. Try another one.'); };
-  video.play();
+  startSrc(url);
   setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
+  osdShow();
 }
-function closePlayer() { subIdx = -1; stopSubs(); video.pause(); video.removeAttribute('src'); video.load(); video.style.display = 'none'; }
+function closePlayer() {
+  clearTimeout(watchdog); clearTimeout(osdTimer); pq = null; subIdx = -1; stopSubs();
+  video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
+  video.style.display = 'none'; osd.style.display = 'none'; closeBtn.style.display = 'none';
+}
 
-// ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing) ----------
-var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, BrowserBack: 8 };
-var dbg = document.getElementById('dbg');
+// On-screen controls (TV / desktop). Phones use the native controls instead.
+function osdUpdate() {
+  var d = video.duration;
+  $('osdFill').style.width = (isFinite(d) && d > 0 ? video.currentTime / d * 100 : 0) + '%';
+  $('osdTime').textContent = fmtTime(video.currentTime) + ' / ' + fmtTime(d);
+  $('osdPlay').textContent = video.paused ? '▶' : '❚❚';
+}
+function osdShow() {
+  if (MOBILE) return;
+  osd.style.display = 'block'; subEl.style.bottom = '250px'; osdUpdate();
+  clearTimeout(osdTimer);
+  osdTimer = setTimeout(function () { if (!video.paused) { osd.style.display = 'none'; subEl.style.bottom = ''; } }, 4000);
+}
+function seek(d) {
+  if (isFinite(video.duration)) video.currentTime = Math.max(0, Math.min(video.duration - 1, video.currentTime + d));
+  osdShow();
+}
+function togglePlay() { if (video.paused) video.play(); else video.pause(); osdShow(); }
+video.ontimeupdate = function () { if (osd.style.display === 'block') osdUpdate(); };
+video.onpause = video.onplay = osdShow;
+if (!MOBILE) video.onclick = togglePlay;
+$('osdRw').onok = function () { seek(-30); };
+$('osdFf').onok = function () { seek(30); };
+$('osdPlay').onok = togglePlay;
+closeBtn.onok = function () { history.back(); };
+$('osdBar').onclick = function (ev) {
+  var r = this.getBoundingClientRect();
+  if (isFinite(video.duration)) { video.currentTime = video.duration * Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)); osdShow(); }
+};
+document.addEventListener('mousemove', function () { if (video.style.display === 'block') osdShow(); });
+
+// ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing; 412-417 are remote media keys) ----------
+var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, MediaPlayPause: 179, MediaRewind: 412, MediaFastForward: 417 };
+function isBack(k) { return k === 8 || k === 27 || k === 461 || k === 10009; }
 document.onkeydown = function (ev) {
   var k = ev.keyCode || ev.which || KEYS[ev.key] || 0, playing = video.style.display === 'block';
-  if (!playing) dbg.textContent = 'v5 · key ' + k + (ev.key ? ' ' + ev.key : '');
-  if (playing && k === 13) { video.paused ? video.play() : video.pause(); }
-  else if (playing && (k === 37 || k === 39)) { video.currentTime += k === 39 ? 10 : -10; }
-  else if (playing && k === 38) { setSub(subIdx + 1 >= subs.length ? -1 : subIdx + 1); }
-  else if (playing && k === 40) { setSub(subIdx <= -1 ? subs.length - 1 : subIdx - 1); }
-  else if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
+  if (playing) {
+    if (k === 13 || k === 32 || k === 179 || k === 10252 || k === 415 || k === 19) togglePlay();
+    else if (k === 37) seek(-10); else if (k === 39) seek(10);
+    else if (k === 412) seek(-30); else if (k === 417) seek(30);
+    else if (k === 38) { setSub(subIdx + 1 >= subs.length ? -1 : subIdx + 1); osdShow(); }
+    else if (k === 40) { setSub(subIdx <= -1 ? subs.length - 1 : subIdx - 1); osdShow(); }
+    else if (k === 413 || isBack(k)) history.back();
+    else return;
+    return ev.preventDefault();
+  }
+  if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
   else if (k === 38) move(0, -1); else if (k === 40) move(0, 1);
   else if (k === 13) { if (cur && cur.onok) cur.onok(); }
-  else if (k === 8 || k === 27 || k === 461 || k === 10009) { if (k === 8 && document.activeElement && document.activeElement.tagName === 'INPUT') return; history.back(); }
+  else if (isBack(k)) { if (k === 8 && document.activeElement && document.activeElement.tagName === 'INPUT') return; history.back(); }
   else return;
   ev.preventDefault();
 };
 
 // ---------- top bar ----------
 function topBtn(text, ok) { var b = el('button', 'f', text); b.onok = ok; top_.appendChild(b); }
+topBtn('Home', function () { show(home); });
 topBtn('Movies', function () { show(catalog('movie')); });
 topBtn('Series', function () { show(catalog('series')); });
 topBtn('Dev', function () { show(devList); });
@@ -329,7 +550,7 @@ q.onok = function () { if (q.value.trim()) show(search(q.value.trim())); };
 top_.appendChild(q);
 topBtn('Settings', function () { show(settings); });
 
-show(catalog('movie'));
+show(home);
 </script>
 </body>
 </html>
