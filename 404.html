@@ -380,12 +380,6 @@ h1{font-weight:800;letter-spacing:-.03em}
 .mobile #cPlay,.mobile #cBack,.mobile #cFwd{display:none}
 .mobile #pDur{font-size:12px}
 /* ===== v14: iPhone native player, desktop scale ===== */
-.ios #pl{pointer-events:none}
-.ios #ptop{pointer-events:auto;background:#000;padding:10px 12px 10px;opacity:1 !important}
-.ios #pbot,.ios #pmid,.ios #spin{display:none !important}
-.ios #pl.hid #ptop{opacity:1}
-.ios video{top:64px;height:calc(100% - 64px)}
-.ios .pmenu{pointer-events:auto}
 html.desk{zoom:.72}
 .desk .feat{height:118vh}
 .desk #main{padding-left:4vw;padding-right:4vw}
@@ -604,6 +598,38 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
 .mobile .person small{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mobile #main{padding-left:14px;padding-right:14px}
 .mobile .row h2{margin-left:6px}
+/* ===== v25: phone player like streaming apps ===== */
+.mobile #pl{background:rgba(0,0,0,.38);-webkit-transition:background .3s;transition:background .3s}
+.mobile #pl.hid{background:transparent}
+.mobile #ptop{padding:16px 14px 46px;background:linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,0));white-space:nowrap;display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center}
+.mobile .pt{-webkit-box-flex:1;flex:1;min-width:0;max-width:none !important}
+.mobile .pr{float:none;margin-left:auto;-webkit-flex-shrink:0;flex-shrink:0}
+.mobile .pb{padding:4px 6px;background:transparent}
+.mobile .pb svg{width:28px !important;height:28px !important}
+.mobile .pt{margin-left:10px;max-width:52vw}
+.mobile .pt h3{font-size:17px;font-weight:700;line-height:1.25}
+.mobile .pt small{font-size:13px;color:#b9b9c0}
+.mobile .pill{background:transparent !important;padding:6px 7px;margin-left:6px;border:0}
+.mobile .pill i,.mobile .pill b{display:none}
+.mobile .pill svg{width:28px !important;height:28px !important;margin:0}
+.mobile #pmid{margin-top:-34px}
+.mobile .mb{margin:0 30px;padding:6px}
+.mobile .mb svg{width:36px !important;height:36px !important}
+.mobile .mb.big svg{width:54px !important;height:54px !important}
+.mobile .mb.skip b{font-size:13px;font-weight:700;left:-2px;bottom:-2px}
+.mobile #pl.loading #mPlay{visibility:hidden}
+.mobile #spin{width:44px;height:44px;margin:-22px;border-width:3px}
+.mobile #pbot{display:-webkit-box;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;flex-direction:column;padding:40px 22px 22px;background:linear-gradient(to top,rgba(0,0,0,.8),rgba(0,0,0,0))}
+.mobile #pbar{-webkit-box-ordinal-group:2;order:1;height:20px}
+.mobile #pbar .trk{top:8px;height:4px;border-radius:2px;background:rgba(255,255,255,.3)}
+.mobile #pfill{background:#fff}
+.mobile #pknob{top:3px;width:15px;height:15px;margin-left:-7px}
+.mobile #ptime{-webkit-box-ordinal-group:3;order:2;text-align:left;font-size:14px;font-weight:500;color:#e2e2e6;margin:12px 0 0}
+.mobile .ctrls{position:absolute;right:16px;bottom:14px;margin:0}
+.mobile #cMute{display:none}
+.mobile #cFs{padding:6px}
+.mobile #cFs svg{width:26px !important;height:26px !important}
+.mobile #ptoast{top:auto;bottom:110px}
 </style>
 </head>
 <body>
@@ -616,7 +642,7 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
   <div id="ptop">
     <span class="pb f" id="pBack"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
     <div class="pt"><h3 id="pTitle"></h3><small id="pDur"></small></div>
-    <span class="pr"><span class="pill f" id="qBtn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg><b>Quality</b><i id="qLabel"></i></span><span class="pill f" id="sBtn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 10.5a2 2 0 1 0 0 3M16 10.5a2 2 0 1 0 0 3"/></svg><b>Audio &amp; Subtitles</b></span></span>
+    <span class="pr"><span class="pill f" id="nBtn" style="display:none"></span><span class="pill f" id="qBtn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg><b>Quality</b><i id="qLabel"></i></span><span class="pill f" id="sBtn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 10.5a2 2 0 1 0 0 3M16 10.5a2 2 0 1 0 0 3"/></svg><b>Audio &amp; Subtitles</b></span></span>
   </div>
   <div class="pmenu" id="qMenu"><div class="plabel">Quality</div><div class="plist" id="srvList"></div><div class="speed"><span class="plabel">Speed</span><span id="spList"></span></div></div>
   <div class="pmenu" id="sMenu"><div class="pcols"><div class="pcol"><div class="plabel">Audio</div><div class="plist" id="aList"></div></div><div class="pcol"><div class="plabel">Subtitles</div><div class="plist" id="subList"></div></div></div><div class="speed"><span class="plabel">Size</span><span id="szList"></span></div></div>
@@ -634,8 +660,8 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v24 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v24';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v25 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v25';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -660,6 +686,7 @@ var ICONS = {
   list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
+  next: '<path d="M6 5.5l9 6.5-9 6.5z"/><path d="M18 5v14"/>',
   home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
   tv: '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
   grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
@@ -1153,7 +1180,12 @@ function detail(type, id) {
       }
       var eps = (m.videos || []).slice().sort(function (a, b) { return (a.season - b.season) || (a.episode - b.episode); });
       function epTitle(v) { return m.name + ' \u00b7 S' + v.season + ' E' + v.episode; }
-      function playEp(v) { autoPlay('series', v.id, epTitle(v), m, 'S' + v.season + ' E' + v.episode + (v.name || v.title ? ' \u00b7 ' + (v.name || v.title) : '')); }
+      function playEp(v) {
+        var k = eps.indexOf(v), nx = null;
+        for (var j = k + 1; j < eps.length; j++) if (eps[j].season > 0) { nx = eps[j]; break; }
+        nextEpFn = nx ? function () { saveProgress(); playEp(nx); } : null;
+        autoPlay('series', v.id, epTitle(v), m, 'S' + v.season + ' E' + v.episode + (v.name || v.title ? ' \u00b7 ' + (v.name || v.title) : ''));
+      }
       // Play: continue the last watched episode, otherwise the first real episode
       var last = watched().filter(function (x) { return x.metaId === m.id; })[0], startEp = null;
       eps.forEach(function (v) { if (!startEp && v.season > 0) startEp = v; if (last && v.id === last.vid) startEp = v; });
@@ -1868,13 +1900,14 @@ function play(url, title) { openPlayer(title); startSrc(url); }
 function openPlayer(title, sub) {
   if (!isPlaying()) { history.pushState(null, '', BASE + '/watch/' + slug(title || 'video')); setTitle('Watching ' + (title || '')); }
   video.style.display = 'block'; pl.style.display = 'block';
-  $('pTitle').textContent = title || ''; $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
+  $('nBtn').style.display = nextEpFn ? '' : 'none';
+  $('pTitle').textContent = sub && /^S\d+ E\d+/.test(sub) ? String(title || '').replace(/ · S\d+ E\d+$/, '') : (title || ''); $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
   video.onerror = onVideoError;
   resumeAt = 0;
   if (nowPlaying) watched().forEach(function (x) { if (x.vid === nowPlaying.vid) resumeAt = x.t; });
   video.onloadedmetadata = function () {
-    var sub = pl.getAttribute('data-sub');
-    $('pDur').textContent = (sub ? sub + ' \u00b7 ' : '') + (isFinite(video.duration) ? fmtTime(video.duration) : 'LIVE');
+    var sub = pl.getAttribute('data-sub'), d = video.duration;
+    $('pDur').textContent = sub || (isFinite(d) ? fmtRuntime(Math.round(d / 60)) : 'LIVE');
     if (resumeAt > 0 && isFinite(video.duration)) { video.currentTime = Math.max(0, resumeAt - 5); resumeAt = 0; }
     // Where the browser exposes audio tracks, prefer English
     var at = video.audioTracks, i, en = -1;
@@ -1884,13 +1917,13 @@ function openPlayer(title, sub) {
     }
     renderAudio();
   };
-  video.controls = IS_IOS; // iPhone/iPad: native controls, AirPlay, full screen
+  video.controls = false; // our controls everywhere; iPhone full screen hands over to Apple's player
   setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
   closeMenus(); renderQ(); renderSubs(); renderAudio(); wake();
   if (MOBILE && screen.orientation && screen.orientation.lock) { try { screen.orientation.lock('landscape')['catch'](function () {}); } catch (e) {} }
 }
 function closePlayer() {
-  saveProgress(); stopProbes(); closeMovi(); moviTried = {}; nowPlaying = null; destroyHls(); hlsTried = {};
+  saveProgress(); stopProbes(); closeMovi(); moviTried = {}; nextEpFn = null; nowPlaying = null; destroyHls(); hlsTried = {};
   clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.removeAttribute('poster'); video.load();
   video.style.display = 'none'; pl.style.display = 'none';
@@ -1904,7 +1937,7 @@ function wake() {
   subEl.style.bottom = MOBILE ? '110px' : '230px';
   clearTimeout(hideTimer);
   hideTimer = setTimeout(function () {
-    if (video.paused || openMenu || IS_IOS) return;
+    if (video.paused || openMenu) return;
     pl.className += ' hid'; subEl.style.bottom = '';
     if (cur && pl.contains(cur)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
   }, 3500);
@@ -1921,6 +1954,10 @@ function seek(d) {
 }
 function togglePlay() { if (video.paused) video.play(); else video.pause(); wake(); }
 var PLAY_I = '<svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg>', PAUSE_I = '<svg viewBox="0 0 24 24"><path d="M7 4v16M17 4v16" stroke-width="3"/></svg>';
+var nextEpFn = null;
+$('nBtn').innerHTML = ico('next'); $('nBtn').title = 'Next episode';
+$('nBtn').onok = function () { if (nextEpFn) nextEpFn(); };
+video.onended = function () { if (nextEpFn) nextEpFn(); };
 video.onplay = function () { $('cPlay').innerHTML = $('mPlay').innerHTML = PAUSE_I; wake(); };
 video.onpause = function () { $('cPlay').innerHTML = $('mPlay').innerHTML = PLAY_I; saveProgress(); wake(); };
 $('mPlay').onok = function () { togglePlay(); };
