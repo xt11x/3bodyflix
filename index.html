@@ -677,10 +677,11 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v27 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v27';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v28 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v28';
 </script>
 <script>
+var APP_VERSION = 'v28';
 var CINEMETA = 'https://v3-cinemeta.strem.io';
 function $(id) { return document.getElementById(id); }
 var main = $('main'), top_ = $('top'), video = $('video'), dbg = $('dbg'), subEl = $('sub'), closeBtn = $('closeBtn');
@@ -1670,6 +1671,7 @@ function editProfile(id) {
 
 function settings() {
   clear('Settings — Addons');
+  var ver = el('p', 'muted', 'Version ' + APP_VERSION + ' · if this looks old, pull down to refresh the page.'); ver.style.fontSize = '0.8em'; main.appendChild(ver);
   main.appendChild(el('p', 'muted', 'Paste a Stremio addon manifest URL (…/manifest.json). It must return direct http(s) streams.'));
   var inp = el('input', 'f'); inp.placeholder = 'https://…/manifest.json';
   var add = el('button', 'f', 'Add');
