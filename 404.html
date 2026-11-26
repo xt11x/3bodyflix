@@ -927,11 +927,11 @@ html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v38 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v38';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v39 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v39';
 </script>
 <script>
-var APP_VERSION = 'v38';
+var APP_VERSION = 'v39';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -2390,12 +2390,12 @@ function wrongEpisode(s, id) {
 console.assert(wrongEpisode({ url: 'https://a/x', behaviorHints: { filename: 'The.Pitt.S01E10.720p.mkv' } }, 'tt1:1:1') && !wrongEpisode({ url: 'https://a/The.Pitt.S01E01.mkv' }, 'tt1:1:1'), 'wrongEpisode');
 function browserDead(s) { return !!hints(s).proxyHeaders || /\/\/(www\.)?pixeldrain\.|\/\/[^\/]*hubcloud\.|\/drive\//i.test(s.url); }
 console.assert(browserDead({ url: 'https://pixeldrain.dev/api/file/x?download' }) && browserDead({ url: 'https://hubcloud.mov/drive/abc' }) && !browserDead({ url: 'https://a.b/v.mp4' }), 'browserDead');
-function iosOk(s) { var f = fmtOf(s), x = hints(s); return !x.proxyHeaders && !isHevc(s) && (f === 'MP4' || f === 'HLS' || (f === 'FILE' && !x.notWebReady)); }
+function iosOk(s) { var f = fmtOf(s), x = hints(s); return !x.proxyHeaders && !isHevc(s) && (f === 'MP4' || f === 'HLS' || (f === 'FILE' && !x.notWebReady && /mp4|m3u8|hls/i.test(fileName(s) + ' ' + (s.title || '') + ' ' + (s.name || '')) && !/remux|bluray|blu-ray|dts|truehd|atmos|mkv/i.test(fileName(s)))); }
 function iosList(list) { // MP4 / HLS first; at most 2 unlabelled files (each costs up to 10 s when it is really an MKV)
   var files = 0;
   return list.filter(function (s) { if (!iosOk(s)) return false; if (fmtOf(s) !== 'FILE') return true; return ++files <= 2; });
 }
-console.assert(iosOk({ url: 'https://a/b.mp4' }) && !iosOk({ url: 'https://a/b.mkv' }) && !iosOk({ url: 'https://a/b.m3u8', behaviorHints: { proxyHeaders: {} } }) && !iosOk({ url: 'https://a/x', behaviorHints: { notWebReady: true } }), 'iosOk');
+console.assert(iosOk({ url: 'https://a/b.mp4' }) && !iosOk({ url: 'https://a/b.mkv' }) && !iosOk({ url: 'https://a/b.m3u8', behaviorHints: { proxyHeaders: {} } }) && !iosOk({ url: 'https://a/x', behaviorHints: { notWebReady: true } }) && !iosOk({ url: 'https://r2/x', behaviorHints: { filename: 'Banshee.S01E01.1080p.BluRay.DTS-HD' } }) && iosOk({ url: 'https://h/f', behaviorHints: { filename: 'Show.S01E01.720p.mp4' } }), 'iosOk');
 function iosPenalty(s) { return IS_IOS && (fmtOf(s) === 'MKV' || isHevc(s)) ? 20 : 0; }
 function sortForAuto(list) {
   return list.map(function (s, i) { return [s, i]; }).sort(function (a, b) {
