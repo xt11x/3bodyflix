@@ -927,11 +927,11 @@ html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v39 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v39';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v40 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v40';
 </script>
 <script>
-var APP_VERSION = 'v39';
+var APP_VERSION = 'v40';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -2125,7 +2125,7 @@ function myListPage() {
 function watched() { if (!profile) return []; try { return JSON.parse(localStorage[pkey('cw')]) || []; } catch (e) { return []; } }
 function saveProgress() {
   if (!nowPlaying || !profile) return;
-  var d = media().duration, t = media().currentTime;
+  var d = durT(), t = curT();
   if (!isFinite(d) || d < 120 || t < 15) return; // skip live streams, trailers and accidental starts
   var list = watched().filter(function (x) { return x.vid !== nowPlaying.vid; });
   if (t / d < 0.95) { var e = {}; for (var k in nowPlaying) e[k] = nowPlaying[k]; e.t = t; e.d = d; e.at = new Date().getTime(); list.unshift(e); }
@@ -2279,6 +2279,23 @@ function settings() {
   addons().forEach(function (u, idx) {
     var it = ibtn('item', 'trash', u); it.onok = function () { var a = addons(); a.splice(idx, 1); saveAddons(a); settings(); }; main.appendChild(it);
   });
+  main.appendChild(el('div', 'sec', 'iPhone converter'));
+  main.appendChild(el('p', 'muted', 'Plays MKV titles inside the site on iPhone. Start the converter on your computer (converter/start.cmd), then type the code it shows here once.'));
+  var ci = el('input', 'fin f'), cs = el('div', 'autherr'), cb = el('div', 'wbtn f', CONV_CODE ? 'Check / change code' : 'Save code');
+  ci.placeholder = 'Converter code (8 letters and numbers)'; ci.value = CONV_CODE; ci.setAttribute('autocapitalize', 'none'); ci.setAttribute('autocomplete', 'off');
+  function check() {
+    cs.style.color = ''; cs.textContent = 'Checking…';
+    convFind(function (b) {
+      if (!b) return (cs.textContent = CONV_CODE ? 'Code saved. The converter is not online right now (start it on your computer).' : '');
+      rawGet(b + '/ping?k=' + encodeURIComponent(CONV_CODE), function (r) {
+        cs.style.color = r && r.paired ? '#5ad17a' : '';
+        cs.textContent = r && r.paired ? 'Connected. MKV titles will play inside the site.' : r ? 'The converter is online, but this code is wrong.' : 'Code saved. The converter is not reachable right now.';
+      }, 8000);
+    });
+  }
+  cb.onok = function () { CONV_CODE = ci.value.trim().toLowerCase(); try { if (CONV_CODE) localStorage.convCode = CONV_CODE; else localStorage.removeItem('convCode'); } catch (e) {} check(); };
+  main.appendChild(ci); main.appendChild(cs); main.appendChild(cb);
+  if (CONV_CODE) check();
   setFocus(inp);
 }
 
@@ -2462,7 +2479,7 @@ video.addEventListener('loadedmetadata', stopProbes);
 
 // Press Play -> player opens at once, uses the prefetched sources, picks the fastest by itself
 function autoPlay(type, id, title, meta, sub) {
-  meta = meta || {};
+  meta = meta || {}; convStop();
   // Safari only lets a video start from the tap itself: touch play() now so the element is allowed to play later
   try { if (!isPlaying()) { video.muted = false; var up = video.play(); if (up && up['catch']) up['catch'](function () {}); } } catch (e) {}
   // Android: full screen in landscape (needs the tap too)
@@ -2486,7 +2503,7 @@ function autoPlay(type, id, title, meta, sub) {
     pq.all = list.slice();
     list = list.filter(function (s) { return !browserDead(s); });
     if (IS_IOS) list = iosList(list);
-    if (!list.length) { if (IS_TV) { history.back(); return alert('No stream could be played on this device. Try another title.'); } return showExtSheet(); }
+    if (!list.length) { if (IS_TV) { history.back(); return alert('No stream could be played on this device. Try another title.'); } return CONV_CODE ? convFrom(pq.all) : showExtSheet(); }
     pq.q = list.slice(); renderQ();
     pq.i = 0; pq.tried[0] = 1;
     startSrc(pq.q[0].url); renderQ();
@@ -2564,7 +2581,65 @@ function showExtSheet() {
   setFocus(b1);
 }
 function hideExtSheet() { xsheet.className = ''; xsheet.innerHTML = ''; pl.className = pl.className.replace(/ xs\b/g, ''); }
+// ---------- converter: MKV / HEVC / DTS turned into HLS by the owner's computer (converter/server.mjs) ----------
+var CONV_CODE = '', convBase = '', conv = null;
+try { CONV_CODE = localStorage.convCode || ''; } catch (e) {}
+function convFind(cb) { // the converter publishes its current https link in conv.json next to the site
+  if (!CONV_CODE) return cb('');
+  try { if (localStorage.convDev) return cb(localStorage.convDev); } catch (e) {}
+  rawGet('conv.json?nc=' + new Date().getTime(), function (r) { cb(r && /^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(r.url || '') ? r.url : ''); }, 8000);
+}
+function convCands(all) { // 1080p first, smaller files first (they start and seek faster), never header tricks or pixeldrain
+  return (all || []).filter(function (s) { return isHttp(s.url) && !browserDead(s) && !isHindi(s); }).map(function (s, i) { return [s, i]; }).sort(function (a, b) {
+    return QORDER.indexOf(qualityOf(a[0])) - QORDER.indexOf(qualityOf(b[0])) || (hints(a[0]).videoSize || 9e12) - (hints(b[0]).videoSize || 9e12) || a[1] - b[1];
+  }).map(function (p) { return p[0]; });
+}
+function convFrom(all) {
+  if (!pq) return showExtSheet();
+  pq.convTried = 1;
+  var cands = convCands(all), i = 0;
+  pl.className = 'loading'; toast('Preparing it for this device…');
+  convFind(function (b) {
+    if (!isPlaying()) return;
+    if (!b) return showExtSheet();
+    convBase = b;
+    (function next() { if (!isPlaying()) return; var s = cands[i++]; if (!s || i > 3) { conv = null; return showExtSheet(); } convStart(s, resumeAt, next); })();
+  });
+}
+function convStart(s, at, onFail) {
+  clearTimeout(watchdog); closeMovi(); destroyHls();
+  pl.className = 'loading';
+  var x = new XMLHttpRequest();
+  x.open('GET', convBase + '/start?k=' + encodeURIComponent(CONV_CODE) + '&t=' + Math.floor(at || 0) + '&u=' + encodeURIComponent(s.url));
+  x.timeout = 50000;
+  x.onload = function () {
+    var r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
+    if (!isPlaying()) return;
+    if (x.status === 403) { toast('The converter code is wrong (Settings)'); return showExtSheet(); }
+    if (x.status !== 200 || !r || !r.playlist) return onFail();
+    conv = { s: s, start: r.start || 0, dur: r.duration || 0, id: r.id, onFail: onFail };
+    resumeAt = 0;
+    var src = convBase + r.playlist;
+    if (nativeHls()) { video.src = src; tryPlay(); } else useHls(src);
+    watchdog = setTimeout(function () { if (conv && video.readyState < 2 && isPlaying()) { conv = null; onFail(); } }, 20000);
+  };
+  x.onerror = x.ontimeout = function () { if (isPlaying()) onFail(); };
+  x.send();
+}
+// player time on the film's own clock (a converted piece may start in the middle of the film)
+function curT() { return (conv ? conv.start : 0) + (media().currentTime || 0); }
+function durT() { return conv && conv.dur ? conv.dur : media().duration; }
+function convSeek(t) {
+  var local = t - conv.start;
+  if (local >= 0 && canSeekTo(local)) { video.currentTime = local; return true; }
+  var c = conv; conv = null; toast('Jumping…'); convStart(c.s, t, c.onFail); return true; // not converted yet: start there
+}
+function convStop() {
+  if (conv && convBase) { try { new Image().src = convBase + '/stop?k=' + encodeURIComponent(CONV_CODE) + '&id=' + conv.id; } catch (e) {} }
+  conv = null;
+}
 function nextStream() {
+  if (conv && conv.onFail) { var cf = conv.onFail; conv = null; return cf(); }
   clearTimeout(watchdog); var wasAt = media().currentTime || 0; closeMovi();
   if (!pq || !pq.q.length) { // a single link (M3U / direct): nothing else to try, so say so instead of spinning forever
     if (!isPlaying()) return;
@@ -2581,7 +2656,7 @@ function nextStream() {
     toast('Switching to another source\u2026');
     startSrc(pq.q[pq.i].url, wasAt); renderQ();
   } else {
-    if (!IS_TV) return showExtSheet();
+    if (!IS_TV) return CONV_CODE && !pq.convTried ? convFrom(pq.all) : showExtSheet();
     history.back();
     alert('No stream could be played on this device. Try another quality or title.');
   }
@@ -2596,7 +2671,8 @@ function loadHlsLib(cb) {
   s.onload = cb; s.onerror = cb;
   document.head.appendChild(s);
 }
-function nativeHls() { return !!video.canPlayType('application/vnd.apple.mpegurl'); }
+// Apple devices and TVs: the built-in HLS player. Chrome / Edge / Firefox: hls.js (Chrome's new built-in HLS rejects some valid streams)
+function nativeHls() { var c = !!video.canPlayType('application/vnd.apple.mpegurl'); if (IS_IOS || IS_TV) return c; if (window.MediaSource && /Chrome|CriOS|Edg|Firefox|Android/.test(UA)) return false; return c; }
 function isM3u8(u) { return /\.m3u8?(\?|$)/i.test(u); }
 console.assert(isM3u8('https://a/b/index.m3u8?t=1') && isM3u8('https://a/x.m3u8') && !isM3u8('https://a/b.mp4'), 'isM3u8');
 function useHls(url) {
@@ -2708,6 +2784,7 @@ function startSrc(url, at) {
 }
 // A link without a file extension may still be HLS: give hls.js one try before moving to the next source
 function onVideoError() {
+  if (conv && conv.onFail) { var cf = conv.onFail; conv = null; return cf(); }
   var u = video.currentSrc || video.src;
   if (u && !hlsTried[u] && !nativeHls() && !/^blob:/.test(u) && isM3u8(u)) { clearTimeout(watchdog); watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 20000); return useHls(u); }
   // the browser cannot decode this file (MKV / HEVC / AC3): hand the same link to the universal player
@@ -2726,7 +2803,7 @@ function openPlayer(title, sub) {
   resumeAt = 0;
   if (nowPlaying) watched().forEach(function (x) { if (x.vid === nowPlaying.vid) resumeAt = x.t; });
   video.onloadedmetadata = function () {
-    var sub = pl.getAttribute('data-sub'), d = video.duration;
+    var sub = pl.getAttribute('data-sub'), d = durT();
     $('pDur').textContent = sub || (isFinite(d) ? fmtRuntime(Math.round(d / 60)) : 'LIVE');
     if (resumeAt > 0 && isFinite(video.duration)) { video.currentTime = Math.max(0, resumeAt - 5); resumeAt = 0; }
     // Where the browser exposes audio tracks, prefer English
@@ -2747,7 +2824,7 @@ function closePlayer() {
   document.documentElement.className = document.documentElement.className.replace(/ playing\b/g, '');
   try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
   try { var fe = document.fullscreenElement || document.webkitFullscreenElement; if (fe && MOBILE) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
-  saveProgress(); stopProbes(); closeMovi(); moviTried = {}; nextEpFn = null; nowPlaying = null; destroyHls(); hlsTried = {};
+  saveProgress(); convStop(); stopProbes(); closeMovi(); moviTried = {}; nextEpFn = null; nowPlaying = null; destroyHls(); hlsTried = {};
   clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.removeAttribute('poster'); video.load();
   video.style.display = 'none'; pl.style.display = 'none';
@@ -2767,10 +2844,10 @@ function wake() {
   }, 3500);
 }
 function pUpdate() {
-  var d = video.duration, p = isFinite(d) && d > 0 ? video.currentTime / d * 100 : 0;
+  var d = durT(), t = curT(), p = isFinite(d) && d > 0 ? t / d * 100 : 0;
   $('pfill').style.width = p + '%'; $('pknob').style.left = p + '%';
-  try { if (video.buffered.length && isFinite(d)) $('pbuf').style.width = video.buffered.end(video.buffered.length - 1) / d * 100 + '%'; } catch (e) {}
-  $('ptime').textContent = video.readyState < 1 ? '--:--' : fmtTime(video.currentTime) + ' / ' + fmtTime(d);
+  try { if (video.buffered.length && isFinite(d)) $('pbuf').style.width = ((conv ? conv.start : 0) + video.buffered.end(video.buffered.length - 1)) / d * 100 + '%'; } catch (e) {}
+  $('ptime').textContent = video.readyState < 1 ? '--:--' : fmtTime(t) + ' / ' + fmtTime(d);
 }
 // Some servers cannot jump inside the file: setting currentTime there restarts the film from 0:00
 function canSeekTo(t) { var s = video.seekable; for (var i = 0; i < s.length; i++) if (t >= s.start(i) - 1 && t <= s.end(i) + 1) return true; return false; }
@@ -2779,7 +2856,8 @@ function seekTo(t) {
   video.currentTime = t; return true;
 }
 function seek(d) {
-  if (isFinite(video.duration) && seekTo(Math.max(0, Math.min(video.duration - 1, video.currentTime + d)))) toast((d > 0 ? '+' : '') + d + 's');
+  var D = durT();
+  if (isFinite(D) && D > 0) { var to = Math.max(0, Math.min(D - 1, curT() + d)); if (conv ? convSeek(to) : seekTo(to)) toast((d > 0 ? '+' : '') + d + 's'); }
   wake();
 }
 function togglePlay() { if (video.paused) video.play(); else video.pause(); wake(); }
@@ -2815,7 +2893,7 @@ video.onwaiting = function () { if (pl.className.indexOf('loading') < 0) pl.clas
 video.oncanplay = video.onplaying = function () { clearTimeout(watchdog); pl.className = pl.className.replace(/\bloading\b/g, ''); };
 video.ontimeupdate = function () {
   pUpdate();
-  var dd = video.duration; upEl.style.display = nextEpFn && isFinite(dd) && dd > 300 && dd - video.currentTime < 45 ? '' : 'none';
+  var dd = durT(); upEl.style.display = nextEpFn && isFinite(dd) && dd > 300 && dd - curT() < 45 ? '' : 'none';
   var now = new Date().getTime();
   if (now - lastSave > 10000) { lastSave = now; saveProgress(); }
 };
@@ -2839,7 +2917,8 @@ pl.onclick = function (ev) {
 };
 function barSeek(x) {
   var r = $('pbar').getBoundingClientRect();
-  if (isFinite(video.duration)) { seekTo(video.duration * Math.max(0, Math.min(1, (x - r.left) / r.width))); pUpdate(); wake(); }
+  var D = durT();
+  if (isFinite(D) && D > 0) { var to = D * Math.max(0, Math.min(1, (x - r.left) / r.width)); if (conv) convSeek(to); else seekTo(to); pUpdate(); wake(); }
 }
 $('pbar').onclick = function (ev) { barSeek(ev.clientX); };
 $('pbar').addEventListener('touchmove', function (ev) { if (ev.touches[0]) { barSeek(ev.touches[0].clientX); ev.preventDefault(); } });
