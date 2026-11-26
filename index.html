@@ -855,6 +855,9 @@ html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,
 .hsk .hs-b{width:240px;height:56px;margin-top:22px}
 .mobile .hsk .hs-t{height:44px;width:70%}
 .mobile .hsk .hs-b{width:46%;height:46px}
+.xs-keep{display:block;color:#a9a9b2;font-size:15px;margin:12px 0 2px;cursor:pointer}
+.xs-keep input{width:18px;height:18px;vertical-align:-3px;margin:0 6px 0 0;accent-color:#e50914}
+.mobile .xs-keep{font-size:13px}
 </style>
 </head>
 <body>
@@ -885,11 +888,11 @@ html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v36 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v36';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v37 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v37';
 </script>
 <script>
-var APP_VERSION = 'v36';
+var APP_VERSION = 'v37';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -2474,7 +2477,8 @@ function showExtSheet() {
   qs.sort(function (a, b) { return QORDER.indexOf(a) - QORDER.indexOf(b); });
   var pick = qs[0];
   function streamFor(q) { return pool.filter(function (s) { return qualityOf(s) === q; }).sort(function (a, b) { return isFast(b) - isFast(a); })[0]; }
-  function go(app) { var s = streamFor(pick); if (s) location.href = extUrl(s.url, app); }
+  function go(app) { var s = streamFor(pick); if (!s) return; if (keep && keep.checked) { try { localStorage.autoExt = app || 'vlc'; } catch (e) {} } location.href = extUrl(s.url, app); }
+  var keep = null, auto = ''; try { auto = MOBILE ? localStorage.autoExt || '' : ''; } catch (e) {}
   pl.className = pl.className.replace(/\bloading\b/g, '').replace(/ xs\b/g, '') + ' xs';
   xsheet.innerHTML = '';
   var card = el('div', 'xs-card');
@@ -2510,7 +2514,14 @@ function showExtSheet() {
   var gv = el('div', 'alink dim f', PC ? 'Get VLC free (videolan.org)' : IS_IOS ? 'No VLC yet? Get it free' : 'No player app? Get VLC free');
   gv.onok = function () { location.href = PC ? 'https://www.videolan.org/vlc/' : IS_IOS ? 'https://apps.apple.com/app/vlc-media-player/id650377962' : 'https://play.google.com/store/apps/details?id=org.videolan.vlc'; };
   card.appendChild(gv);
+  if (MOBILE) {
+    var kl = el('label', 'xs-keep'); keep = el('input'); keep.type = 'checkbox'; keep.checked = !!auto;
+    kl.appendChild(keep); kl.appendChild(document.createTextNode(IS_IOS ? ' Always open these in my player app' : ' Always open these in my video app'));
+    keep.onchange = function () { try { if (!keep.checked) localStorage.removeItem('autoExt'); } catch (e) {} };
+    card.appendChild(kl);
+  }
   xsheet.appendChild(card); xsheet.className = 'on';
+  if (auto) { toast('Opening in ' + (auto === 'infuse' ? 'Infuse' : 'VLC') + '…'); setTimeout(function () { go(auto === 'infuse' ? 'infuse' : undefined); }, 400); }
   setFocus(b1);
 }
 function hideExtSheet() { xsheet.className = ''; xsheet.innerHTML = ''; pl.className = pl.className.replace(/ xs\b/g, ''); }
