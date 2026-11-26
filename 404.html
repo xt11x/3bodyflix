@@ -898,6 +898,15 @@ html:not(.tv) .ptile .pav{box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 1px
 html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
 .pairnote{position:fixed;left:50%;top:24px;z-index:60;-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:14px 22px;border-radius:14px;font-size:18px;font-weight:600;color:#fff;background:rgba(22,22,30,.6);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);-webkit-animation:toastIn .3s ease both;animation:toastIn .3s ease both;white-space:nowrap}
 .mobile .pairnote{font-size:13px;top:14px}
+.mobile #xsheet.on{-webkit-box-align:start;align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:78px 0 40px;box-sizing:border-box}
+.xs-conv{margin:0 0 6px}
+.xs-conv b{display:block;font-size:21px;margin:0 0 6px}
+.xs-conv p{font-size:15px !important;margin:0 0 12px !important}
+.xs-conv .fin{text-align:center;letter-spacing:.12em;font-size:20px;margin:0 0 6px}
+.xs-or{color:#8b8b95;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin:14px 0 4px}
+.mobile .xs-conv b{font-size:17px}
+.mobile .xs-conv p{font-size:12.5px !important}
+.mobile .xs-conv .fin{font-size:17px}
 </style>
 </head>
 <body>
@@ -929,11 +938,11 @@ html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v41 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v41';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v42 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v42';
 </script>
 <script>
-var APP_VERSION = 'v41';
+var APP_VERSION = 'v42';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -2556,6 +2565,22 @@ function showExtSheet() {
   var card = el('div', 'xs-card');
   card.appendChild(el('div', 'xs-ic')).innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="M10 8.5v5l4.5-2.5z" fill="currentColor"/><path d="M8 21h8"/></svg>';
   var PC = !MOBILE;
+  if (MOBILE && pq) {
+    var cvw = el('div', 'xs-conv'), cvi = el('input', 'fin f'), cvn = el('div', 'autherr'), cvb = ibtn('btn redbtn f', 'play', 'Play here');
+    cvw.appendChild(el('b', '', 'Play it right here'));
+    cvw.appendChild(el('p', '', 'Type your converter code once on this phone (it is shown in the converter window on your computer).'));
+    cvi.placeholder = 'Converter code'; cvi.setAttribute('autocapitalize', 'none'); cvi.setAttribute('autocomplete', 'off'); cvi.spellcheck = false;
+    cvb.onok = function () {
+      var c = cvi.value.trim().toLowerCase();
+      if (!/^[a-z0-9]{8}$/.test(c)) { cvn.textContent = 'The code is 8 letters and numbers.'; return; }
+      CONV_CODE = c; try { localStorage.convCode = c; localStorage.removeItem('autoExt'); } catch (e) {}
+      hideExtSheet(); pq.convTried = 0; convFrom(pq.all || pq.q);
+    };
+    cvi.onkeyup = function (ev) { if ((ev.keyCode || 0) === 13) cvb.onok(); };
+    cvw.appendChild(cvi); cvw.appendChild(cvn); cvw.appendChild(cvb);
+    card.appendChild(cvw);
+    card.appendChild(el('div', 'xs-or', 'or'));
+  }
   card.appendChild(el('h3', '', PC ? 'Play it in VLC' : IS_IOS ? 'Play it in a player app' : 'Open it in a video app'));
   card.appendChild(el('p', '', PC ? "This title's sources don't play in a browser right now. Copy the link, then in VLC choose Media → Open Network Stream and paste it." :
     IS_IOS ? "This title's sources don't play in the iPhone browser. VLC or Infuse open them in seconds, at full quality, with subtitles." :
@@ -2631,7 +2656,7 @@ function convStart(s, at, onFail) {
   x.onload = function () {
     var r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
     if (!isPlaying()) return;
-    if (x.status === 403) { toast('The converter code is wrong (Settings)'); return showExtSheet(); }
+    if (x.status === 403) { CONV_CODE = ''; try { localStorage.removeItem('convCode'); } catch (e) {} toast('Wrong converter code'); return showExtSheet(); }
     if (x.status !== 200 || !r || !r.playlist) return onFail();
     conv = { s: s, start: r.start || 0, dur: r.duration || 0, id: r.id, onFail: onFail };
     resumeAt = 0;
