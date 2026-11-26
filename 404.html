@@ -23,6 +23,7 @@ if (MOBILE) {
 var IS_IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && 'ontouchend' in document);
 if (IS_IOS) document.documentElement.className += ' ios';
 if (!IS_TV && !MOBILE) document.documentElement.className += ' desk';
+if (IS_TV) document.documentElement.className += ' tv';
 </script>
 <!-- ES5 + old CSS only: the VIDAA 2021 browser is an old engine (no flex gap, no arrow functions, no inset) -->
 <style>
@@ -739,6 +740,111 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 .mobile .xs-ic svg{width:28px;height:28px}
 .mobile .xs-card h3{font-size:20px}
 .mobile .xs-card p{font-size:14px;margin-bottom:14px}
+/* ===== v35: quick search ===== */
+#qsb{display:none;position:fixed;top:118px;right:40px;width:700px;max-width:calc(100vw - 60px);z-index:40}
+#qsb.on{display:block;-webkit-animation:qsIn .24s cubic-bezier(.2,.7,.2,1) both;animation:qsIn .24s cubic-bezier(.2,.7,.2,1) both}
+@-webkit-keyframes qsIn{from{opacity:0;-webkit-transform:translateY(-12px) scale(.98)}to{opacity:1;-webkit-transform:none}}
+@keyframes qsIn{from{opacity:0;transform:translateY(-12px) scale(.98)}to{opacity:1;transform:none}}
+.qs-bar{display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;height:64px;padding:0 10px 0 20px;background:rgba(26,26,30,.97);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.65)}
+.qs-ic svg,.qs-x svg,.qs-more svg{width:24px;height:24px;fill:none;stroke:#a5a5ae;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;display:block}
+#qsb .qs-in{-webkit-box-flex:1;flex:1;min-width:0;width:auto !important;background:transparent;border:0;outline:0;color:#fff;font-size:23px;padding:0 14px;margin:0;box-shadow:none}
+.qs-x{display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;-webkit-box-pack:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;-webkit-transition:background .2s;transition:background .2s}
+.qs-x:hover,.qs-x.on{background:rgba(255,255,255,.1)}
+.qs-panel{margin-top:10px;background:rgba(20,20,24,.97);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.qs-tabs{padding:14px 14px 6px;white-space:nowrap}
+.qs-tab{display:inline-block;padding:9px 18px;margin-right:6px;border-radius:10px;color:#b9b9c2;font-weight:600;font-size:19px;cursor:pointer;border:0;-webkit-transition:background .2s,color .2s;transition:background .2s,color .2s}
+.qs-tab:hover,.qs-tab.on{color:#fff;background:rgba(255,255,255,.08)}
+.qs-tab.sel{background:#fff;color:#000}
+.qs-list{max-height:64vh;overflow-y:auto;padding:4px 10px 12px;-webkit-overflow-scrolling:touch}
+.qs-h{color:#85858f;font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:12px 10px 8px}
+.qs-item{display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;padding:10px;border-radius:12px;cursor:pointer;border:0;-webkit-animation:fadeUp .4s cubic-bezier(.2,.7,.2,1) both;animation:fadeUp .4s cubic-bezier(.2,.7,.2,1) both;-webkit-transition:background .18s;transition:background .18s}
+.qs-item:hover,.qs-item.on{background:rgba(255,255,255,.07)}
+.qs-img{width:56px;height:82px;-o-object-fit:cover;object-fit:cover;border-radius:7px;background:#26262b;-webkit-box-flex:0;flex:none;margin-right:18px;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.qs-t{-webkit-box-flex:1;flex:1;min-width:0}
+.qs-t b{display:block;font-size:21px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qs-m{color:#9b9ba5;font-size:17px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qs-more{display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;-webkit-box-pack:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:0;-webkit-box-flex:0;flex:none;-webkit-transition:-webkit-transform .28s,background .2s;transition:transform .28s,background .2s}
+.qs-more:hover,.qs-more.on{background:rgba(255,255,255,.12)}
+.qs-item.open .qs-more{-webkit-transform:rotate(180deg);transform:rotate(180deg)}
+.qs-x2{padding:2px 10px 14px 84px;-webkit-animation:fadeUp .3s ease both;animation:fadeUp .3s ease both}
+.qs-x2 p{color:#c3c3cb;font-size:17px;line-height:1.55;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.qs-x2 .wbtn,.qs-x2 .gbtn{font-size:17px;padding:10px 20px;border-radius:8px}
+.qs-x2 svg{width:18px;height:18px;vertical-align:-3px;margin-right:6px}
+.qs-all{display:block;text-align:center;color:#fff;font-weight:600;font-size:17px;padding:14px;margin-top:6px;border-radius:12px;border:0;background:rgba(255,255,255,.06);cursor:pointer}
+.qs-all:hover,.qs-all.on{background:rgba(255,255,255,.12)}
+.qs-sk{pointer-events:none}
+.qs-sk .skl{height:16px;width:60%;margin:0 0 10px}
+.qs-sk .skl.short{width:35%}
+.mobile #qsb{top:0;left:0;right:0;bottom:0;width:auto;max-width:none;padding:12px 12px 0;background:rgba(12,12,14,.98)}
+.mobile .qs-bar{height:52px;border-radius:14px;padding:0 6px 0 14px}
+.mobile #qsb .qs-in{font-size:16px;padding:0 10px}
+.mobile .qs-ic svg,.mobile .qs-x svg,.mobile .qs-more svg{width:20px;height:20px}
+.mobile .qs-panel{background:transparent;border:0;box-shadow:none;margin-top:4px;-webkit-backdrop-filter:none;backdrop-filter:none}
+.mobile .qs-tabs{padding:8px 0 4px;overflow-x:auto}
+.mobile .qs-tab{font-size:14px;padding:7px 14px}
+.mobile .qs-list{max-height:calc(100vh - 140px);padding:0 0 90px}
+.mobile .qs-h{font-size:11px;padding:10px 4px 6px}
+.mobile .qs-item{padding:8px 4px}
+.mobile .qs-img{width:46px;height:68px;margin-right:12px}
+.mobile .qs-t b{font-size:15px}
+.mobile .qs-m{font-size:12.5px;margin-top:4px}
+.mobile .qs-more{width:36px;height:36px}
+.mobile .qs-x2{padding:0 4px 12px 62px}
+.mobile .qs-x2 p{font-size:13px}
+.mobile .qs-x2 .wbtn,.mobile .qs-x2 .gbtn{display:inline-block;font-size:13px;padding:8px 14px;margin:0 6px 0 0}
+.mobile .qs-all{font-size:14px}
+.qsopen body{overflow:hidden}
+.qsopen #tabbar{display:none !important}
+/* ===== v35: motion everywhere (transform / opacity only; TVs keep it light) ===== */
+@-webkit-keyframes popIn{from{opacity:0;-webkit-transform:scale(.82) translateY(14px)}to{opacity:1;-webkit-transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.82) translateY(14px)}to{opacity:1;transform:none}}
+@keyframes heroIn{from{opacity:0;transform:scale(1.08)}to{opacity:1;transform:none}}
+@keyframes zoomGo{to{opacity:0;transform:scale(1.18)}}
+@keyframes menuIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes phIn{from{opacity:.25}to{opacity:1}}
+@keyframes tabPop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px) scale(.95)}to{opacity:1;transform:translateX(-50%)}}
+html:not(.tv) #main > .row:nth-child(2){-webkit-animation-delay:.06s;animation-delay:.06s}
+html:not(.tv) #main > .row:nth-child(3){-webkit-animation-delay:.12s;animation-delay:.12s}
+html:not(.tv) #main > .row:nth-child(4){-webkit-animation-delay:.18s;animation-delay:.18s}
+html:not(.tv) #main > .row:nth-child(5){-webkit-animation-delay:.24s;animation-delay:.24s}
+html:not(.tv) #main > .rv{-webkit-animation:none;animation:none;opacity:0;-webkit-transform:translateY(40px);transform:translateY(40px);-webkit-transition:opacity .7s cubic-bezier(.2,.7,.2,1),-webkit-transform .7s cubic-bezier(.2,.7,.2,1);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+html:not(.tv) #main > .rv.in{opacity:1;-webkit-transform:none;transform:none}
+html:not(.tv) .card img{opacity:0;-webkit-transition:opacity .5s ease;transition:opacity .5s ease}
+html:not(.tv) .card img.ld{opacity:1}
+html:not(.tv) .wc .ph.ld{-webkit-animation:phIn .6s ease both;animation:phIn .6s ease both}
+html.desk .card,html.desk .wc{-webkit-transition:-webkit-transform .32s cubic-bezier(.2,.7,.2,1),box-shadow .32s;transition:transform .32s cubic-bezier(.2,.7,.2,1),box-shadow .32s}
+@media (hover:hover){html.desk .wc:hover,html.desk .card:hover{-webkit-transform:translateY(-6px) scale(1.05);transform:translateY(-6px) scale(1.05);box-shadow:0 22px 44px rgba(0,0,0,.6)}}
+.mobile .wc:active,.mobile .card:active{-webkit-transform:scale(.95);transform:scale(.95);-webkit-transition:-webkit-transform .12s;transition:transform .12s}
+.btn,.wbtn,.gbtn,.pill,.chip,.tab,.qs-tab,#nav button,.mb,.pb,.alink,.rlink{-webkit-transition:-webkit-transform .16s ease,background-color .22s,color .22s,opacity .22s;transition:transform .16s ease,background-color .22s,color .22s,opacity .22s}
+.btn:active,.wbtn:active,.gbtn:active,.pill:active,.chip:active,.tab:active,#nav button:active,.mb:active,.pb:active,.redbtn:active,.qs-tab:active{-webkit-transform:scale(.93);transform:scale(.93)}
+html:not(.tv) .hero .in > *{-webkit-animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) both;animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) both}
+html:not(.tv) .hero .in > :nth-child(2){-webkit-animation-delay:.08s;animation-delay:.08s}
+html:not(.tv) .hero .in > :nth-child(3){-webkit-animation-delay:.16s;animation-delay:.16s}
+html:not(.tv) .hero .in > :nth-child(4){-webkit-animation-delay:.24s;animation-delay:.24s}
+html:not(.tv) .hero .in > :nth-child(5){-webkit-animation-delay:.32s;animation-delay:.32s}
+html:not(.tv) .hero .in > :nth-child(n+6){-webkit-animation-delay:.4s;animation-delay:.4s}
+html:not(.tv) .hero:not(.feat) .bgl{-webkit-animation:heroIn 1.3s cubic-bezier(.2,.7,.2,1) both;animation:heroIn 1.3s cubic-bezier(.2,.7,.2,1) both}
+html:not(.tv) .ptile{-webkit-animation:popIn .55s cubic-bezier(.2,.9,.3,1.25) both;animation:popIn .55s cubic-bezier(.2,.9,.3,1.25) both}
+html:not(.tv) .ptile:nth-child(2){-webkit-animation-delay:.07s;animation-delay:.07s}
+html:not(.tv) .ptile:nth-child(3){-webkit-animation-delay:.14s;animation-delay:.14s}
+html:not(.tv) .ptile:nth-child(4){-webkit-animation-delay:.21s;animation-delay:.21s}
+html:not(.tv) .ptile:nth-child(5){-webkit-animation-delay:.28s;animation-delay:.28s}
+html:not(.tv) .ptile:nth-child(6){-webkit-animation-delay:.35s;animation-delay:.35s}
+.ptile .pav{-webkit-transition:-webkit-transform .25s cubic-bezier(.2,.7,.2,1),border-color .2s;transition:transform .25s cubic-bezier(.2,.7,.2,1),border-color .2s}
+.ptile:hover .pav,.ptile.on .pav{-webkit-transform:scale(1.07);transform:scale(1.07)}
+.pgo #main{-webkit-animation:zoomGo .32s cubic-bezier(.4,0,.6,1) both;animation:zoomGo .32s cubic-bezier(.4,0,.6,1) both}
+#ptop,#pbot{-webkit-transition:opacity .35s,-webkit-transform .35s cubic-bezier(.2,.7,.2,1);transition:opacity .35s,transform .35s cubic-bezier(.2,.7,.2,1)}
+#pl.hid #ptop{-webkit-transform:translateY(-18px);transform:translateY(-18px)}
+#pl.hid #pbot{-webkit-transform:translateY(18px);transform:translateY(18px)}
+#pmid{-webkit-transition:opacity .3s,-webkit-transform .3s;transition:opacity .3s,transform .3s}
+.mobile #pl.hid #pmid{-webkit-transform:scale(.88);transform:scale(.88)}
+html:not(.tv) .pmenu{-webkit-animation:menuIn .24s cubic-bezier(.2,.7,.2,1) both;animation:menuIn .24s cubic-bezier(.2,.7,.2,1) both}
+html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,1) both;animation:toastIn .28s cubic-bezier(.2,.7,.2,1) both}
+.tab.act svg{-webkit-animation:tabPop .38s ease;animation:tabPop .38s ease}
+#nav button{-webkit-transition:background-color .25s,color .25s,-webkit-transform .16s;transition:background-color .25s,color .25s,transform .16s}
+#pfill,#pknob{-webkit-transition:width .25s linear,left .25s linear;transition:width .25s linear,left .25s linear}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{-webkit-animation-duration:.01ms !important;animation-duration:.01ms !important;-webkit-animation-delay:0s !important;animation-delay:0s !important;-webkit-transition-duration:.01ms !important;transition-duration:.01ms !important}}
 </style>
 </head>
 <body>
@@ -769,11 +875,11 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v34 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v34';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v35 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v35';
 </script>
 <script>
-var APP_VERSION = 'v34';
+var APP_VERSION = 'v35';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -836,7 +942,7 @@ function base(url) { return url.replace(/\/manifest\.json$/, '').replace(/\/$/, 
 // Hindi-dubbed / dual-audio releases usually default to Hindi audio, so they are dropped (user wants English audio).
 function hints(s) { return s.behaviorHints || {}; }
 function fileName(s) { var u = s.url; try { u = decodeURIComponent(u); } catch (e) {} return (hints(s).filename || '') + ' ' + u.split('?')[0]; }
-function isHindi(s) { return /hindi|\bhin\b|org\.hind|dual[ .-]?audio/i.test([s.name, s.title, s.description, fileName(s)].join(' ')); }
+function isHindi(s) { return /hindi|\bhin\b|org\.hind|dual[ .-]?audio|multi[ .-]?audio|tamil|telugu|malayalam|kannada/i.test([s.name, s.title, s.description, fileName(s)].join(' ')); }
 function playable(streams) { return (streams || []).filter(function (s) { return s && isHttp(s.url) && !isHindi(s); }); }
 function fmtOf(s) {
   var f = (hints(s).filename || s.url.split('?')[0]).toLowerCase();
@@ -976,7 +1082,8 @@ function restoreSnap(f) {
 function navMark() {
   if (typeof nav === 'undefined' || !nav) return;
   var p = location.pathname.slice(BASE.length).replace(/\/+$/, '') || '/';
-  [].forEach.call(nav.childNodes, function (x) {
+  var tb = document.getElementById('tabbar'), items = [].slice.call(nav.childNodes).concat(tb ? [].slice.call(tb.querySelectorAll('.tab')) : []);
+  items.forEach(function (x) {
     if (typeof x.className !== 'string') return;
     var on = x._p && (x._p === p || (x._p !== '/' && p.indexOf(x._p + '/') === 0));
     x.className = x.className.replace(/ act\b/g, '') + (on ? ' act' : '');
@@ -1000,6 +1107,7 @@ function openTrailer(yt) {
   trailerEl.style.display = 'block'; closeBtn.style.display = 'block';
 }
 function back() {
+  if (typeof qsb !== 'undefined' && qsOpen()) { closeQS(); var top = stack[stack.length - 1]; if (top && top._url) history.pushState(null, '', top._url); return; }
   if (trailerEl.style.display === 'block') { trailerEl.innerHTML = ''; trailerEl.style.display = 'none'; closeBtn.style.display = 'none'; return; }
   if (video.style.display === 'block') return closePlayer();
   if (stack.length > 1) { stack.pop(); snaps.length = stack.length; var f = stack[stack.length - 1]; setTitle(f._title); restoreSnap(f); navMark(); }
@@ -1009,6 +1117,7 @@ window.onpopstate = back;
 function rating(m) { var r = parseFloat(m.imdbRating); return r > 0 ? r.toFixed(1) : ''; }
 function card(m, parent, rank) {
   var c = el('div', 'card f'), img = el('img');
+  img.onload = function () { img.className += ' ld'; };
   if (isHttp(m.poster)) img.src = m.poster;
   c.appendChild(img); c.appendChild(el('div', '', m.name));
   if (m.releaseInfo) c.appendChild(el('div', 'yr', String(m.releaseInfo)));
@@ -1024,7 +1133,7 @@ function card(m, parent, rank) {
 function wcard(m, parent, topN, big) {
   var portrait = MOBILE && !big && !m._land && isHttp(m.poster); // phones: tall posters, like most streaming apps
   var c = el('div', 'wc f' + (big ? ' big' : '') + (portrait ? ' pt' : '')), ph = el('div', 'ph'), img = portrait ? m.poster : isHttp(m.background) ? m.background : m.poster;
-  if (isHttp(img)) ph.style.backgroundImage = 'url(' + JSON.stringify(img) + ')';
+  if (isHttp(img)) { ph.style.backgroundImage = 'url(' + JSON.stringify(img) + ')'; if (!IS_TV) { var pre = new Image(); pre.onload = function () { ph.className += ' ld'; }; pre.src = img; } }
   ph.appendChild(el('b', '', m.name));
   if (topN) ph.appendChild(el('span', 'tb', 'TOP ' + topN));
   if (m.type && (m.id || m.tmdb)) {
@@ -1040,10 +1149,19 @@ function wcard(m, parent, topN, big) {
   return c;
 }
 
+var revealObs = !IS_TV && window.IntersectionObserver ? new IntersectionObserver(function (es) {
+  es.forEach(function (e) { if (e.isIntersecting) { e.target.className += ' in'; revealObs.unobserve(e.target); } });
+}, { rootMargin: '0px 0px -8% 0px' }) : null;
+function reveal(e) {
+  if (!revealObs) return;
+  var r = e.getBoundingClientRect();
+  if (r.top < (window.innerHeight || 800) * 1.05) return; // already on screen: the page animation covers it
+  e.className += ' rv'; revealObs.observe(e);
+}
 function grid(metas) {
   if (!metas || !metas.length) return msg('Nothing found.');
   var first = null;
-  metas.forEach(function (m) { var c = card(m, main); first = first || c; });
+  metas.forEach(function (m, i) { var c = card(m, main); c.style.animationDelay = Math.min(i, 24) * 22 + 'ms'; first = first || c; });
   setFocus(first);
 }
 
@@ -1142,7 +1260,7 @@ function home() {
   function newRow(title, open) {
     var row = el('div', 'row'), strip = el('div', 'strip'), h2 = el('h2', open ? 'rlink f' : '', title + ' ›');
     if (open) h2.onok = open;
-    row.appendChild(h2); row.appendChild(strip); main.appendChild(row);
+    row.appendChild(h2); row.appendChild(strip); main.appendChild(row); reveal(row);
     for (var k = 0; k < 7; k++) { var sk = el('div', 'wc skw' + (MOBILE ? ' pt' : '')); sk.appendChild(el('div', 'ph sk')); sk.appendChild(el('div', 'skl sk')); strip.appendChild(sk); }
     return { row: row, strip: strip };
   }
@@ -1825,36 +1943,71 @@ function readAvatar(f, cb) {
   rd.readAsDataURL(f);
 }
 // Originals: our own cartoon characters (blob monsters, kids, robots, animals) with accessories
-// Profile tiles in the classic streaming style: one bold colour, a big simple face (our own set: 12 colours x 5 faces)
+// Profile tiles: bold, flat, one solid colour. 0-29 characters (panda, cat, robot, alien, ghost, monster), 30-59 smiley faces
 var OR_N = 60;
-var OR_COL = [['#2f6fed', '#2258c9'], ['#f2b21b', '#d99a0b'], ['#e4413a', '#c42f29'], ['#1fa463', '#16854f'], ['#8b5cf6', '#7344e0'], ['#ec4899', '#cf3380'],
-  ['#0ea5a4', '#0a8786'], ['#f97316', '#da5f0b'], ['#5b6b82', '#46546a'], ['#d6336c', '#b02456'], ['#0891d1', '#0874ab'], ['#7c3aed', '#6427cf']];
+var CH_BG = [['#2f6fed', '#e4413a', '#1fa463', '#8b5cf6', '#f97316'], ['#2f6fed', '#1fa463', '#ec4899', '#5b6b82', '#e4413a'], ['#e4413a', '#2f6fed', '#8b5cf6', '#0ea5a4', '#f2b21b'],
+  ['#7c3aed', '#2f6fed', '#e4413a', '#13203b', '#ec4899'], ['#8b5cf6', '#2f6fed', '#f97316', '#1fa463', '#e4413a'], ['#2f6fed', '#e4413a', '#1fa463', '#8b5cf6', '#f2b21b']];
+var MON_BODY = ['#a3e635', '#fde047', '#c084fc', '#fb923c', '#38bdf8'];
+var SM_BG = [['#2f6fed', '#1d4fbf'], ['#f2b21b', '#b98300'], ['#e4413a', '#a82620'], ['#1fa463', '#12703f'], ['#8b5cf6', '#5b2fd0'], ['#ec4899', '#b51f68']];
 function avatarOrig(n) {
   n = Math.abs(parseInt(n, 10) || 0) % OR_N;
-  var c = OR_COL[n % 12], face = Math.floor(n / 12) % 5, id = 'o' + n, F = '#fff';
-  var s = '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
-    '<stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>' +
-    '<rect width="100" height="100" fill="url(#' + id + ')"/><g transform="translate(-9 -6) scale(1.18)">';
-  var L = 'fill="none" stroke="' + F + '" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"';
-  if (face === 0) { // tall eyes, wide smile
-    s += '<rect x="28" y="30" width="9" height="17" rx="4.5" fill="' + F + '"/><rect x="63" y="30" width="9" height="17" rx="4.5" fill="' + F + '"/>';
-    s += '<path d="M24 60q26 22 52 0" ' + L + '/>';
-  } else if (face === 1) { // happy closed eyes, open grin
-    s += '<path d="M25 42q7-9 14 0M61 42q7-9 14 0" ' + L + '/>';
-    s += '<path d="M28 58h44q-3 20-22 20q-19 0-22-20z" fill="' + F + '"/><path d="M38 70q12 6 24 0q-4 7-12 7q-8 0-12-7z" fill="' + c[1] + '"/>';
-  } else if (face === 2) { // round eyes, small smile, cheeks
-    s += '<circle cx="33" cy="39" r="6.5" fill="' + F + '"/><circle cx="67" cy="39" r="6.5" fill="' + F + '"/>';
-    s += '<circle cx="24" cy="57" r="6" fill="' + F + '" opacity=".22"/><circle cx="76" cy="57" r="6" fill="' + F + '" opacity=".22"/>';
-    s += '<path d="M38 60q12 11 24 0" ' + L + '/>';
-  } else if (face === 3) { // wink, lopsided smile
-    s += '<circle cx="33" cy="38" r="6.5" fill="' + F + '"/><path d="M60 39h15" ' + L + '/>';
-    s += '<path d="M30 60q20 18 42-4" ' + L + '/>';
-  } else { // brows up, big "o" of surprise-joy
-    s += '<path d="M24 26l12-4M76 26l-12-4" ' + L + ' stroke-width="5"/>';
-    s += '<rect x="28" y="33" width="9" height="13" rx="4.5" fill="' + F + '"/><rect x="63" y="33" width="9" height="13" rx="4.5" fill="' + F + '"/>';
-    s += '<ellipse cx="50" cy="66" rx="10" ry="12" fill="' + F + '"/><ellipse cx="50" cy="69" rx="5.5" ry="6" fill="' + c[1] + '"/>';
+  var s = '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true">', K = '#16161d', W = '#fff';
+  function rnd(d, w, c) { return '<path d="' + d + '" fill="none" stroke="' + (c || K) + '" stroke-width="' + w + '" stroke-linecap="round" stroke-linejoin="round"/>'; }
+  if (n < 30) {
+    var ch = n % 6, cw = Math.floor(n / 6) % 5, bg = CH_BG[ch][cw];
+    s += '<rect width="100" height="100" fill="' + bg + '"/>';
+    if (ch === 0) { // panda
+      s += '<circle cx="26" cy="32" r="12" fill="' + K + '"/><circle cx="74" cy="32" r="12" fill="' + K + '"/><ellipse cx="50" cy="58" rx="34" ry="31" fill="' + W + '"/>';
+      s += '<ellipse cx="37" cy="55" rx="8.5" ry="11" transform="rotate(-28 37 55)" fill="' + K + '"/><ellipse cx="63" cy="55" rx="8.5" ry="11" transform="rotate(28 63 55)" fill="' + K + '"/>';
+      s += '<circle cx="38.5" cy="53" r="3.2" fill="' + W + '"/><circle cx="61.5" cy="53" r="3.2" fill="' + W + '"/><ellipse cx="50" cy="69" rx="5.5" ry="3.8" fill="' + K + '"/>' + rnd('M43 75q7 6 14 0', 3);
+    } else if (ch === 1) { // cat
+      var fur = '#fbf1e2';
+      s += '<path d="M21 50L25 13L47 33Z" fill="' + fur + '"/><path d="M79 50L75 13L53 33Z" fill="' + fur + '"/><path d="M27 40L28.5 23L40 33Z" fill="#f9a8b8"/><path d="M73 40L71.5 23L60 33Z" fill="#f9a8b8"/>';
+      s += '<ellipse cx="50" cy="60" rx="33" ry="29" fill="' + fur + '"/>';
+      s += '<ellipse cx="38" cy="56" rx="5" ry="7.5" fill="' + K + '"/><ellipse cx="62" cy="56" rx="5" ry="7.5" fill="' + K + '"/><circle cx="39.6" cy="53.2" r="1.8" fill="' + W + '"/><circle cx="63.6" cy="53.2" r="1.8" fill="' + W + '"/>';
+      s += '<path d="M46 65h8l-4 4.5z" fill="#f472b6"/>' + rnd('M50 69q-3 6-9 3.5M50 69q3 6 9 3.5', 2.8) + '<g opacity=".55">' + rnd('M18 63h13M19 70l12-3M82 63H69M81 70l-12-3', 2.2) + '</g>';
+    } else if (ch === 2) { // robot
+      s += rnd('M50 21V11', 4.5, '#dfe3ea') + '<circle cx="50" cy="9" r="5.5" fill="#fde047"/><rect x="31" y="80" width="38" height="24" rx="7" fill="#b8bfcc"/>';
+      s += '<rect x="11" y="41" width="9" height="19" rx="4.5" fill="#b8bfcc"/><rect x="80" y="41" width="9" height="19" rx="4.5" fill="#b8bfcc"/><rect x="17" y="20" width="66" height="60" rx="17" fill="#e3e7ee"/>';
+      s += '<rect x="26" y="33" width="48" height="25" rx="12.5" fill="#1f2430"/><circle cx="39.5" cy="45.5" r="6" fill="#5eead4"/><circle cx="60.5" cy="45.5" r="6" fill="#5eead4"/><circle cx="41" cy="44" r="2" fill="' + W + '"/><circle cx="62" cy="44" r="2" fill="' + W + '"/>';
+      s += '<rect x="35" y="64" width="30" height="8" rx="4" fill="#1f2430"/>' + rnd('M42.5 64v8M50 64v8M57.5 64v8', 2.2, '#e3e7ee');
+    } else if (ch === 3) { // alien
+      var al = '#a3e635';
+      s += rnd('M39 24L32 10M61 24L68 10', 4, al) + '<circle cx="31" cy="9" r="5" fill="' + al + '"/><circle cx="69" cy="9" r="5" fill="' + al + '"/>';
+      s += '<path d="M50 20C75 20 86 37 84 53C82 75 66 92 50 92C34 92 18 75 16 53C14 37 25 20 50 20Z" fill="' + al + '"/>';
+      s += '<ellipse cx="36" cy="53" rx="10.5" ry="14" transform="rotate(-22 36 53)" fill="' + K + '"/><ellipse cx="64" cy="53" rx="10.5" ry="14" transform="rotate(22 64 53)" fill="' + K + '"/>';
+      s += '<ellipse cx="33" cy="48" rx="3" ry="4" fill="' + W + '" opacity=".9"/><ellipse cx="61" cy="48" rx="3" ry="4" fill="' + W + '" opacity=".9"/>' + rnd('M43 76q7 5 14 0', 3.2);
+    } else if (ch === 4) { // ghost
+      s += '<path d="M21 94V49C21 30 34 15 50 15C66 15 79 30 79 49V94L69.5 86L60 94L50 86L40 94L30.5 86Z" fill="' + W + '"/>';
+      s += '<ellipse cx="40" cy="49" rx="6" ry="8.5" fill="' + K + '"/><ellipse cx="60" cy="49" rx="6" ry="8.5" fill="' + K + '"/><circle cx="41.8" cy="46" r="2" fill="' + W + '"/><circle cx="61.8" cy="46" r="2" fill="' + W + '"/>';
+      s += '<circle cx="31" cy="61" r="5.5" fill="#fda4af"/><circle cx="69" cy="61" r="5.5" fill="#fda4af"/><ellipse cx="50" cy="65" rx="5" ry="6.5" fill="' + K + '"/>';
+    } else { // one-eyed monster
+      var bd = MON_BODY[cw];
+      s += '<path d="M31 38L23 13L42 30Z" fill="' + W + '"/><path d="M69 38L77 13L58 30Z" fill="' + W + '"/><path d="M12 102C12 58 26 25 50 25C74 25 88 58 88 102Z" fill="' + bd + '"/>';
+      s += '<circle cx="50" cy="54" r="16" fill="' + W + '"/><circle cx="52.5" cy="56.5" r="8" fill="' + K + '"/><circle cx="49" cy="52" r="3" fill="' + W + '"/>';
+      s += '<path d="M33 77Q50 92 67 77Z" fill="' + K + '"/><path d="M39 78l3.5 5.5 3.5-5.5zM54 78l3.5 5.5 3.5-5.5z" fill="' + W + '"/>';
+    }
+  } else {
+    var m = n - 30, c = SM_BG[m % 6], face = Math.floor(m / 6) % 5, D = c[1];
+    s += '<rect width="100" height="100" fill="' + c[0] + '"/>';
+    if (face === 0) { // capsule eyes, big crescent smile with dimples
+      s += '<rect x="29" y="28" width="11" height="22" rx="5.5" fill="' + W + '"/><rect x="60" y="28" width="11" height="22" rx="5.5" fill="' + W + '"/>';
+      s += '<path d="M22 58Q50 92 78 58Q50 76 22 58Z" fill="' + W + '"/>' + rnd('M21 57l-4-5M79 57l4-5', 4.5, W);
+    } else if (face === 1) { // happy eyes, open laugh with tongue
+      s += rnd('M25 45q8-11 16 0M59 45q8-11 16 0', 7, W);
+      s += '<path d="M27 58h46q0 25-23 25q-23 0-23-25z" fill="' + W + '"/><path d="M38 74q12-9 24 0q-4 9-12 9q-8 0-12-9z" fill="#ff6b81"/>';
+    } else if (face === 2) { // big round eyes, sweet smile
+      s += '<circle cx="34" cy="40" r="11" fill="' + W + '"/><circle cx="66" cy="40" r="11" fill="' + W + '"/><circle cx="36" cy="42" r="5.5" fill="' + K + '"/><circle cx="68" cy="42" r="5.5" fill="' + K + '"/>';
+      s += '<circle cx="34" cy="39.5" r="1.8" fill="' + W + '"/><circle cx="66" cy="39.5" r="1.8" fill="' + W + '"/><path d="M32 63Q50 84 68 63Q50 74 32 63Z" fill="' + W + '"/>';
+    } else if (face === 3) { // wink and a sly grin
+      s += '<rect x="29" y="28" width="11" height="22" rx="5.5" fill="' + W + '"/>' + rnd('M58 42q8-8 16 0', 7, W);
+      s += '<path d="M28 63Q54 84 74 55Q52 72 28 63Z" fill="' + W + '"/>';
+    } else { // toothy grin
+      s += '<rect x="29" y="27" width="11" height="22" rx="5.5" fill="' + W + '"/><rect x="60" y="27" width="11" height="22" rx="5.5" fill="' + W + '"/>';
+      s += '<rect x="24" y="58" width="52" height="21" rx="10.5" fill="' + W + '"/>' + rnd('M26 68.5h48', 3, D) + rnd('M37 59v19M50 59v19M63 59v19', 2.6, D);
+    }
   }
-  return s + '</g></svg>';
+  return s + '</svg>';
 }
 function avatarFace(i) {
   i = Math.abs(parseInt(i, 10) || 0) % 36;
@@ -1936,7 +2089,12 @@ function profilesPage() {
   setFocus(first);
 }
 function enterProfile(p) {
-  function go() { profile = p.id; localStorage.profile = p.id; managing = false; updateProfileBtn(); stack = []; show(home, '/'); }
+  function go() {
+    var dc = document.documentElement;
+    if (IS_TV) { profile = p.id; localStorage.profile = p.id; managing = false; updateProfileBtn(); stack = []; return show(home, '/'); }
+    dc.className += ' pgo';
+    setTimeout(function () { dc.className = dc.className.replace(/ pgo\b/g, ''); profile = p.id; localStorage.profile = p.id; managing = false; updateProfileBtn(); stack = []; show(home, '/'); }, 320);
+  }
   if (!p.pin) return go();
   var v = prompt('Enter the 4-digit PIN for ' + p.name);
   if (v === null) return;
@@ -2147,6 +2305,11 @@ function playQueue(q, i, title) { pq = { q: q, i: i, title: title, tried: {} }; 
 var QORDER = ['1080P', '720P', '4K', '480P', '360P', 'Auto'];
 function isFast(s) { return /\u26a1|fast|\u0623\u0633\u0631\u0639|\u0627\u0644\u0623\u0633\u0631\u0639/i.test((s.name || '') + ' ' + (s.title || '')) ? 1 : 0; }
 // playable formats first, then the addon's "fastest server" picks, then 1080p > 720p > 4K > 480p
+function wrongEpisode(s, id) {
+  var m = /:(\d+):(\d+)$/.exec(id || ''), f = /s(\d{1,2})[ ._-]?e(\d{1,3})(?!\d)/i.exec(fileName(s) + ' ' + (s.title || ''));
+  return !!(m && f && (+f[1] !== +m[1] || +f[2] !== +m[2]));
+}
+console.assert(wrongEpisode({ url: 'https://a/x', behaviorHints: { filename: 'The.Pitt.S01E10.720p.mkv' } }, 'tt1:1:1') && !wrongEpisode({ url: 'https://a/The.Pitt.S01E01.mkv' }, 'tt1:1:1'), 'wrongEpisode');
 function browserDead(s) { return !!hints(s).proxyHeaders || /\/\/(www\.)?pixeldrain\.|\/\/[^\/]*hubcloud\.|\/drive\//i.test(s.url); }
 console.assert(browserDead({ url: 'https://pixeldrain.dev/api/file/x?download' }) && browserDead({ url: 'https://hubcloud.mov/drive/abc' }) && !browserDead({ url: 'https://a.b/v.mp4' }), 'browserDead');
 function iosOk(s) { var f = fmtOf(s), x = hints(s); return !x.proxyHeaders && !isHevc(s) && (f === 'MP4' || f === 'HLS' || (f === 'FILE' && !x.notWebReady)); }
@@ -2240,6 +2403,8 @@ function autoPlay(type, id, title, meta, sub) {
   fetchStreams(type, id, function (list) {
     if (!isPlaying() || pq !== mine) return;
     if (!list.length) { history.back(); return alert('No playable sources found for this title.'); }
+    list = list.filter(function (s) { return !wrongEpisode(s, id); });
+    if (!list.length) { history.back(); return alert('No playable sources found for this episode.'); }
     pq.all = list.slice();
     list = list.filter(function (s) { return !browserDead(s); });
     if (IS_IOS) list = iosList(list);
@@ -2300,6 +2465,12 @@ function showExtSheet() {
     if (IS_IOS) { var b2 = el('div', 'wbtn f', 'Play in Infuse'); b2.onok = function () { go('infuse'); }; card.appendChild(b2); }
     var b3 = el('div', 'gbtn f', 'Copy link'); b3.onok = copyLink; card.appendChild(b3);
   }
+  var pd = /pixeldrain\.[a-z]+\/api\/file\/([A-Za-z0-9]+)/;
+  if (pool.some(function (s) { return pd.test(s.url); })) {
+    var b4 = el('div', 'gbtn f', 'Open on pixeldrain');
+    b4.onok = function () { var s = streamFor(pick), mm = s && pd.exec(s.url) || pool.map(function (x) { return pd.exec(x.url); }).filter(Boolean)[0]; if (mm) window.open('https://pixeldrain.com/u/' + mm[1], '_blank'); };
+    card.appendChild(b4);
+  }
   var gv = el('div', 'alink dim f', PC ? 'Get VLC free (videolan.org)' : IS_IOS ? 'No VLC yet? Get it free' : 'No player app? Get VLC free');
   gv.onok = function () { location.href = PC ? 'https://www.videolan.org/vlc/' : IS_IOS ? 'https://apps.apple.com/app/vlc-media-player/id650377962' : 'https://play.google.com/store/apps/details?id=org.videolan.vlc'; };
   card.appendChild(gv);
@@ -2352,6 +2523,17 @@ function useHls(url) {
     hls.on(Hls.Events.ERROR, function (e, d) { if (d && d.fatal) { destroyHls(); nextStream(); } });
     hls.loadSource(url); hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+    hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, function () { // start on English; never on a Hindi / Indian dub
+      var t = hls.audioTracks || [], en = -1, ok = -1;
+      for (var i = 0; i < t.length; i++) {
+        var tag = (t[i].lang || '') + ' ' + (t[i].name || '');
+        if (en < 0 && /^en|english/i.test(tag)) en = i;
+        if (ok < 0 && !/^(hi|ta|te|ml|kn)\b|hindi|tamil|telugu/i.test(tag)) ok = i;
+      }
+      var pick = en >= 0 ? en : ok;
+      if (pick >= 0 && pick !== hls.audioTrack) hls.audioTrack = pick;
+      renderAudio();
+    });
   });
 }
 // ---------- universal player: Movi-Player plays MKV / HEVC / AC3 / DTS in the browser (WebCodecs + FFmpeg WASM) ----------
@@ -2433,7 +2615,7 @@ function startSrc(url, at) {
     if (video.readyState >= 2 || !isPlaying()) return;
     if (canMovi() && !moviTried[url] && !isM3u8(url)) return openMovi(url, resumeAt);
     nextStream();
-  }, IS_IOS ? 10000 : 14000);
+  }, IS_IOS ? 8000 : 10000);
   if (isM3u8(url) && !nativeHls()) return useHls(url);
   video.src = url;
   tryPlay();
@@ -2502,7 +2684,7 @@ function pUpdate() {
   var d = video.duration, p = isFinite(d) && d > 0 ? video.currentTime / d * 100 : 0;
   $('pfill').style.width = p + '%'; $('pknob').style.left = p + '%';
   try { if (video.buffered.length && isFinite(d)) $('pbuf').style.width = video.buffered.end(video.buffered.length - 1) / d * 100 + '%'; } catch (e) {}
-  $('ptime').textContent = fmtTime(video.currentTime) + ' / ' + fmtTime(d);
+  $('ptime').textContent = video.readyState < 1 ? '--:--' : fmtTime(video.currentTime) + ' / ' + fmtTime(d);
 }
 // Some servers cannot jump inside the file: setting currentTime there restarts the film from 0:00
 function canSeekTo(t) { var s = video.seekable; for (var i = 0; i < s.length; i++) if (t >= s.start(i) - 1 && t <= s.end(i) + 1) return true; return false; }
@@ -2652,11 +2834,25 @@ function renderSubs() {
     sz.appendChild(b);
   });
 }
+var LANG_NAMES = { en: 'English', ar: 'Arabic', fr: 'French', es: 'Spanish', de: 'German', it: 'Italian', tr: 'Turkish', ja: 'Japanese', ko: 'Korean', ru: 'Russian', pt: 'Portuguese', zh: 'Chinese' };
+function trackName(lang, label, i) {
+  var l = String(lang || '').toLowerCase().slice(0, 2);
+  return label && !/^(und|track ?\d*)$/i.test(label) ? label : LANG_NAMES[l] || (lang ? String(lang).toUpperCase() : 'Track ' + (i + 1));
+}
 function renderAudio() {
-  var box = $('aList'), at = video.audioTracks; box.innerHTML = '';
-  if (!at || at.length < 2) return box.appendChild(el('div', 'pempty', 'No other audio tracks'));
+  var box = $('aList'); box.innerHTML = '';
+  if (hls && hls.audioTracks && hls.audioTracks.length > 1) { // HLS: tracks from the playlist
+    hls.audioTracks.forEach(function (t, i) {
+      var name = trackName(t.lang, t.name, i);
+      opt(box, name, hls.audioTrack === i, function () { hls.audioTrack = i; renderAudio(); toast('Audio: ' + name); });
+    });
+    return;
+  }
+  var at = video.audioTracks;
+  if (!at || at.length < 2) return box.appendChild(el('div', 'pempty', 'Original audio'));
   for (var i = 0; i < at.length; i++) (function (i) {
-    opt(box, at[i].label || at[i].language || 'Track ' + (i + 1), at[i].enabled, function () { for (var j = 0; j < at.length; j++) at[j].enabled = j === i; renderAudio(); toast('Audio: ' + (at[i].label || at[i].language || i + 1)); });
+    var name = trackName(at[i].language, at[i].label, i);
+    opt(box, name, at[i].enabled, function () { for (var j = 0; j < at.length; j++) at[j].enabled = j === i; renderAudio(); toast('Audio: ' + name); });
   })(i);
 }
 // subtitle status messages show as player toasts
@@ -2697,6 +2893,8 @@ document.onkeydown = function (ev) {
     }
     return ev.preventDefault();
   }
+  if (typeof qsb !== 'undefined' && qsOpen() && isBack(k) && k !== 8) { closeQS(); return ev.preventDefault(); } // Esc closes the search, never the site
+  if ((k === 37 || k === 39) && !IS_TV && document.activeElement && document.activeElement.tagName === 'INPUT') return;
   if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
   else if (k === 38) move(0, -1); else if (k === 40) move(0, 1);
   else if (k === 13) { if (cur && cur.onok) cur.onok(); }
@@ -2704,6 +2902,103 @@ document.onkeydown = function (ev) {
   else return;
   ev.preventDefault();
 };
+
+// ---------- quick search: results while you type, over whatever page is open ----------
+var GENRE_NAME = {}, gk;
+for (gk in TG_MOVIE) if (TG_MOVIE.hasOwnProperty(gk)) GENRE_NAME[TG_MOVIE[gk]] = gk;
+for (gk in TG_TV) if (TG_TV.hasOwnProperty(gk) && !GENRE_NAME[TG_TV[gk]]) GENRE_NAME[TG_TV[gk]] = gk;
+GENRE_NAME[10759] = 'Action'; GENRE_NAME[10765] = 'Sci-Fi'; GENRE_NAME[10762] = 'Kids'; GENRE_NAME[10764] = 'Reality'; GENRE_NAME[10768] = 'War';
+var QS_ICON = '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg>';
+var qsb = el('div'), qsIn = el('input', 'qs-in f'), qsX = el('span', 'qs-x f'), qsList = el('div', 'qs-list'), qsTabs = el('div', 'qs-tabs');
+var qsTab = 'all', qsSeq = 0, qsTimer = null;
+(function () {
+  qsb.id = 'qsb';
+  var bar = el('div', 'qs-bar'), ic = el('span', 'qs-ic'), panel = el('div', 'qs-panel');
+  ic.innerHTML = QS_ICON; qsX.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  qsIn.placeholder = 'Search movies, shows, anime…'; qsIn.setAttribute('autocomplete', 'off'); qsIn.setAttribute('autocapitalize', 'none'); qsIn.spellcheck = false;
+  bar.appendChild(ic); bar.appendChild(qsIn); bar.appendChild(qsX);
+  [['all', 'All'], ['movie', 'Movies'], ['tv', 'Shows'], ['anime', 'Anime']].forEach(function (t) {
+    var b = el('span', 'qs-tab f' + (t[0] === 'all' ? ' sel' : ''), t[1]);
+    b.onok = function () { qsTab = t[0]; [].forEach.call(qsTabs.childNodes, function (x) { x.className = x.className.replace(/ sel\b/g, ''); }); b.className += ' sel'; qsRun(); };
+    qsTabs.appendChild(b);
+  });
+  panel.appendChild(qsTabs); panel.appendChild(qsList);
+  qsb.appendChild(bar); qsb.appendChild(panel);
+  document.body.appendChild(qsb);
+  qsIn.oninput = function () { clearTimeout(qsTimer); qsTimer = setTimeout(qsRun, 220); };
+  qsIn.onok = function () { var t = qsIn.value.trim(); if (!t) return; closeQS(); show(searchPage(t), '/search?q=' + encodeURIComponent(t), 'Search: ' + t); };
+  qsIn.onkeyup = function (ev) { if ((ev.keyCode || 0) === 13 && MOBILE) qsIn.onok(); };
+  qsX.onok = function () { if (qsIn.value) { qsIn.value = ''; qsRun(); qsIn.focus(); } else closeQS(); };
+  // computer: a click outside the dropdown closes it
+  document.addEventListener('mousedown', function (ev) { if (qsOpen() && !MOBILE && !qsb.contains(ev.target) && !(srchBtn && srchBtn.contains(ev.target))) closeQS(); }, true);
+})();
+function qsOpen() { return /\bon\b/.test(qsb.className); }
+function openQS() {
+  if (qsOpen()) return qsIn.focus();
+  qsb.className = 'on'; qsIn.value = ''; qsRun();
+  try { qsIn.focus(); } catch (e) {}
+  if (MOBILE) document.documentElement.className += ' qsopen';
+}
+function closeQS() {
+  qsb.className = ''; qsSeq++; try { qsIn.blur(); } catch (e) {}
+  document.documentElement.className = document.documentElement.className.replace(/ qsopen\b/g, '');
+}
+function qsMeta(x) {
+  var bits = [x.media_type === 'tv' ? 'Show' : 'Movie'], y = (x.release_date || x.first_air_date || '').slice(0, 4), g = (x.genre_ids || []).map(function (i) { return GENRE_NAME[i]; }).filter(Boolean)[0];
+  if (y) bits.push(y);
+  if (x.vote_average > 0 && x.vote_count > 5) bits.push('★ ' + x.vote_average.toFixed(1));
+  if (g) bits.push(g);
+  return bits.join('  ·  ');
+}
+function qsRun() {
+  var text = qsIn.value.trim(), my = ++qsSeq;
+  qsList.innerHTML = '';
+  for (var k = 0; k < 6; k++) { var sk = el('div', 'qs-item qs-sk'); sk.appendChild(el('div', 'qs-img sk')); var t = el('div', 'qs-t'); t.appendChild(el('div', 'skl sk')); t.appendChild(el('div', 'skl sk short')); sk.appendChild(t); qsList.appendChild(sk); }
+  var url = text ? tmdb('/search/multi', 'include_adult=false&query=' + encodeURIComponent(text))
+    : qsTab === 'anime' ? tmdb('/discover/tv', 'with_genres=16&with_original_language=ja&sort_by=popularity.desc')
+    : tmdb('/trending/' + (qsTab === 'movie' ? 'movie' : qsTab === 'tv' ? 'tv' : 'all') + '/day');
+  rawGet(url, function (r) {
+    if (my !== qsSeq) return; // a newer search replaced this one
+    qsList.innerHTML = '';
+    var res = ((r && r.results) || []).map(function (x) { if (!x.media_type) x.media_type = qsTab === 'movie' ? 'movie' : 'tv'; return x; }).filter(function (x) {
+      if (x.media_type !== 'movie' && x.media_type !== 'tv') return false;
+      if (qsTab === 'movie' || qsTab === 'tv') return x.media_type === qsTab;
+      if (qsTab === 'anime') return (x.genre_ids || []).indexOf(16) >= 0 && x.original_language === 'ja';
+      return true;
+    });
+    res.sort(function (a, b) { return (b.poster_path ? 1 : 0) - (a.poster_path ? 1 : 0); });
+    qsList.appendChild(el('div', 'qs-h', text ? (res.length ? 'Results' : 'No results for “' + text + '”') : 'Trending now'));
+    res.slice(0, 20).forEach(function (x, i) { qsItem(x, i); });
+    if (text && res.length) { var all = el('div', 'qs-all f', 'See all results for “' + text + '”'); all.onok = qsIn.onok; qsList.appendChild(all); }
+  }, 15000);
+}
+function qsItem(x, i) {
+  var m = fromTmdb(x), row = el('div', 'qs-item f'), img = el('img', 'qs-img'), t = el('div', 'qs-t'), more = el('span', 'qs-more f');
+  row.style.animationDelay = Math.min(i, 12) * 28 + 'ms';
+  img.alt = ''; img.loading = 'lazy'; if (x.poster_path) img.src = TIMG + 'w92' + x.poster_path;
+  t.appendChild(el('b', '', m.name)); t.appendChild(el('div', 'qs-m', qsMeta(x)));
+  more.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+  row.appendChild(img); row.appendChild(t); row.appendChild(more);
+  row.onok = function () { closeQS(); openAny(m); };
+  var box = null;
+  more.onok = function () { // details right in the list: overview + Play / More info
+    if (box) { box.parentNode.removeChild(box); box = null; row.className = row.className.replace(/ open\b/g, ''); return; }
+    row.className += ' open';
+    box = el('div', 'qs-x2');
+    if (m.description) box.appendChild(el('p', '', m.description));
+    var pb = ibtn('wbtn f', 'play', m.type === 'movie' ? 'Play' : 'Episodes'), ib = ibtn('gbtn f', 'info', 'More info');
+    pb.onok = function () {
+      if (m.type !== 'movie') { closeQS(); return openAny(m); }
+      try { if (!isPlaying()) { var up = video.play(); if (up && up['catch']) up['catch'](function () {}); } } catch (e) {} // keeps the tap's permission to start sound
+      closeQS();
+      toImdb(m, function (id) { if (id) autoPlay('movie', id, m.name, { id: id, type: 'movie', name: m.name, poster: m.poster, background: m.background }); else openAny(m); });
+    };
+    ib.onok = row.onok;
+    box.appendChild(pb); box.appendChild(ib);
+    row.parentNode.insertBefore(box, row.nextSibling);
+  };
+  qsList.appendChild(row);
+}
 
 // ---------- top bar ----------
 var nav = el('span'), topR = el('span');
@@ -2736,7 +3031,7 @@ q.onok = function () { if (q.value.trim()) show(searchPage(q.value.trim())); };
 topR.appendChild(q);
 nav.appendChild(el('span', 'nsep'));
 var srchBtn = el('button', 'f ib'); srchBtn.innerHTML = ico('search'); srchBtn.title = 'Search';
-srchBtn.onok = function () { show(searchPage(), '/search', 'Search'); };
+srchBtn.onok = function () { if (IS_TV) show(searchPage(), '/search', 'Search'); else openQS(); };
 nav.appendChild(srchBtn); srchBtn._p = '/search';
 var profBtn = el('button', 'f ib');
 profBtn.onok = function () { show(profilesPage, '/profiles', 'Profiles'); };
@@ -2761,8 +3056,9 @@ tabGo('tHome', function () { show(home, '/'); });
 tabGo('tMov', function () { show(catalog('movie'), '/movies', 'Movies'); });
 tabGo('tSer', function () { show(catalog('series'), '/shows', 'Shows'); });
 tabGo('tList', function () { show(myListPage, '/my-list', 'My List'); });
-tabGo('tSearch', function () { show(searchPage(), '/search', 'Search'); });
+$('tSearch').onok = function () { openQS(); };
 tabGo('tProf', function () { show(profilesPage, '/profiles', 'Profiles'); });
+$('tHome')._p = '/'; $('tMov')._p = '/movies'; $('tSer')._p = '/shows'; $('tList')._p = '/my-list'; $('tProf')._p = '/profiles';
 
 // keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
 if (!MOBILE) { main.style.top = '0'; main.style.paddingTop = top_.offsetHeight + 'px'; } // header floats over the content
