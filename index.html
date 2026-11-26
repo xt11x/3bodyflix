@@ -858,9 +858,48 @@ html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,
 .xs-keep{display:block;color:#a9a9b2;font-size:15px;margin:12px 0 2px;cursor:pointer}
 .xs-keep input{width:18px;height:18px;vertical-align:-3px;margin:0 6px 0 0;accent-color:#e50914}
 .mobile .xs-keep{font-size:13px}
+/* ===== v38: frosted glass ===== */
+#aurora{display:none}
+html:not(.tv) body{background:#0a0a10}
+html:not(.tv) #aurora{display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;pointer-events:none;overflow:hidden}
+#aurora i{position:absolute;display:block;width:70vmax;height:70vmax;border-radius:50%;-webkit-filter:blur(90px);filter:blur(90px);opacity:.30;will-change:transform}
+#aurora i:nth-child(1){background:#e50914;top:-32vmax;left:-22vmax;-webkit-animation:drift1 40s ease-in-out infinite alternate;animation:drift1 40s ease-in-out infinite alternate}
+#aurora i:nth-child(2){background:#6d28d9;bottom:-38vmax;right:-26vmax;-webkit-animation:drift2 48s ease-in-out infinite alternate;animation:drift2 48s ease-in-out infinite alternate}
+#aurora i:nth-child(3){background:#1d4ed8;top:28%;left:30%;width:52vmax;height:52vmax;opacity:.20;-webkit-animation:drift3 56s ease-in-out infinite alternate;animation:drift3 56s ease-in-out infinite alternate}
+@-webkit-keyframes drift1{to{-webkit-transform:translate(28vw,22vh) scale(1.15)}}
+@keyframes drift1{to{transform:translate(28vw,22vh) scale(1.15)}}
+@-webkit-keyframes drift2{to{-webkit-transform:translate(-24vw,-26vh) scale(1.1)}}
+@keyframes drift2{to{transform:translate(-24vw,-26vh) scale(1.1)}}
+@-webkit-keyframes drift3{to{-webkit-transform:translate(-18vw,16vh) scale(.85)}}
+@keyframes drift3{to{transform:translate(-18vw,16vh) scale(.85)}}
+html:not(.tv) .hero .bgl{-webkit-mask-image:linear-gradient(to bottom,#000 55%,transparent 100%);mask-image:linear-gradient(to bottom,#000 55%,transparent 100%)}
+html:not(.tv) .hero .shade{background:linear-gradient(90deg,rgba(10,10,16,.88) 8%,rgba(10,10,16,0) 62%)}
+html.mobile:not(.tv) .hero .shade{background:linear-gradient(to bottom,rgba(10,10,16,0) 30%,rgba(10,10,16,.55) 70%,rgba(10,10,16,.2))}
+html.desk #top{background:linear-gradient(rgba(10,10,16,.55),rgba(10,10,16,0))}
+html:not(.tv) #nav{background:rgba(22,22,30,.42);border:1px solid rgba(255,255,255,.12);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 50px rgba(0,0,0,.45);border-radius:18px}
+html:not(.tv) #nav button.act,#nav button.on{background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
+html.mobile:not(.tv) #tabbar{background:rgba(22,22,30,.42);border:1px solid rgba(255,255,255,.12);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 50px rgba(0,0,0,.45);background:rgba(20,20,28,.62)}
+html:not(.tv) #tabbar .tab.act{background:rgba(255,255,255,.16)}
+html:not(.tv) .btn.ghost,.gbtn,.chip,.item,.ep,.pill,.qs-all{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 30px rgba(0,0,0,.30)}
+html:not(.tv) .gbtn{color:#fff}
+html:not(.tv) .chip.sel,.qs-tab.sel{background:rgba(255,255,255,.92);color:#000;border-color:transparent}
+html:not(.tv) .btn:not(.ghost):not(.redbtn){background:rgba(255,255,255,.92);box-shadow:0 8px 26px rgba(0,0,0,.35),inset 0 1px 0 #fff}
+html:not(.tv) .pmenu,.xs-card,.authbox,.qs-panel,.qs-bar{background:rgba(22,22,30,.42);border:1px solid rgba(255,255,255,.12);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 50px rgba(0,0,0,.45)}
+html:not(.tv) .pmenu{background:rgba(20,20,28,.55)}
+html:not(.tv) .authbox{background:rgba(14,14,20,.5)}
+html:not(.tv) #ptoast{background:rgba(22,22,30,.42);border:1px solid rgba(255,255,255,.12);-webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 50px rgba(0,0,0,.45);border-radius:20px}
+html:not(.tv) .acct,.trow{border-color:rgba(255,255,255,.08)}
+html:not(.tv) .wc .ph,.card img{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 10px 28px rgba(0,0,0,.35)}
+html:not(.tv) .wc .ph b{text-shadow:0 2px 10px rgba(0,0,0,.6)}
+html:not(.tv) .fin,#main input.srch{background-color:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+html.mobile:not(.tv) .mb{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:50%}
+html.mobile:not(.tv) .pill,html.mobile:not(.tv) .pb{background:rgba(255,255,255,.08) !important;border:1px solid rgba(255,255,255,.12) !important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:12px}
+html:not(.tv) .ptile .pav{box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
+html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
+<div id="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <div id="top"><span id="logo" title="3BodyFlix"><img src="logo.svg?v=2" alt="3BodyFlix"></span></div>
 <div id="main"></div>
 <video id="video" playsinline webkit-playsinline></video>
@@ -888,11 +927,11 @@ html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v37 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v37';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v38 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v38';
 </script>
 <script>
-var APP_VERSION = 'v37';
+var APP_VERSION = 'v38';
 (function () {
   try {
     var x = new XMLHttpRequest();
