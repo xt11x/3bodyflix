@@ -896,6 +896,8 @@ html.mobile:not(.tv) .mb{background:rgba(255,255,255,.10);border:1px solid rgba(
 html.mobile:not(.tv) .pill,html.mobile:not(.tv) .pb{background:rgba(255,255,255,.08) !important;border:1px solid rgba(255,255,255,.12) !important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:12px}
 html:not(.tv) .ptile .pav{box-shadow:0 12px 32px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12)}
 html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
+.pairnote{position:fixed;left:50%;top:24px;z-index:60;-webkit-transform:translateX(-50%);transform:translateX(-50%);padding:14px 22px;border-radius:14px;font-size:18px;font-weight:600;color:#fff;background:rgba(22,22,30,.6);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);-webkit-animation:toastIn .3s ease both;animation:toastIn .3s ease both;white-space:nowrap}
+.mobile .pairnote{font-size:13px;top:14px}
 </style>
 </head>
 <body>
@@ -927,11 +929,11 @@ html:not(.tv) #foot{border-top:1px solid rgba(255,255,255,.08)}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v40 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v40';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v41 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v41';
 </script>
 <script>
-var APP_VERSION = 'v40';
+var APP_VERSION = 'v41';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -2523,9 +2525,23 @@ function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i]
 
 var xsheet = el('div'); xsheet.id = 'xsheet'; pl.appendChild(xsheet);
 function extPool() { return ((pq && (pq.all || pq.q)) || []).filter(function (s) { return !hints(s).proxyHeaders && !/\/\/[^\/]*hubcloud\.|\/drive\//i.test(s.url); }); }
+function convOffSheet() {
+  pl.className = pl.className.replace(/\bloading\b/g, '').replace(/ xs\b/g, '') + ' xs';
+  xsheet.innerHTML = '';
+  var card = el('div', 'xs-card');
+  card.appendChild(el('div', 'xs-ic')).innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>';
+  card.appendChild(el('h3', '', 'Turn on your converter'));
+  card.appendChild(el('p', '', 'This title needs the converter on your computer to play here. Double-click start.cmd on the computer, wait a minute, then tap Try again.'));
+  var again = ibtn('btn redbtn f', 'play', 'Try again');
+  again.onok = function () { hideExtSheet(); if (pq) { pq.convTried = 0; convFrom(pq.all || pq.q); } };
+  card.appendChild(again);
+  xsheet.appendChild(card); xsheet.className = 'on';
+  setFocus(again);
+}
 function showExtSheet() {
   clearTimeout(watchdog); stopProbes(); closeMovi(); stopSubs(); subNote('');
   try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
+  if (CONV_CODE) return convOffSheet();
   var pool = extPool();
   if (!pool.length) { history.back(); return alert('No stream could be played on this device. Try another title.'); }
   var qs = [];
@@ -3238,6 +3254,13 @@ window.addEventListener('scroll', saveScrollSoon); main.addEventListener('scroll
 var savedY = 0; try { savedY = +sessionStorage[scrollKey()] || 0; } catch (e) {}
 (function () {
   var path = location.pathname.slice(BASE.length).replace(/\/+$/, '') || '/', qs = location.search, m;
+  var pair = /[?&]conv=([a-z0-9]{8})(?:&|$)/.exec(qs);
+  if (pair) {
+    CONV_CODE = pair[1]; try { localStorage.convCode = pair[1]; localStorage.removeItem('autoExt'); } catch (e) {}
+    qs = qs.replace(/[?&]conv=[a-z0-9]{8}/, '').replace(/^&/, '?'); history.replaceState(null, '', location.pathname + qs);
+    var note = el('div', 'pairnote', 'Converter paired. MKV titles will play right here.'); document.body.appendChild(note);
+    setTimeout(function () { if (note.parentNode) note.parentNode.removeChild(note); }, 4500);
+  }
   if (/^\/watch\//.test(path)) { var wf = ''; try { wf = sessionStorage.watchFrom || ''; } catch (e) {} path = (wf.split('?')[0] || '/'); qs = wf.indexOf('?') >= 0 ? wf.slice(wf.indexOf('?')) : ''; savedY = 0; if (path !== '/') history.replaceState(null, '', BASE + path + qs); }
   var old = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
   if (AUTH.token) api('GET', 'me', null, function (st, me) { // pull the latest copy from the account
