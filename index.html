@@ -1109,6 +1109,9 @@ function home() {
     ['Trending This Week', '/trending/all/week', null, ''],
     ['Popular Movies', '/movie/popular', 'movie', ''],
     ['Popular Shows', '/tv/popular', 'tv', ''],
+    ['Arabic Movies', '/discover/movie', 'movie', 'with_original_language=ar&sort_by=popularity.desc'],
+    ['Arabic Series', '/discover/tv', 'tv', 'with_original_language=ar&sort_by=popularity.desc'],
+    ['Turkish Series', '/discover/tv', 'tv', 'with_original_language=tr&sort_by=popularity.desc'],
     ['Now Playing in Theaters', '/movie/now_playing', 'movie', ''],
     ['Top 10 Shows Today', '/trending/tv/day', 'tv', '', 10, true],
     ['Top Rated Movies', '/movie/top_rated', 'movie', ''],
@@ -2231,7 +2234,12 @@ function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i]
 
 function nextStream() {
   clearTimeout(watchdog); var wasAt = media().currentTime || 0; closeMovi();
-  if (!pq || !pq.q.length) return;
+  if (!pq || !pq.q.length) { // a single link (M3U / direct): nothing else to try, so say so instead of spinning forever
+    if (!isPlaying()) return;
+    history.back();
+    alert('This stream could not be played. The link may be offline, or its server blocks web browsers (it may still open in VLC).');
+    return;
+  }
   // next untried source, preferring the same quality the viewer is on
   var want = qualityOf(pq.q[pq.i]), j, pick = -1;
   for (j = 0; j < pq.q.length; j++) if (!pq.tried[j] && qualityOf(pq.q[j]) === want) { pick = j; break; }
