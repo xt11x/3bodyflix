@@ -640,6 +640,13 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 .mobile .avsec{font-size:14px;margin:12px 0 8px}
 .mobile .avopt{width:62px;height:62px}
 .mobile .avcredit{font-size:10px}
+/* ===== v27: badge placement, NEW tag, phone fit ===== */
+.rate.new{color:#fff;background:#e50914}
+.mobile #nl-badge-frame{top:10px !important;bottom:auto !important;right:8px !important}
+.mobile.playing #nl-badge-frame{top:auto !important;bottom:64px !important;right:auto !important;left:8px !important;opacity:.75}
+.mobile.ttl #nl-badge-frame{top:14px !important}
+.mobile video{object-fit:contain}
+@media (orientation:landscape){.mobile #ptop{padding-top:10px}.mobile #pbot{padding-bottom:12px}.mobile #pmid{margin-top:-30px}}
 </style>
 </head>
 <body>
@@ -670,8 +677,8 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v26 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v26';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v27 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v27';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -861,6 +868,7 @@ function card(m, parent, rank) {
   c.appendChild(img); c.appendChild(el('div', '', m.name));
   if (m.releaseInfo) c.appendChild(el('div', 'yr', String(m.releaseInfo)));
   if (rating(m)) c.appendChild(el('span', 'rate', '★ ' + rating(m)));
+  else if (+String(m.releaseInfo || '').slice(0, 4) >= new Date().getFullYear()) c.appendChild(el('span', 'rate new', 'NEW'));
   if (rank) c.appendChild(el('span', 'rank', '#' + rank));
   c.onok = function () { openAny(m); };
   parent.appendChild(c);
@@ -1050,17 +1058,38 @@ function catalogs() {
   sec('Series Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('series', g), '/genre/shows/' + slug(g), g + ' Shows'); }]; }));
   setFocus(first);
 }
+// TMDB genre ids for the genre names shown in Catalogs (TV uses its own ids)
+var TG_MOVIE = { Action: 28, Adventure: 12, Animation: 16, Comedy: 35, Crime: 80, Documentary: 99, Drama: 18, Family: 10751, Fantasy: 14, History: 36, Horror: 27, Mystery: 9648, Romance: 10749, 'Sci-Fi': 878, Thriller: 53, War: 10752, Western: 37 };
+var TG_TV = { Action: 10759, Adventure: 10759, Animation: 16, Comedy: 35, Crime: 80, Documentary: 99, Drama: 18, Family: 10751, Fantasy: 10765, History: 99, Horror: 9648, Mystery: 9648, Romance: 18, 'Sci-Fi': 10765, Thriller: 80, War: 10768, Western: 37 };
+// Grid of TMDB results from several pages, merged in page order without duplicates
+function tmdbGrid(path, params, pages, mediaType) {
+  var got = [], n = 0;
+  msg('Loading…');
+  for (var pg = 1; pg <= pages; pg++) (function (pg) {
+    get(tmdb(path, (params ? params + '&' : '') + 'page=' + pg), function (r) {
+      got[pg] = ((r && r.results) || []).map(function (x) { return fromTmdb(x, mediaType); }).filter(function (x) { return x && x.poster; });
+      if (++n < pages) return;
+      if (main.lastChild && main.lastChild.className === 'muted') main.removeChild(main.lastChild);
+      var seen = {}, all = [];
+      got.forEach(function (list) { (list || []).forEach(function (m) { var k = m.type + m.tmdb; if (!seen[k]) { seen[k] = 1; all.push(m); } }); });
+      all.length ? grid(all) : msg('Could not load this list. Check the internet.');
+    });
+  })(pg);
+}
 function genrePage(type, g) {
   return function () {
-    clear(g + (type === 'movie' ? ' Movies' : ' Series'));
-    get(CINEMETA + '/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog.'); });
+    clear(g + (type === 'movie' ? ' Movies' : ' Shows'));
+    var id = (type === 'movie' ? TG_MOVIE : TG_TV)[g];
+    if (!id) return get(CINEMETA + '/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog.'); });
+    tmdbGrid('/discover/' + tPath(type), 'with_genres=' + id + '&sort_by=popularity.desc&vote_count.gte=30' + (isKids() ? '&certification_country=US&certification.lte=PG' : ''), 3, tPath(type));
   };
 }
 
 function catalog(type) {
   return function () {
-    clear(type === 'movie' ? 'Movies' : 'Series');
-    get(CINEMETA + '/catalog/' + type + '/top.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog. Check internet.'); });
+    clear(type === 'movie' ? 'Movies' : 'Shows');
+    if (isKids()) return tmdbGrid('/discover/' + tPath(type), 'with_genres=' + (type === 'movie' ? '10751' : '10762') + '&sort_by=popularity.desc', 3, tPath(type));
+    tmdbGrid('/' + tPath(type) + '/popular', '', 3, tPath(type));
   };
 }
 
@@ -1106,11 +1135,17 @@ function searchPage(q, filter) {
 function search(q, into, filter) {
   return function () {
     if (!into) clear('Search: ' + q);
-    var n = 0, top = [], rest = [], ql = q.toLowerCase(), c0 = /[a-z0-9]/.test(ql.charAt(0)) ? ql.charAt(0) : 'x';
+    var n = 0, top = [], rest = [], tm = [], ql = q.toLowerCase(), c0 = /[a-z0-9]/.test(ql.charAt(0)) ? ql.charAt(0) : 'x';
     function done() {
-      if (++n < 3) return;
-      var seen = {}, all = [];
-      top.concat(rest).forEach(function (m) { if (m && m.id && !seen[m.id] && (!filter || filter === 'all' || m.type === filter)) { seen[m.id] = 1; all.push(m); } });
+      if (++n < 4) return;
+      var seen = {}, names = {}, all = [];
+      function keep(m) { return m && (!filter || filter === 'all' || m.type === filter); }
+      // TMDB results (rated, popularity order) first; IMDb/Cinemeta add titles TMDB missed
+      tm.forEach(function (m) { if (keep(m)) { names[m.type + ':' + String(m.name).toLowerCase() + ':' + m.releaseInfo] = 1; all.push(m); } });
+      (all.length < 8 ? top.concat(rest) : []).forEach(function (m) { // extras only when TMDB found little
+        var y = String(m.releaseInfo || '').slice(0, 4);
+        if (keep(m) && m.id && !seen[m.id] && !names[m.type + ':' + String(m.name).toLowerCase() + ':' + y]) { seen[m.id] = 1; all.push(m); }
+      });
       if (!into) return grid(all);
       if (!all.length) return into.appendChild(el('p', 'muted', 'Nothing found.'));
       all.forEach(function (m) { card(m, into); });
@@ -1122,6 +1157,10 @@ function search(q, into, filter) {
     });
     ['movie', 'series'].forEach(function (t) {
       get(CINEMETA + '/catalog/' + t + '/top/search=' + encodeURIComponent(q) + '.json', function (r) { rest = rest.concat((r && r.metas) || []); done(); });
+    });
+    get(tmdb('/search/multi', 'include_adult=false&query=' + encodeURIComponent(q)), function (r) {
+      tm = ((r && r.results) || []).map(function (x) { return fromTmdb(x); }).filter(function (x) { return x && x.poster; });
+      done();
     });
   };
 }
@@ -1250,6 +1289,11 @@ function tmdbEnrich(m, type, hb) {
       if (d.content_ratings) (d.content_ratings.results || []).forEach(function (x) { if (x.iso_3166_1 === 'US' && x.rating) cr = x.rating; });
       if (d.release_dates) (d.release_dates.results || []).forEach(function (x) { if (x.iso_3166_1 === 'US') (x.release_dates || []).forEach(function (r) { if (!cr && r.certification) cr = r.certification; }); });
       if (cr && ce) { ce.textContent = cr; ce.style.display = ''; }
+      var mt = inner.querySelector('.meta');
+      if (mt && !mt.querySelector('.rt') && d.vote_average > 0) { // Cinemeta had no IMDb score: show TMDB's
+        var st = el('span', 'rt'); st.innerHTML = '<svg class="ic fill" viewBox="0 0 24 24">' + ICONS.star + '</svg>'; st.appendChild(document.createTextNode(d.vote_average.toFixed(1)));
+        mt.insertBefore(el('span', 'dot', '·'), mt.firstChild); mt.insertBefore(st, mt.firstChild);
+      }
       if (!rating(m) && d.vote_average) { /* keep the IMDb-style score when Cinemeta has none */ }
       if (lg) { var h1 = inner.querySelector('h1'), li = el('img', 'tlogo'); li.src = TIMG + 'w500' + lg.file_path; li.alt = m.name; h1.innerHTML = ''; h1.appendChild(li); }
       if (d.backdrop_path) hb.hero.querySelector('.bgl').style.backgroundImage = 'url(' + JSON.stringify(TIMG + 'w1280' + d.backdrop_path) + ')';
@@ -1738,9 +1782,10 @@ function playQueue(q, i, title) { pq = { q: q, i: i, title: title, tried: {} }; 
 var QORDER = ['1080P', '720P', '4K', '480P', '360P', 'Auto'];
 function isFast(s) { return /\u26a1|fast|\u0623\u0633\u0631\u0639|\u0627\u0644\u0623\u0633\u0631\u0639/i.test((s.name || '') + ' ' + (s.title || '')) ? 1 : 0; }
 // playable formats first, then the addon's "fastest server" picks, then 1080p > 720p > 4K > 480p
+function iosPenalty(s) { return IS_IOS && (fmtOf(s) === 'MKV' || isHevc(s)) ? 20 : 0; }
 function sortForAuto(list) {
   return list.map(function (s, i) { return [s, i]; }).sort(function (a, b) {
-    return streamRank(a[0]) - streamRank(b[0]) || isFast(b[0]) - isFast(a[0]) || QORDER.indexOf(qualityOf(a[0])) - QORDER.indexOf(qualityOf(b[0])) || a[1] - b[1];
+    return streamRank(a[0]) + iosPenalty(a[0]) - streamRank(b[0]) - iosPenalty(b[0]) || isFast(b[0]) - isFast(a[0]) || QORDER.indexOf(qualityOf(a[0])) - QORDER.indexOf(qualityOf(b[0])) || a[1] - b[1];
   }).map(function (p) { return p[0]; });
 }
 console.assert(qualityOf({ name: 'x', url: 'https://a/b.mp4' }) === 'Auto', 'qualityOf');
@@ -1804,6 +1849,13 @@ video.addEventListener('loadedmetadata', stopProbes);
 // Press Play -> player opens at once, uses the prefetched sources, picks the fastest by itself
 function autoPlay(type, id, title, meta, sub) {
   meta = meta || {};
+  // Safari only lets a video start from the tap itself: touch play() now so the element is allowed to play later
+  try { if (!isPlaying()) { video.muted = false; var up = video.play(); if (up && up['catch']) up['catch'](function () {}); } } catch (e) {}
+  // Android: full screen in landscape (needs the tap too)
+  if (MOBILE && !IS_IOS && !isPlaying()) {
+    var de = document.documentElement, rq = de.requestFullscreen || de.webkitRequestFullscreen;
+    try { var fp = rq && rq.call(de); if (fp && fp.then) fp.then(function () { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape')['catch'](function () {}); })['catch'](function () {}); } catch (e) {}
+  }
   nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster, bg: meta.background };
   loadSubs(type, id);
   pq = { q: [], i: 0, title: title, tried: {}, auto: true };
@@ -1940,7 +1992,7 @@ function startSrc(url, at) {
     if (video.readyState >= 2 || !isPlaying()) return;
     if (canMovi() && !moviTried[url] && !isM3u8(url)) return openMovi(url, resumeAt);
     nextStream();
-  }, 14000);
+  }, IS_IOS ? 10000 : 14000);
   if (isM3u8(url) && !nativeHls()) return useHls(url);
   video.src = url;
   tryPlay();
@@ -1978,9 +2030,12 @@ function openPlayer(title, sub) {
   video.controls = false; // our controls everywhere; iPhone full screen hands over to Apple's player
   setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
   closeMenus(); renderQ(); renderSubs(); renderAudio(); wake();
-  if (MOBILE && screen.orientation && screen.orientation.lock) { try { screen.orientation.lock('landscape')['catch'](function () {}); } catch (e) {} }
+  if (document.documentElement.className.indexOf(' playing') < 0) document.documentElement.className += ' playing';
 }
 function closePlayer() {
+  document.documentElement.className = document.documentElement.className.replace(/ playing\b/g, '');
+  try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+  try { var fe = document.fullscreenElement || document.webkitFullscreenElement; if (fe && MOBILE) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
   saveProgress(); stopProbes(); closeMovi(); moviTried = {}; nextEpFn = null; nowPlaying = null; destroyHls(); hlsTried = {};
   clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.removeAttribute('poster'); video.load();
