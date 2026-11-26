@@ -488,12 +488,22 @@ html:not(.kbd) .wc.on .ph{box-shadow:none}
 .dots i.a:after{content:"";position:absolute;top:0;left:0;bottom:0;width:100%;background:#f2f2f4;-webkit-transform-origin:left;transform-origin:left;-webkit-animation:slidebar 7s linear both;animation:slidebar 7s linear both}
 @-webkit-keyframes slidebar{from{-webkit-transform:scaleX(0)}to{-webkit-transform:scaleX(1)}}
 @keyframes slidebar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* ===== v21: universal player layer ===== */
+#movi{display:none;position:fixed;left:0;right:0;bottom:0;top:96px;z-index:13;background:#000}
+#movi movi-player{display:block;width:100%;height:100%}
+.movi-on #pbot,.movi-on #pmid,.movi-on #spin,.movi-on #sub,.movi-on #sBtn{display:none !important}
+.movi-on #ptop{opacity:1 !important;background:#000;pointer-events:auto}
+.movi-on #pl{pointer-events:none}
+.movi-on #pl #ptop{pointer-events:auto}
+.mobile #movi{top:58px}
+.ios.movi-on video{display:none !important}
 </style>
 </head>
 <body>
 <div id="top"><span id="logo" title="3BodyFlix"><img src="logo.svg?v=2" alt="3BodyFlix"></span></div>
 <div id="main"></div>
 <video id="video" playsinline webkit-playsinline></video>
+<div id="movi"></div>
 <div id="sub"></div>
 <div id="pl">
   <div id="ptop">
@@ -517,8 +527,8 @@ html:not(.kbd) .wc.on .ph{box-shadow:none}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v20 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v20';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v21 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v21';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -1254,7 +1264,7 @@ function myListPage() {
 function watched() { if (!profile) return []; try { return JSON.parse(localStorage[pkey('cw')]) || []; } catch (e) { return []; } }
 function saveProgress() {
   if (!nowPlaying || !profile) return;
-  var d = video.duration, t = video.currentTime;
+  var d = media().duration, t = media().currentTime;
   if (!isFinite(d) || d < 120 || t < 15) return; // skip live streams, trailers and accidental starts
   var list = watched().filter(function (x) { return x.vid !== nowPlaying.vid; });
   if (t / d < 0.95) { var e = {}; for (var k in nowPlaying) e[k] = nowPlaying[k]; e.t = t; e.d = d; e.at = new Date().getTime(); list.unshift(e); }
@@ -1443,7 +1453,7 @@ console.assert(extUrl('https://a.com/v.mkv?x=1').indexOf('intent://a.com/v.mkv?x
 function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i].url; video.pause(); location.href = extUrl(u, app); }
 
 function nextStream() {
-  clearTimeout(watchdog);
+  clearTimeout(watchdog); var wasAt = media().currentTime || 0; closeMovi();
   if (!pq || !pq.q.length) return;
   // next untried source, preferring the same quality the viewer is on
   var want = qualityOf(pq.q[pq.i]), j, pick = -1;
@@ -1452,7 +1462,7 @@ function nextStream() {
   if (pick >= 0) {
     pq.i = pick; pq.tried[pick] = 1;
     toast('Switching to another source\u2026');
-    startSrc(pq.q[pq.i].url, video.currentTime); renderQ();
+    startSrc(pq.q[pq.i].url, wasAt); renderQ();
   } else {
     if (MOBILE && pq.q.length && confirm('This video format does not play in the browser. Open it in ' + (IS_IOS ? 'VLC' : 'a video player app (VLC / MX Player)') + '?')) { pq.i = 0; return openExternal(); }
     history.back();
@@ -1484,12 +1494,73 @@ function useHls(url) {
     hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
   });
 }
+// ---------- universal player: Movi-Player plays MKV / HEVC / AC3 / DTS in the browser (WebCodecs + FFmpeg WASM) ----------
+var moviEl = null, moviTried = {};
+function media() { return moviEl || video; }
+function canMovi() { return !IS_TV && !!window.customElements && typeof WebAssembly === 'object'; }
+function loadMovi(cb) {
+  if (!window.customElements) return cb(false);
+  if (customElements.get('movi-player')) return cb(true);
+  var s = document.createElement('script');
+  s.type = 'module'; s.src = 'https://cdn.jsdelivr.net/npm/movi-player@0.4/dist/element.js';
+  s.onload = function () { customElements.whenDefined('movi-player').then(function () { cb(true); }); };
+  s.onerror = function () { cb(false); };
+  document.head.appendChild(s);
+}
+function closeMovi() {
+  if (moviEl) { try { moviEl.pause(); } catch (e) {} }
+  $('movi').innerHTML = ''; $('movi').style.display = 'none'; moviEl = null;
+  document.documentElement.className = document.documentElement.className.replace(/ movi-on\b/g, '');
+}
+function bestSubs() { // first Arabic and first English file, Arabic shown by default
+  var out = [], seen = {};
+  subs.forEach(function (s) { var l = langOf(s); if ((l === 'ar' || l === 'en') && !seen[l]) { seen[l] = 1; out.push(s); } });
+  return out.sort(function (a, b) { return langOf(a) === 'ar' ? -1 : langOf(b) === 'ar' ? 1 : 0; });
+}
+function openMovi(url, at) {
+  moviTried[url] = 1; clearTimeout(watchdog);
+  pl.className = 'loading';
+  loadMovi(function (ok) {
+    if (!isPlaying()) return;
+    if (!ok) return nextStream();
+    closeMovi();
+    try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
+    var m = document.createElement('movi-player');
+    m.setAttribute('src', url); m.setAttribute('controls', ''); m.setAttribute('autoplay', ''); m.setAttribute('playsinline', '');
+    m.setAttribute('themecolor', '#e50914'); m.setAttribute('subtitlesize', MOBILE ? '1' : '1.2');
+    if (at > 5) m.setAttribute('startat', String(Math.floor(at - 3)));
+    bestSubs().forEach(function (s, i) {
+      var t = document.createElement('track');
+      t.kind = 'subtitles'; t.src = s.url; t.srclang = langOf(s); t.label = langOf(s) === 'ar' ? 'Arabic' : 'English';
+      if (!/\.vtt(\?|$)/i.test(s.url)) t.setAttribute('data-format', 'srt');
+      if (i === 0) t.setAttribute('default', '');
+      m.appendChild(t);
+    });
+    m.addEventListener('error', function () { if (moviEl === m) { closeMovi(); nextStream(); } });
+    m.addEventListener('playing', function () { clearTimeout(watchdog); pl.className = pl.className.replace(/\bloading\b/g, ''); });
+    m.addEventListener('timeupdate', function () { var now = new Date().getTime(); if (now - lastSave > 10000) { lastSave = now; saveProgress(); } });
+    m.addEventListener('back', function () { history.back(); });
+    $('movi').appendChild(m); $('movi').style.display = 'block'; moviEl = m;
+    document.documentElement.className += ' movi-on';
+    stopSubs(); // Movi draws the subtitle tracks itself
+    watchdog = setTimeout(function () { if (moviEl === m && !(m.currentTime > 0)) { closeMovi(); nextStream(); } }, 35000);
+  });
+}
+// iPhone Safari never plays MKV or HEVC: those go straight to the universal player
+function needsMovi() { var s = pq && pq.q[pq.i]; return canMovi() && IS_IOS && !!s && (fmtOf(s) === 'MKV' || isHevc(s)); }
+
 function startSrc(url, at) {
+  closeMovi();
   pl.className = 'loading';
   if (at) resumeAt = at;
   destroyHls();
   clearTimeout(watchdog);
-  watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 25000);
+  if (needsMovi() && !moviTried[url]) return openMovi(url, at || resumeAt);
+  watchdog = setTimeout(function () {
+    if (video.readyState >= 2 || !isPlaying()) return;
+    if (canMovi() && !moviTried[url] && !isM3u8(url)) return openMovi(url, resumeAt);
+    nextStream();
+  }, 25000);
   if (isM3u8(url) && !nativeHls()) return useHls(url);
   video.src = url;
   tryPlay();
@@ -1497,6 +1568,9 @@ function startSrc(url, at) {
 // A link without a file extension may still be HLS: give hls.js one try before moving to the next source
 function onVideoError() {
   var u = video.currentSrc || video.src;
+  if (u && !hlsTried[u] && !nativeHls() && !/^blob:/.test(u) && isM3u8(u)) { clearTimeout(watchdog); watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 20000); return useHls(u); }
+  // the browser cannot decode this file (MKV / HEVC / AC3): hand the same link to the universal player
+  if (u && canMovi() && !moviTried[u] && !/^blob:/.test(u)) return openMovi(u, video.currentTime || resumeAt);
   if (u && !hlsTried[u] && !nativeHls() && !/^blob:/.test(u)) { clearTimeout(watchdog); watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 20000); return useHls(u); }
   nextStream();
 }
@@ -1526,7 +1600,7 @@ function openPlayer(title, sub) {
   if (MOBILE && screen.orientation && screen.orientation.lock) { try { screen.orientation.lock('landscape')['catch'](function () {}); } catch (e) {} }
 }
 function closePlayer() {
-  saveProgress(); nowPlaying = null; destroyHls(); hlsTried = {};
+  saveProgress(); closeMovi(); moviTried = {}; nowPlaying = null; destroyHls(); hlsTried = {};
   clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
   video.style.display = 'none'; pl.style.display = 'none';
@@ -1633,14 +1707,14 @@ function renderQ() {
     }
     opt(box, 'Auto  (fastest)', pq.auto, function () {
       pq.auto = true; closeMenus();
-      if (pq.i !== 0) { pq.i = 0; startSrc(pq.q[0].url, video.currentTime); }
+      if (pq.i !== 0) { pq.i = 0; startSrc(pq.q[0].url, media().currentTime); }
       renderQ(); toast('Auto quality');
     });
     order.forEach(function (q) {
       if (q === 'Auto') return;
       opt(box, q + (q === '4K' ? '  Ultra HD' : q === '1080P' ? '  Full HD' : q === '720P' ? '  HD' : ''), !pq.auto && q === curQ, function () {
         closeMenus(); pq.auto = false;
-        if (q !== curQ) { pq.i = groups[q][0]; pq.tried[pq.i] = 1; startSrc(pq.q[pq.i].url, video.currentTime); }
+        if (q !== curQ) { pq.i = groups[q][0]; pq.tried[pq.i] = 1; startSrc(pq.q[pq.i].url, media().currentTime); }
         renderQ(); toast(q);
       });
     });
