@@ -16,6 +16,9 @@ if (MOBILE) {
   document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1');
   document.documentElement.className = 'mobile';
 }
+var IS_IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && 'ontouchend' in document);
+if (IS_IOS) document.documentElement.className += ' ios';
+if (!IS_TV && !MOBILE) document.documentElement.className += ' desk';
 </script>
 <!-- ES5 + old CSS only: the VIDAA 2021 browser is an old engine (no flex gap, no arrow functions, no inset) -->
 <style>
@@ -89,7 +92,7 @@ video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background
 #osd .ctl{display:inline-block;font-size:36px;padding:6px 24px;margin-right:10px;background:rgba(255,255,255,.12)}
 #osdTime{float:right;font-size:30px;margin-top:14px}
 #closeBtn{display:none;position:fixed;top:20px;left:20px;z-index:13;font-size:34px;padding:6px 20px;background:rgba(0,0,0,.6);color:#fff}
-#dbg{position:fixed;right:10px;bottom:6px;font-size:22px;color:#aaa;z-index:14;pointer-events:none}
+#dbg{display:none;position:fixed;right:10px;bottom:6px;font-size:16px;color:#f88;z-index:14;pointer-events:none}
 /* phones / tablets */
 .mobile body{font-size:16px;overflow:auto}
 .mobile #top{padding:8px;white-space:nowrap;overflow-x:auto;position:-webkit-sticky;position:sticky;top:0;z-index:5}
@@ -304,7 +307,7 @@ h1{font-weight:800;letter-spacing:-.03em}
 #pl.loading #spin{display:block}
 @-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-#ptoast{position:absolute;left:50%;top:42%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);background:rgba(0,0,0,.75);padding:14px 24px;border-radius:12px;font-size:24px;font-weight:600;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center}
+#ptoast{position:absolute;left:50%;top:120px;-webkit-transform:translateX(-50%);transform:translateX(-50%);background:rgba(0,0,0,.6);padding:8px 18px;border-radius:20px;font-size:18px;font-weight:600;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center}
 #ptoast.show{opacity:1}
 .add{position:absolute;top:10px;right:10px;width:40px;height:40px;line-height:34px;text-align:center;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.55);color:#fff;font-size:22px;font-weight:700;opacity:0;-webkit-transition:opacity .2s,background .2s;transition:opacity .2s,background .2s;cursor:pointer;z-index:2}
 .wc:hover .add,.wc.on .add,.add.in{opacity:1}
@@ -325,7 +328,7 @@ h1{font-weight:800;letter-spacing:-.03em}
 .mobile .sp{font-size:13px;padding:5px 9px}
 .mobile #ptime{font-size:12px}
 .mobile .cb{margin-right:8px;padding:6px 8px}
-.mobile #ptoast{font-size:15px}
+.mobile #ptoast{font-size:12px;top:64px;padding:5px 12px}
 .mobile .add{opacity:1;width:28px;height:28px;line-height:24px;font-size:15px;top:6px;right:6px}
 /* ===== v13: episodes, phone layout, simple playback ===== */
 .ep{display:block;padding:12px;background:#1b1b1f;border-radius:16px;margin:12px 0;overflow:hidden;max-width:1300px}
@@ -372,6 +375,16 @@ h1{font-weight:800;letter-spacing:-.03em}
 .mobile .mb b{position:absolute;left:4px;bottom:4px;font-size:12px}
 .mobile #cPlay,.mobile #cBack,.mobile #cFwd{display:none}
 .mobile #pDur{font-size:12px}
+/* ===== v14: iPhone native player, desktop scale ===== */
+.ios #pl{pointer-events:none}
+.ios #ptop{pointer-events:auto;background:#000;padding:10px 12px 10px;opacity:1 !important}
+.ios #pbot,.ios #pmid,.ios #spin{display:none !important}
+.ios #pl.hid #ptop{opacity:1}
+.ios video{top:64px;height:calc(100% - 64px)}
+.ios .pmenu{pointer-events:auto}
+html.desk{zoom:.72}
+.desk .feat{height:118vh}
+.desk #main{padding-left:4vw;padding-right:4vw}
 </style>
 </head>
 <body>
@@ -398,11 +411,11 @@ h1{font-weight:800;letter-spacing:-.03em}
 <div id="tabbar"><span class="tab f act" id="tHome"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span class="tab f" id="tMov"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><span class="tab f" id="tSer"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/></svg></span><span class="tab f" id="tList"><svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.7l6.2-.9z"/></svg></span><span class="tsep"></span><span class="tab f" id="tSearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg></span><span class="tab f" id="tProf"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span></div>
 <div id="trailer"></div>
 <span class="f" id="closeBtn">✕</span>
-<div id="dbg">v13 · no JS yet</div>
+<div id="dbg">v14 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { document.getElementById('dbg').textContent = 'v13 ERROR: ' + m + ' @' + l; };
-document.getElementById('dbg').textContent = 'v13';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v14 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v14';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -1090,7 +1103,19 @@ function showCue() {
   subEl.textContent = c ? c.t : '';
   subEl.style.display = c ? 'block' : 'none';
 }
-function stopSubs() { cues = []; if (subTimer) clearInterval(subTimer); subTimer = null; subEl.style.display = 'none'; }
+function stopSubs() {
+  cues = []; if (subTimer) clearInterval(subTimer); subTimer = null; subEl.style.display = 'none';
+  var tr = video.getElementsByTagName('track'); while (tr.length) video.removeChild(tr[0]);
+}
+function srtToVtt(t) { return 'WEBVTT\n\n' + t.replace(/^\uFEFF/, '').replace(/\r/g, '').replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2'); }
+console.assert(srtToVtt('1\r\n00:00:01,500 --> 00:00:02,000\r\nhi').indexOf('00:00:01.500 --> 00:00:02.000\nhi') > 0, 'srtToVtt');
+function nativeTrack(text, lang) {
+  var t = document.createElement('track');
+  t.kind = 'subtitles'; t.srclang = lang || 'und'; t.label = lang || 'Subtitles'; t['default'] = true;
+  t.src = 'data:text/vtt;charset=utf-8,' + encodeURIComponent(srtToVtt(text));
+  video.appendChild(t);
+  setTimeout(function () { if (video.textTracks && video.textTracks[0]) video.textTracks[0].mode = 'showing'; }, 50);
+}
 function setSub(i) {
   stopSubs();
   subIdx = i;
@@ -1101,6 +1126,7 @@ function setSub(i) {
     if (subIdx !== i) return;
     cues = text ? parseSrt(text) : [];
     if (!cues.length) return subNote('Subtitle ' + label + ' failed, press ▲ for next');
+    if (IS_IOS) { nativeTrack(text, s.lang); cues = []; return; } // shown by the iPhone player itself
     subTimer = setInterval(showCue, 200);
     subNote('Subtitles: ' + label + (MOBILE ? '' : '  (▲▼ to change)'));
   });
@@ -1140,7 +1166,7 @@ function autoPlay(type, id, title, meta, sub) {
   loadSubs(type, id);
   pq = { q: [], i: 0, title: title, tried: {}, auto: true };
   openPlayer(title, sub);
-  pl.className = 'loading'; toast('Finding the fastest source\u2026');
+  pl.className = 'loading';
   var list = addons(), n = 0, all = [];
   if (!list.length) { history.back(); return alert('No addon set. Open Settings to add one.'); }
   list.forEach(function (a) {
@@ -1149,7 +1175,7 @@ function autoPlay(type, id, title, meta, sub) {
       if (++n < list.length || !isPlaying() || !pq) return;
       if (!all.length) { history.back(); return alert('No playable sources found for this title.'); }
       pq.q = sortForAuto(all); pq.i = 0; pq.tried[0] = 1;
-      startSrc(pq.q[0].url); renderQ(); toast('Playing \u00b7 ' + qualityOf(pq.q[0]));
+      startSrc(pq.q[0].url); renderQ();
     });
   });
 }
@@ -1170,20 +1196,53 @@ function nextStream() {
     alert('No stream could be played on this device. Try another quality or title.');
   }
 }
+var hls = null, hlsTried = {};
+function tryPlay() { var p = video.play(); if (p && p['catch']) p['catch'](function () {}); } // autoplay rejections: the user presses play
+function destroyHls() { if (hls) { try { hls.destroy(); } catch (e) {} hls = null; } }
+function loadHlsLib(cb) {
+  if (window.Hls) return cb();
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js';
+  s.onload = cb; s.onerror = cb;
+  document.head.appendChild(s);
+}
+function nativeHls() { return !!video.canPlayType('application/vnd.apple.mpegurl'); }
+function isM3u8(u) { return /\.m3u8?(\?|$)/i.test(u); }
+console.assert(isM3u8('https://a/b/index.m3u8?t=1') && isM3u8('https://a/x.m3u8') && !isM3u8('https://a/b.mp4'), 'isM3u8');
+function useHls(url) {
+  hlsTried[url] = 1;
+  loadHlsLib(function () {
+    if (!isPlaying()) return;
+    if (!window.Hls || !Hls.isSupported()) { video.src = url; return tryPlay(); }
+    destroyHls();
+    hls = new Hls({ maxBufferLength: 30 });
+    hls.on(Hls.Events.ERROR, function (e, d) { if (d && d.fatal) { destroyHls(); nextStream(); } });
+    hls.loadSource(url); hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+  });
+}
 function startSrc(url, at) {
   pl.className = 'loading';
-  video.src = url;
   if (at) resumeAt = at;
-  var p = video.play(); if (p && p['catch']) p['catch'](function () {}); // autoplay rejections: the user presses play
+  destroyHls();
   clearTimeout(watchdog);
   watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 25000);
+  if (isM3u8(url) && !nativeHls()) return useHls(url);
+  video.src = url;
+  tryPlay();
+}
+// A link without a file extension may still be HLS: give hls.js one try before moving to the next source
+function onVideoError() {
+  var u = video.currentSrc || video.src;
+  if (u && !hlsTried[u] && !nativeHls() && !/^blob:/.test(u)) { clearTimeout(watchdog); watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 20000); return useHls(u); }
+  nextStream();
 }
 function play(url, title) { openPlayer(title); startSrc(url); }
 function openPlayer(title, sub) {
   if (!isPlaying()) history.pushState(null, '');
   video.style.display = 'block'; pl.style.display = 'block';
   $('pTitle').textContent = title || ''; $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
-  video.onerror = nextStream;
+  video.onerror = onVideoError;
   resumeAt = 0;
   if (nowPlaying) watched().forEach(function (x) { if (x.vid === nowPlaying.vid) resumeAt = x.t; });
   video.onloadedmetadata = function () {
@@ -1198,12 +1257,13 @@ function openPlayer(title, sub) {
     }
     renderAudio();
   };
+  video.controls = IS_IOS; // iPhone/iPad: native controls, AirPlay, full screen
   setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
   closeMenus(); renderQ(); renderSubs(); renderAudio(); wake();
   if (MOBILE && screen.orientation && screen.orientation.lock) { try { screen.orientation.lock('landscape')['catch'](function () {}); } catch (e) {} }
 }
 function closePlayer() {
-  saveProgress(); nowPlaying = null;
+  saveProgress(); nowPlaying = null; destroyHls(); hlsTried = {};
   clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
   video.style.display = 'none'; pl.style.display = 'none';
@@ -1216,7 +1276,7 @@ function wake() {
   subEl.style.bottom = MOBILE ? '110px' : '230px';
   clearTimeout(hideTimer);
   hideTimer = setTimeout(function () {
-    if (video.paused || openMenu) return;
+    if (video.paused || openMenu || IS_IOS) return;
     pl.className += ' hid'; subEl.style.bottom = '';
     if (cur && pl.contains(cur)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
   }, 3500);
@@ -1346,7 +1406,7 @@ function renderAudio() {
   })(i);
 }
 // subtitle status messages show as player toasts
-subNote = function (t) { if (isPlaying()) toast(t); };
+subNote = function (t) { if (isPlaying() && /failed/i.test(t)) toast('Subtitle unavailable'); };
 
 // ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing; 412-417 are remote media keys) ----------
 var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, MediaPlayPause: 179, MediaRewind: 412, MediaFastForward: 417 };
