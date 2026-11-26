@@ -7,6 +7,9 @@
 <title>3BodyFlix</title>
 <link rel="icon" href="logo.svg?v=2" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://3body-self.vercel.app" crossorigin>
+<link rel="preconnect" href="https://api.themoviedb.org" crossorigin>
+<link rel="preconnect" href="https://image.tmdb.org">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <script>
 // Phones/tablets get a responsive touch layout; TVs (and desktop) keep the fixed 1920 canvas
@@ -631,8 +634,8 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v23 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v23';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v24 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v24';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -876,7 +879,7 @@ function home() {
     var list = ((res && res.results) || []).map(function (x) { return fromTmdb(x, 'movie'); }).filter(function (x) { return x && x.background && x.description; }).slice(0, 5);
     list.forEach(function (m) {
       m.background = m.background.replace('/w780/', '/w1280/');
-      toImdb(m, function () {}); // ready before the viewer presses Play / My List
+      toImdb(m, function (id) { if (id && m === list[0]) prefetch('movie', id); }); // ready before Play / My List; the first slide's sources too
       get(tmdb('/movie/' + m.tmdb + '/images', 'include_image_language=en,null'), function (im) {
         var lg = im && im.logos && im.logos[0];
         if (lg) { m.logo = TIMG + 'w500' + lg.file_path; if (list[idx] === m && !((IS_TV || kbdUsed) && cur && feat.contains(cur))) render(idx, false); }
@@ -927,6 +930,7 @@ function home() {
       c.firstChild.appendChild(el('span', 'left', fmtTime(Math.max(0, x.d - x.t)) + ' left'));
       fill.style.width = Math.round(x.t / x.d * 100) + '%'; bar.appendChild(fill); c.appendChild(bar);
       c.onok = function () { autoPlay(x.type, x.vid, x.label, { id: x.metaId, type: x.mtype, name: x.name, poster: x.poster, background: x.bg }); };
+      if (x === cw[0]) prefetch(x.type, x.vid);
     });
   }
   var ml = myList();
@@ -1143,6 +1147,7 @@ function detail(type, id) {
       if (type === 'movie') {
         var b = ibtn('btn', 'play', 'Play');
         b.onok = function () { autoPlay('movie', m.id, m.name, m); };
+        prefetch('movie', m.id);
         inner.appendChild(b); inner.appendChild(listBtn(m, 'chip')); if (trailerB) inner.appendChild(trailerB); inner.appendChild(shareB); inner.appendChild(linkP);
         return setFocus(b);
       }
@@ -1152,6 +1157,7 @@ function detail(type, id) {
       // Play: continue the last watched episode, otherwise the first real episode
       var last = watched().filter(function (x) { return x.metaId === m.id; })[0], startEp = null;
       eps.forEach(function (v) { if (!startEp && v.season > 0) startEp = v; if (last && v.id === last.vid) startEp = v; });
+      if (startEp) prefetch('series', startEp.id);
       if (startEp) {
         var sb = ibtn('btn', 'play', last ? 'Continue  S' + startEp.season + ' E' + startEp.episode : 'Play  S' + startEp.season + ' E' + startEp.episode);
         sb.onok = function () { playEp(startEp); };
@@ -1649,23 +1655,80 @@ function sortForAuto(list) {
 }
 console.assert(qualityOf({ name: 'x', url: 'https://a/b.mp4' }) === 'Auto', 'qualityOf');
 // Press Play -> player opens at once, finds the fastest source by itself; the user only ever picks a quality
+// Sources are fetched once per title and kept 30 min; title pages prefetch them so Play starts at once
+var streamCache = {};
+function rawGet(url, cb, ms) {
+  var x = new XMLHttpRequest(); x.open('GET', url); x.timeout = ms || 60000;
+  x.onload = function () { var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} cb(r); };
+  x.onerror = x.ontimeout = function () { cb(null); };
+  x.send();
+}
+function fetchStreams(type, id, cb) {
+  var k = type + ':' + id, c = streamCache[k], now = new Date().getTime();
+  if (c && c.list && now - c.t < 1800000) { if (cb) cb(c.list); return; }
+  if (c && c.wait) { if (cb) c.wait.push(cb); return; }
+  c = streamCache[k] = { wait: cb ? [cb] : [] };
+  var list = addons(), n = 0, all = [];
+  function finish() {
+    var w = c.wait; c.wait = null; c.list = sortForAuto(all); c.t = new Date().getTime();
+    if (!c.list.length) delete streamCache[k]; // do not cache an empty answer
+    w.forEach(function (f) { f(c.list); });
+  }
+  if (!list.length) return finish();
+  list.forEach(function (a) {
+    rawGet(base(a) + '/stream/' + type + '/' + id + '.json', function (r) { all = all.concat(playable((r && r.streams) || [])); if (++n === list.length) finish(); });
+  });
+}
+function prefetch(type, id) { if (id && /^tt/.test(String(id))) fetchStreams(type, id); }
+
+// Android / computer: the player starts on the best source at once while 3 others load quietly in the background;
+// if one of them answers before the player does, the player jumps to it (no waiting on a slow server)
+var probes = [];
+function stopProbes() {
+  probes.forEach(function (v) { v.onloadedmetadata = v.onerror = null; try { v.removeAttribute('src'); v.load(); } catch (e) {} });
+  probes = [];
+}
+function probeOthers() {
+  stopProbes();
+  if (IS_IOS || IS_TV || !pq) return;
+  var mine = pq, picks = [];
+  for (var j = 0; j < pq.q.length && picks.length < 3; j++) {
+    var s = pq.q[j];
+    if (j === pq.i || pq.tried[j] || streamRank(s) >= 4 || isM3u8(s.url) && !nativeHls()) continue;
+    picks.push(j);
+  }
+  picks.forEach(function (j) {
+    var v = document.createElement('video'); v.preload = 'metadata'; v.muted = true; v.setAttribute('playsinline', '');
+    v.onloadedmetadata = function () {
+      if (pq !== mine || !isPlaying() || video.readyState >= 1 || moviEl) return stopProbes();
+      if (!(v.duration > 60)) return;
+      stopProbes(); pq.i = j; pq.tried[j] = 1; startSrc(pq.q[j].url); renderQ();
+    };
+    v.onerror = function () { pq.tried[j] = 1; };
+    v.src = pq.q[j].url; probes.push(v);
+  });
+  setTimeout(function () { if (pq === mine) stopProbes(); }, 30000);
+}
+video.addEventListener('loadedmetadata', stopProbes);
+
+// Press Play -> player opens at once, uses the prefetched sources, picks the fastest by itself
 function autoPlay(type, id, title, meta, sub) {
   meta = meta || {};
   nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster, bg: meta.background };
   loadSubs(type, id);
   pq = { q: [], i: 0, title: title, tried: {}, auto: true };
+  video.poster = isHttp(meta.background) ? meta.background : '';
   openPlayer(title, sub);
   pl.className = 'loading';
-  var list = addons(), n = 0, all = [];
-  if (!list.length) { history.back(); return alert('No addon set. Open Settings to add one.'); }
-  list.forEach(function (a) {
-    get(base(a) + '/stream/' + type + '/' + id + '.json', function (r) {
-      all = all.concat(playable((r && r.streams) || []));
-      if (++n < list.length || !isPlaying() || !pq) return;
-      if (!all.length) { history.back(); return alert('No playable sources found for this title.'); }
-      pq.q = sortForAuto(all); pq.i = 0; pq.tried[0] = 1;
-      startSrc(pq.q[0].url); renderQ();
-    });
+  if (!addons().length) { history.back(); return alert('No addon set. Open Settings to add one.'); }
+  var mine = pq;
+  fetchStreams(type, id, function (list) {
+    if (!isPlaying() || pq !== mine) return;
+    if (!list.length) { history.back(); return alert('No playable sources found for this title.'); }
+    pq.q = list.slice(); renderQ();
+    pq.i = 0; pq.tried[0] = 1;
+    startSrc(pq.q[0].url); renderQ();
+    probeOthers();
   });
 }
 // Unsupported formats either fire 'error' or just never start on some TVs: both move on to the next stream
@@ -1787,7 +1850,7 @@ function startSrc(url, at) {
     if (video.readyState >= 2 || !isPlaying()) return;
     if (canMovi() && !moviTried[url] && !isM3u8(url)) return openMovi(url, resumeAt);
     nextStream();
-  }, 25000);
+  }, 14000);
   if (isM3u8(url) && !nativeHls()) return useHls(url);
   video.src = url;
   tryPlay();
@@ -1827,9 +1890,9 @@ function openPlayer(title, sub) {
   if (MOBILE && screen.orientation && screen.orientation.lock) { try { screen.orientation.lock('landscape')['catch'](function () {}); } catch (e) {} }
 }
 function closePlayer() {
-  saveProgress(); closeMovi(); moviTried = {}; nowPlaying = null; destroyHls(); hlsTried = {};
+  saveProgress(); stopProbes(); closeMovi(); moviTried = {}; nowPlaying = null; destroyHls(); hlsTried = {};
   clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
-  video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
+  video.onerror = null; video.pause(); video.removeAttribute('src'); video.removeAttribute('poster'); video.load();
   video.style.display = 'none'; pl.style.display = 'none';
   if (cur && pl.contains(cur)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
   var f = stack[stack.length - 1]; if (f) setTitle(f._title);
