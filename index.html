@@ -845,6 +845,16 @@ html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,
 #nav button{-webkit-transition:background-color .25s,color .25s,-webkit-transform .16s;transition:background-color .25s,color .25s,transform .16s}
 #pfill,#pknob{-webkit-transition:width .25s linear,left .25s linear;transition:width .25s linear,left .25s linear}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{-webkit-animation-duration:.01ms !important;animation-duration:.01ms !important;-webkit-animation-delay:0s !important;animation-delay:0s !important;-webkit-transition-duration:.01ms !important;transition-duration:.01ms !important}}
+/* ===== v36: banner placeholder while it loads ===== */
+.hsk .bgl.sk{opacity:.35}
+.hsk .in > div{border-radius:10px;margin-bottom:16px}
+.hsk .hs-t{width:58%;height:64px}
+.hsk .hs-m{width:30%;height:22px}
+.hsk .hs-d{width:78%;height:18px;margin-bottom:10px !important}
+.hsk .hs-d2{width:52%;height:18px}
+.hsk .hs-b{width:240px;height:56px;margin-top:22px}
+.mobile .hsk .hs-t{height:44px;width:70%}
+.mobile .hsk .hs-b{width:46%;height:46px}
 </style>
 </head>
 <body>
@@ -875,11 +885,11 @@ html:not(.tv) #ptoast.show{-webkit-animation:toastIn .28s cubic-bezier(.2,.7,.2,
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v35 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v35';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; try { if (!/debug/.test(location.search) && !localStorage.debug) return; } catch (e) { return; } var d = document.getElementById('dbg'); d.textContent = 'v36 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v36';
 </script>
 <script>
-var APP_VERSION = 'v35';
+var APP_VERSION = 'v36';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -965,7 +975,7 @@ function get(url, cb) {
   var v = view, x = new XMLHttpRequest();
   inflight[v] = (inflight[v] || 0) + 1;
   x.open('GET', url);
-  x.timeout = 60000; // 3body scrapes live and often needs ~20s
+  x.timeout = url.indexOf('https://api.themoviedb.org') === 0 ? 12000 : 60000; // 3body scrapes live and often needs ~20s
   x.onload = function () { inflight[v]--; if (v !== view) return; var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} cb(r); };
   x.onerror = x.ontimeout = function () { inflight[v]--; if (v === view) cb(null); };
   x.send();
@@ -1213,18 +1223,28 @@ function browseRow(r) { return function () { clear(r[0]); tmdbGrid(r[1], r[3], r
 function home() {
   clear();
   var feat = el('div'); main.appendChild(feat);
+  var hsk = el('div', 'hero feat hsk'), hin = el('div', 'in');
+  hsk.appendChild(el('div', 'bgl sk'));
+  ['t', 'm', 'd', 'd2', 'b'].forEach(function (k) { hin.appendChild(el('div', 'hs-' + k + ' sk')); });
+  hsk.appendChild(hin); feat.appendChild(hsk);
   // Rotating banner: the 5 most popular movies with a backdrop. Pauses while the remote is on it or the user pressed pause.
-  get(isKids() ? tmdb('/discover/movie', 'with_genres=10751&sort_by=popularity.desc&certification_country=US&certification.lte=PG') : tmdb('/trending/movie/day'), function (res) {
-    var list = ((res && res.results) || []).map(function (x) { return fromTmdb(x, 'movie'); }).filter(function (x) { return x && x.background && x.description; }).slice(0, 5);
+  get(isKids() ? tmdb('/discover/movie', 'with_genres=10751&sort_by=popularity.desc&certification_country=US&certification.lte=PG') : tmdb('/trending/movie/day'), function heroCb(res) {
+    if (!res) return get(CINEMETA + '/catalog/movie/top.json', function (c) { // TMDB unreachable: Cinemeta's top movies
+      var cl = ((c && c.metas) || []).filter(function (x) { return x.background && x.description; }).slice(0, 5).map(function (x) {
+        return { id: x.id, type: 'movie', name: x.name, description: x.description, poster: x.poster, background: x.background, logo: x.logo, releaseInfo: x.releaseInfo, imdbRating: x.imdbRating };
+      });
+      if (cl.length) heroCb({ _list: cl }); else feat.innerHTML = '';
+    });
+    var list = res._list || ((res && res.results) || []).map(function (x) { return fromTmdb(x, 'movie'); }).filter(function (x) { return x && x.background && x.description; }).slice(0, 5);
     list.forEach(function (m) {
       m.background = m.background.replace('/w780/', '/w1280/');
       toImdb(m, function (id) { if (id && m === list[0]) prefetch('movie', id); }); // ready before Play / My List; the first slide's sources too
-      get(tmdb('/movie/' + m.tmdb + '/images', 'include_image_language=en,null'), function (im) {
+      if (m.tmdb) get(tmdb('/movie/' + m.tmdb + '/images', 'include_image_language=en,null'), function (im) {
         var lg = im && im.logos && im.logos[0];
         if (lg) { m.logo = TIMG + 'w500' + lg.file_path; if (list[idx] === m && !((IS_TV || kbdUsed) && cur && feat.contains(cur))) render(idx, false); }
       });
     });
-    if (!list.length) return;
+    if (!list.length) { feat.innerHTML = ''; return; }
     var v = view, idx = 0, paused = false;
     function render(i, focus) {
       var m = list[i], hb = heroBox(m, 'feat'), inner = hb.inner;
@@ -1278,9 +1298,24 @@ function home() {
   var ml = myList();
   if (ml.length) { var rl = newRow('My List', function () { show(myListPage, '/my-list', 'My List'); }); rl.strip.innerHTML = ''; ml.slice(0, 20).forEach(function (m) { wcard(m, rl.strip); }); }
   var TROWS = homeRows();
+  var cmUsed = {}, yr = new Date().getFullYear();
+  function cmRow(R, r) {
+    var t = r[2] === 'tv' ? 'series' : 'movie', k = (cmUsed[t] = (cmUsed[t] || 0) + 1) - 1;
+    var opts = [['top', 'Popular'], ['imdbRating', 'Top Rated'], ['year/genre=' + yr, 'New in ' + yr]];
+    if (k >= opts.length) return R.row.parentNode && main.removeChild(R.row);
+    R.row.firstChild.textContent = opts[k][1] + (t === 'movie' ? ' Movies' : ' Shows') + ' ›';
+    R.row.firstChild.onok = null; R.row.firstChild.className = '';
+    get(CINEMETA + '/catalog/' + t + '/' + opts[k][0] + '.json', function (c) {
+      var metas = ((c && c.metas) || []).filter(function (x) { return x.poster || x.background; }).slice(0, 20);
+      if (!metas.length) return R.row.parentNode && main.removeChild(R.row);
+      R.strip.innerHTML = '';
+      metas.forEach(function (m) { if (!m.type) m.type = t; wcard(m, R.strip); });
+    });
+  }
   TROWS.forEach(function (r) {
     var R = newRow(r[0], function () { show(browseRow(r), '/browse/' + slug(r[0]), r[0]); });
     get(tmdb(r[1], r[3]), function (res) {
+      if (!res) return cmRow(R, r);
       var metas = ((res && res.results) || []).map(function (x) { return fromTmdb(x, r[2]); }).filter(function (x) { return x && (x.poster || x.background); }).slice(0, r[4] || 20);
       if (!metas.length) return main.removeChild(R.row); // drop rows that came back empty
       R.strip.innerHTML = '';
@@ -1349,7 +1384,8 @@ function tmdbGrid(path, params, pages, mediaType) {
       dropSkeletons();
       var seen = {}, all = [];
       got.forEach(function (list) { (list || []).forEach(function (m) { var k = m.type + m.tmdb; if (!seen[k]) { seen[k] = 1; all.push(m); } }); });
-      all.length ? grid(all) : msg('Could not load this list. Check the internet.');
+      if (all.length) return grid(all);
+      get(CINEMETA + '/catalog/' + (mediaType === 'tv' ? 'series' : 'movie') + '/top.json', function (c) { c && c.metas && c.metas.length ? grid(c.metas) : msg('Could not load this list. Check the internet.'); });
     });
   })(pg);
 }
