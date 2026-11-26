@@ -408,8 +408,8 @@ html.desk{zoom:.72}
 .mobile .add .ic{width:14px;height:14px}
 .mobile #main > h1:first-child{margin-top:70px}
 /* ===== v16: A logo, footer credits ===== */
-#logo img{width:58px;height:50px;margin:-4px 18px 0 0}
-.mobile #logo img{width:34px;height:29px;margin:0}
+#logo img{width:78px;height:67px;margin:-8px 22px 0 0}
+.mobile #logo img{width:46px;height:40px;margin:0}
 #foot{text-align:center;line-height:1.7}
 #foot b{display:block;color:#e50914;font-weight:800;letter-spacing:-.02em;font-size:22px;margin-bottom:4px}
 #foot .ar{direction:rtl;color:#7a7a82}
@@ -534,6 +534,8 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
 .avopt{display:inline-block;width:92px;height:92px;margin:0 10px 10px 0;border-radius:8px;overflow:hidden;border:3px solid transparent;padding:0;vertical-align:top}
 .avopt svg{display:block;width:100%;height:100%}
 .avopt.sel{border-color:#fff}
+.avopt{border-radius:12px;-webkit-transition:-webkit-transform .2s,border-color .2s;transition:transform .2s,border-color .2s}
+.avopt:hover,.avopt.on{-webkit-transform:translateY(-3px) scale(1.04);transform:translateY(-3px) scale(1.04)}
 .avopt.on{border-color:#e50914}
 .trow{border-top:1px solid #2c2c32;padding:20px 0;overflow:hidden}
 .ttxt b{display:block;font-size:22px;font-weight:600}
@@ -715,6 +717,27 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 .mobile .acrow{font-size:14px}
 #logo{cursor:pointer}
 #logo.on{outline:0;-webkit-filter:drop-shadow(0 0 8px rgba(229,9,20,.8));filter:drop-shadow(0 0 8px rgba(229,9,20,.8))}
+/* ===== v31: player-app sheet ===== */
+#xsheet{display:none;position:absolute;top:0;left:0;right:0;bottom:0;z-index:5;-webkit-box-align:center;align-items:center;-webkit-box-pack:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(0,0,0,.5),rgba(0,0,0,.92) 75%);-webkit-animation:fadeIn .3s ease both;animation:fadeIn .3s ease both}
+#xsheet.on{display:-webkit-box;display:flex}
+#pl.xs #pmid,#pl.xs #pbot,#pl.xs #spin,#pl.xs .upnext{display:none !important}
+#pl.xs #ptop{opacity:1 !important;z-index:6}
+.xs-card{width:520px;max-width:88vw;box-sizing:border-box;background:rgba(22,22,26,.9);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:34px 34px 24px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.65);-webkit-animation:fadeUp .45s cubic-bezier(.2,.7,.2,1) both;animation:fadeUp .45s cubic-bezier(.2,.7,.2,1) both}
+.xs-ic{width:64px;height:64px;margin:0 auto 14px;border-radius:18px;background:linear-gradient(135deg,#e50914,#8f0710);display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;-webkit-box-pack:center;justify-content:center;box-shadow:0 10px 30px rgba(229,9,20,.35)}
+.xs-ic svg{width:34px;height:34px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.xs-card h3{font-size:28px;font-weight:700;margin:0 0 10px}
+.xs-card p{color:#b4b4bc;font-size:18px;line-height:1.55;margin:0 0 18px}
+.xs-q{margin:0 0 8px}
+.xs-q .chip{margin:0 4px 8px}
+.xs-card .redbtn{margin:10px 0 10px;border-radius:10px}
+.xs-card .redbtn svg{width:20px;height:20px;vertical-align:-3px;margin-right:8px;fill:#fff;stroke:none}
+.xs-card .wbtn,.xs-card .gbtn{display:block;text-align:center;margin:0 0 10px;border-radius:10px}
+.xs-card .alink.dim{margin-top:6px}
+.mobile .xs-card{padding:24px 20px 16px;border-radius:18px}
+.mobile .xs-ic{width:52px;height:52px;border-radius:15px;margin-bottom:10px}
+.mobile .xs-ic svg{width:28px;height:28px}
+.mobile .xs-card h3{font-size:20px}
+.mobile .xs-card p{font-size:14px;margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -745,11 +768,11 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v30 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v30';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v31 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v31';
 </script>
 <script>
-var APP_VERSION = 'v30';
+var APP_VERSION = 'v31';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -875,7 +898,7 @@ function openAny(m) { toImdb(m, function (id) { if (id) openTitle(m.type, id, m.
 // ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
 function focusables() {
   var scope = document, sel = '.f';
-  if (typeof pl !== 'undefined' && pl.style.display === 'block') { scope = openMenu ? $(openMenu) : pl; if (!openMenu) sel = '#ptop .f, #pbot .f, #pmid .f, .upnext'; }
+  if (typeof pl !== 'undefined' && pl.style.display === 'block') { scope = openMenu ? $(openMenu) : pl; if (!openMenu) sel = /\bxs\b/.test(pl.className) ? '#ptop .f, #xsheet .f' : '#ptop .f, #pbot .f, #pmid .f, .upnext'; }
   return [].slice.call(scope.querySelectorAll(sel)).filter(function (e) { return e.offsetParent !== null && e !== closeBtn && (scope !== document || !pl.contains(e)); });
 }
 function mark(e) { if (cur) cur.className = cur.className.replace(/ on\b/g, ''); cur = e; e.className += ' on'; }
@@ -1795,52 +1818,81 @@ function readAvatar(f, cb) {
   rd.readAsDataURL(f);
 }
 // Originals: our own cartoon characters (blob monsters, kids, robots, animals) with accessories
-var OR_BG = [['#e50914', '#9b0610'], ['#2563eb', '#173f9e'], ['#16a34a', '#0d6b31'], ['#f59e0b', '#b26f05'], ['#9333ea', '#5f1aa3'], ['#db2777', '#951a51'], ['#0891b2', '#065d75'], ['#ea580c', '#a33c08'], ['#4f46e5', '#312b9c'], ['#0d9488', '#085f57'], ['#65a30d', '#416a08'], ['#475569', '#2b3442']];
-var SKIN = ['#f5c9a5', '#e0a57a', '#b97a4f', '#8a5634', '#ffdcc0'], HAIR = ['#2b1b0e', '#5a3417', '#111', '#c8831f', '#7b2d1e'];
+// Deep, premium backgrounds with one glowing accent colour; characters get soft shading, eye highlights and a floor shadow
+var OR_N = 60;
+var OR_BG = [['#1b2140', '#090c1c'], ['#3b1222', '#14060b'], ['#0f302b', '#051311'], ['#2c1b42', '#100a1c'], ['#3a2a12', '#160f05'], ['#14293f', '#060e19'],
+  ['#2a2a30', '#0d0d10'], ['#3e0f10', '#150405'], ['#10301d', '#05120a'], ['#22183f', '#0b0716'], ['#3b2511', '#150c04'], ['#11323d', '#05141a']];
+var OR_AC = ['#e50914', '#f5a524', '#2dd4bf', '#a78bfa', '#60a5fa', '#f472b6', '#34d399', '#fb923c', '#facc15', '#38bdf8', '#f87171', '#c084fc'];
+var SKIN = ['#f3c7a2', '#dda077', '#b5774c', '#87522f', '#fbd9bd'], HAIR = ['#24170c', '#55311a', '#121214', '#b8761c', '#6f2a1a'];
+var FUR = [['#efe3d3', '#fff6ea'], ['#d99a5b', '#f6d7b0'], ['#7d5136', '#c79c7a'], ['#3a3a44', '#8a8a96']];
 function avatarOrig(n) {
-  n = Math.abs(parseInt(n, 10) || 0) % 48;
-  var c = OR_BG[n % 12], kind = (n + Math.floor(n / 4)) % 4, acc = Math.floor(n / 4) % 6, mood = Math.floor(n / 12) % 4;
-  var s = '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true"><defs><linearGradient id="og' + n + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>';
-  s += '<rect width="100" height="100" fill="url(#og' + n + ')"/>';
-  var ey = 44, ex = 17;
-  if (kind === 0) { // furry blob: the whole tile is the creature
-    for (var k = 0; k < 26; k++) s += '<circle cx="' + ((k * 37 + n * 11) % 100) + '" cy="' + ((k * 53 + n * 7) % 100) + '" r="' + (1.2 + (k % 3)) + '" fill="#000" opacity=".12"/>';
-    ey = 42;
-    s += '<circle cx="' + (50 - ex) + '" cy="' + ey + '" r="12" fill="#fff"/><circle cx="' + (50 + ex) + '" cy="' + ey + '" r="12" fill="#fff"/>';
-    s += '<circle cx="' + (52 - ex) + '" cy="' + (ey + 2) + '" r="5.5" fill="#111"/><circle cx="' + (52 + ex) + '" cy="' + (ey + 2) + '" r="5.5" fill="#111"/>';
-  } else if (kind === 1) { // kid: round face + hair
-    var sk = SKIN[n % 5], hr = HAIR[(n >> 2) % 5]; ey = 56;
-    s += '<circle cx="50" cy="60" r="30" fill="' + sk + '"/><path d="M20 56Q20 26 50 26Q80 26 80 56Q72 40 50 40Q30 40 20 56z" fill="' + hr + '"/>';
-    s += '<circle cx="' + (50 - 11) + '" cy="' + ey + '" r="3.6" fill="#1b1b1b"/><circle cx="' + (50 + 11) + '" cy="' + ey + '" r="3.6" fill="#1b1b1b"/>';
-    s += '<circle cx="34" cy="66" r="4" fill="#ff7a7a" opacity=".35"/><circle cx="66" cy="66" r="4" fill="#ff7a7a" opacity=".35"/>';
-    ex = 11;
+  n = Math.abs(parseInt(n, 10) || 0) % OR_N;
+  var bg = OR_BG[(n + Math.floor(n / 12)) % 12], ac = OR_AC[(n * 5 + Math.floor(n / 12)) % 12];
+  var kind = (n + Math.floor(n / 4)) % 4, acc = Math.floor(n / 4) % 6, mood = Math.floor(n / 12) % 4, id = 'o' + n;
+  var s = '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true"><defs>' +
+    '<linearGradient id="' + id + 'b" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient>' +
+    '<radialGradient id="' + id + 'g" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="' + ac + '" stop-opacity=".42"/><stop offset="1" stop-color="' + ac + '" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="' + id + 's" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>' +
+    '</defs><rect width="100" height="100" fill="url(#' + id + 'b)"/><rect width="100" height="100" fill="url(#' + id + 'g)"/>' +
+    '<ellipse cx="50" cy="95" rx="32" ry="5" fill="#000" opacity=".4"/>';
+  function shade(shape) { return shape + shape.replace(/fill="[^"]*"/, 'fill="url(#' + id + 's)"'); }
+  function eye(x, y, r, pupil) {
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff"/><circle cx="' + (x + r * .15) + '" cy="' + (y + r * .15) + '" r="' + (r * pupil) + '" fill="#0b0b10"/>' +
+      '<circle cx="' + (x - r * .12) + '" cy="' + (y - r * .2) + '" r="' + (r * .18) + '" fill="#fff"/>';
+  }
+  var ey, ex, my, mc = '#14090b';
+  if (kind === 0) { // blob creature
+    if (n % 3 === 1) s += '<path d="M30 30L26 12L40 24z" fill="' + ac + '"/><path d="M70 30L74 12L60 24z" fill="' + ac + '"/>';
+    if (n % 3 === 2) s += '<path d="M50 22V9" stroke="' + ac + '" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="8" r="4.5" fill="#fff"/><circle cx="50" cy="8" r="2.6" fill="' + ac + '"/>';
+    s += shade('<path d="M16 97C12 58 20 22 50 21C80 22 88 58 84 97Z" fill="' + ac + '"/>');
+    s += '<ellipse cx="50" cy="78" rx="20" ry="12" fill="#fff" opacity=".14"/>';
+    ey = 50; ex = 14;
+    s += eye(50 - ex, ey, 10, .52) + eye(50 + ex, ey, 10, .52);
+    my = 72;
+  } else if (kind === 1) { // person
+    var sk = SKIN[n % 5], hr = HAIR[(n >> 2) % 5];
+    s += shade('<path d="M14 100C16 80 31 72 50 72C69 72 84 80 86 100Z" fill="' + ac + '"/>');
+    s += '<path d="M42 64h16v12q-8 5-16 0z" fill="' + sk + '"/><path d="M42 68h16v4q-8 3-16 0z" fill="#000" opacity=".15"/>';
+    s += '<circle cx="26" cy="50" r="5" fill="' + sk + '"/><circle cx="74" cy="50" r="5" fill="' + sk + '"/>';
+    s += shade('<circle cx="50" cy="47" r="24" fill="' + sk + '"/>');
+    if (n % 2) s += '<path d="M25 47C22 22 38 16 52 18C68 19 79 28 75 48C72 37 62 30 49 31C38 32 30 38 25 47Z" fill="' + hr + '"/>';
+    else s += '<path d="M24 52C20 26 34 15 50 16C67 16 81 27 76 52C74 40 70 36 66 34C58 38 44 38 33 33C29 37 26 43 24 52Z" fill="' + hr + '"/>';
+    ey = 49; ex = 9;
+    s += eye(50 - ex, ey, 3.8, .7) + eye(50 + ex, ey, 3.8, .7);
+    s += '<circle cx="35" cy="58" r="3.6" fill="#ff6b6b" opacity=".28"/><circle cx="65" cy="58" r="3.6" fill="#ff6b6b" opacity=".28"/>';
+    my = 60;
   } else if (kind === 2) { // robot
-    ey = 50;
-    s += '<line x1="50" y1="14" x2="50" y2="24" stroke="#e5e7eb" stroke-width="3"/><circle cx="50" cy="12" r="4" fill="#fde047"/>';
-    s += '<rect x="22" y="24" width="56" height="54" rx="12" fill="#e5e7eb"/><rect x="29" y="38" width="42" height="22" rx="8" fill="#1f2937"/>';
-    s += '<circle cx="40" cy="' + ey + '" r="5" fill="#67e8f9"/><circle cx="60" cy="' + ey + '" r="5" fill="#67e8f9"/>';
-    ex = 10;
-  } else { // animal: cat or bear ears
-    var fur = n % 8 < 4 ? '#f6e7d8' : '#d9a066'; ey = 52;
-    if (n % 2) s += '<path d="M24 40L28 14L46 30z" fill="' + fur + '"/><path d="M76 40L72 14L54 30z" fill="' + fur + '"/>';
-    else s += '<circle cx="28" cy="30" r="11" fill="' + fur + '"/><circle cx="72" cy="30" r="11" fill="' + fur + '"/>';
-    s += '<circle cx="50" cy="56" r="30" fill="' + fur + '"/><ellipse cx="50" cy="66" rx="13" ry="9" fill="#fff" opacity=".7"/><ellipse cx="50" cy="62" rx="4" ry="3" fill="#3b2314"/>';
-    s += '<circle cx="39" cy="' + ey + '" r="3.8" fill="#1b1b1b"/><circle cx="61" cy="' + ey + '" r="3.8" fill="#1b1b1b"/>';
-    ex = 11;
+    s += '<path d="M50 24V12" stroke="#9aa3b2" stroke-width="3"/><circle cx="50" cy="10" r="4.5" fill="' + ac + '"/><circle cx="50" cy="10" r="8" fill="' + ac + '" opacity=".25"/>';
+    s += shade('<path d="M20 100v-12q0-10 10-10h40q10 0 10 10v12z" fill="#6b7383"/>');
+    s += '<circle cx="21" cy="50" r="5" fill="#8a93a3"/><circle cx="79" cy="50" r="5" fill="#8a93a3"/>';
+    s += shade('<rect x="22" y="24" width="56" height="50" rx="15" fill="#d9dde5"/>');
+    s += '<rect x="29" y="37" width="42" height="24" rx="12" fill="#0b0f17"/>';
+    ey = 49; ex = 10;
+    s += '<rect x="' + (50 - ex - 5) + '" y="' + (ey - 3.5) + '" width="10" height="7" rx="3.5" fill="' + ac + '"/><rect x="' + (50 + ex - 5) + '" y="' + (ey - 3.5) + '" width="10" height="7" rx="3.5" fill="' + ac + '"/>';
+    s += '<rect x="29" y="37" width="42" height="24" rx="12" fill="' + ac + '" opacity=".1"/>';
+    my = 68; mc = '#3a4150';
+  } else { // animal: cat, bear, fox
+    var fur = FUR[n % 4], sp = n % 3;
+    if (sp === 0) s += '<path d="M24 44L26 14L46 30z" fill="' + fur[0] + '"/><path d="M76 44L74 14L54 30z" fill="' + fur[0] + '"/><path d="M29 36L30 22L40 30z" fill="#ff9fb2" opacity=".8"/><path d="M71 36L70 22L60 30z" fill="#ff9fb2" opacity=".8"/>';
+    else if (sp === 1) s += '<circle cx="28" cy="30" r="11" fill="' + fur[0] + '"/><circle cx="72" cy="30" r="11" fill="' + fur[0] + '"/><circle cx="28" cy="30" r="5.5" fill="#000" opacity=".18"/><circle cx="72" cy="30" r="5.5" fill="#000" opacity=".18"/>';
+    else s += '<path d="M22 46L22 12L46 30z" fill="' + fur[0] + '"/><path d="M78 46L78 12L54 30z" fill="' + fur[0] + '"/><path d="M26 38L26 22L38 31z" fill="#111" opacity=".55"/><path d="M74 38L74 22L62 31z" fill="#111" opacity=".55"/>';
+    s += shade('<circle cx="50" cy="55" r="30" fill="' + fur[0] + '"/>');
+    s += '<ellipse cx="50" cy="68" rx="15" ry="11" fill="' + fur[1] + '"/><path d="M45.5 62h9q-1 5-4.5 5.5q-3.5-.5-4.5-5.5z" fill="#2a1a12"/>';
+    ey = 52; ex = 12;
+    s += eye(50 - ex, ey, 4.4, .72) + eye(50 + ex, ey, 4.4, .72);
+    my = 73;
   }
   // mouth
-  var my = kind === 2 ? 70 : kind === 1 ? 72 : kind === 3 ? 72 : 68, mc = kind === 2 ? '#1f2937' : '#1b1b1b';
-  if (kind === 0) mc = '#111';
-  if (mood === 0) s += '<path d="M' + (50 - 10) + ' ' + my + 'q10 9 20 0" fill="none" stroke="' + mc + '" stroke-width="3.4" stroke-linecap="round"/>';
-  else if (mood === 1) s += '<path d="M' + (50 - 11) + ' ' + (my - 2) + 'h22q-2 11 -11 11q-9 0 -11 -11z" fill="' + mc + '"/><rect x="' + (50 - 7) + '" y="' + (my - 2) + '" width="14" height="4" fill="#fff"/>';
-  else if (mood === 2) s += '<ellipse cx="50" cy="' + (my + 1) + '" rx="5" ry="5.5" fill="' + mc + '"/>';
-  else s += '<path d="M' + (50 - 8) + ' ' + (my + 1) + 'q8 -5 16 1" fill="none" stroke="' + mc + '" stroke-width="3.4" stroke-linecap="round"/>';
+  if (mood === 0) s += '<path d="M' + (50 - 8) + ' ' + my + 'q8 7 16 0" fill="none" stroke="' + mc + '" stroke-width="3" stroke-linecap="round"/>';
+  else if (mood === 1) s += '<path d="M' + (50 - 9) + ' ' + (my - 2) + 'h18q-1.5 10-9 10q-7.5 0-9-10z" fill="' + mc + '"/><path d="M' + (50 - 5) + ' ' + (my + 5) + 'q5-3 10 0q-2 3-5 3q-3 0-5-3z" fill="#ff6b81"/>';
+  else if (mood === 2) s += '<ellipse cx="50" cy="' + (my + 2) + '" rx="4.2" ry="4.8" fill="' + mc + '"/>';
+  else s += '<path d="M' + (50 - 7) + ' ' + (my + 2) + 'q7-4 14 1" fill="none" stroke="' + mc + '" stroke-width="3" stroke-linecap="round"/>';
   // accessory
-  if (acc === 1) s += '<g fill="none" stroke="#111" stroke-width="3"><circle cx="' + (50 - ex) + '" cy="' + ey + '" r="9"/><circle cx="' + (50 + ex) + '" cy="' + ey + '" r="9"/><path d="M' + (50 - ex + 9) + ' ' + ey + 'h' + (2 * ex - 18) + '"/></g>';
-  else if (acc === 2) s += '<rect x="' + (50 - ex - 11) + '" y="' + (ey - 6) + '" width="22" height="12" rx="5" fill="#111"/><rect x="' + (50 + ex - 11) + '" y="' + (ey - 6) + '" width="22" height="12" rx="5" fill="#111"/><rect x="' + (50 - ex + 10) + '" y="' + (ey - 2) + '" width="' + (2 * ex - 20) + '" height="3" fill="#111"/>';
-  else if (acc === 3) s += '<path d="M' + (50 - 14) + ' ' + (my - 6) + 'q7 -6 14 -1q7 -5 14 1q-7 5 -14 1q-7 4 -14 -1z" fill="#2b1b0e"/>';
-  else if (acc === 4) s += '<path d="M16 54Q16 12 50 12Q84 12 84 54" fill="none" stroke="#111" stroke-width="5"/><rect x="10" y="48" width="12" height="20" rx="5" fill="#111"/><rect x="78" y="48" width="12" height="20" rx="5" fill="#111"/>';
-  else if (acc === 5) s += '<path d="M32 20l6 10 6-12 6 12 6-12 6 12 6-10v14H32z" fill="#facc15" stroke="#b45309" stroke-width="1.5"/>';
+  if (acc === 1) s += '<g fill="#fff" fill-opacity=".12" stroke="#0b0b10" stroke-width="2.6"><circle cx="' + (50 - ex) + '" cy="' + ey + '" r="8.5"/><circle cx="' + (50 + ex) + '" cy="' + ey + '" r="8.5"/></g><path d="M' + (50 - ex + 8.5) + ' ' + ey + 'h' + (2 * ex - 17) + '" stroke="#0b0b10" stroke-width="2.6"/>';
+  else if (acc === 2) s += '<path d="M' + (50 - ex - 11) + ' ' + (ey - 5) + 'h' + (2 * ex + 22) + 'v4q-1 8-9 8h-4q-5 0-6-6h-' + (2 * ex - 20) + 'q-1 6-6 6h-4q-8 0-9-8z" fill="#0b0b10"/><path d="M' + (50 - ex - 7) + ' ' + (ey - 3) + 'h5" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>';
+  else if (acc === 3) s += '<path d="M' + (50 - 13) + ' ' + (my - 4) + 'q6-6 13-1q7-5 13 1q-6 4-13 0q-7 4-13 0z" fill="#24170c"/>';
+  else if (acc === 4) s += '<path d="M15 56Q15 10 50 10Q85 10 85 56" fill="none" stroke="#1b1b22" stroke-width="5"/><rect x="9" y="47" width="13" height="22" rx="6" fill="' + ac + '"/><rect x="78" y="47" width="13" height="22" rx="6" fill="' + ac + '"/><rect x="11" y="50" width="4" height="16" rx="2" fill="#fff" opacity=".3"/>';
+  else if (acc === 5) s += '<path d="M32 22l6 10 6-12 6 12 6-12 6 12 6-10v13H32z" fill="#f5c542" stroke="#a66a00" stroke-width="1.2" stroke-linejoin="round"/><circle cx="50" cy="29" r="2.2" fill="' + ac + '"/>';
   return s + '</svg>';
 }
 function avatarFace(i) {
@@ -1934,7 +1986,7 @@ function editProfile(id) {
     clear(); gateOn();
     var list = profilesList(), isNew = !id;
     var p = list.filter(function (x) { return x.id === id; })[0];
-    p = p ? JSON.parse(JSON.stringify(p)) : { id: 'p' + new Date().getTime().toString(36), name: '', av: 'o:' + Math.floor(Math.random() * 48), kids: false, pin: '' };
+    p = p ? JSON.parse(JSON.stringify(p)) : { id: 'p' + new Date().getTime().toString(36), name: '', av: 'o:' + Math.floor(Math.random() * OR_N), kids: false, pin: '' };
     var wrap = el('div', 'edit'), left = el('div', 'eleft'), right = el('div', 'eright'), big = el('div', 'bigav'), cap = el('div', 'gsub', p.name || 'New profile');
     big.innerHTML = avatarSVG(p.av); left.appendChild(big); left.appendChild(cap);
     right.appendChild(el('h1', '', isNew ? 'Add Profile' : 'Edit Profile'));
@@ -1964,7 +2016,7 @@ function editProfile(id) {
       file.onchange = function () { var f = file.files && file.files[0]; if (f) readAvatar(f, function (d) { if (d) pickAv('img:' + d, null); else alert('Could not read this picture.'); }); };
       grid.appendChild(up); grid.appendChild(file);
     }
-    var orig = []; for (var oi = 0; oi < 48; oi++) orig.push('o:' + oi);
+    var orig = []; for (var oi = 0; oi < OR_N; oi++) orig.push('o:' + oi);
     section('3BodyFlix Originals', orig);
     AV_SETS.forEach(function (s) { section(s[0], AV_SEEDS.map(function (seed) { return 'db:' + s[1] + ':' + seed; })); });
     var mine = []; for (var i = 0; i < 36; i++) mine.push(i);
@@ -2050,6 +2102,9 @@ function loadSubs(type, id) {
 }
 function subNote(t) { dbg.textContent = t; dbg.style.color = '#fff'; dbg.style.fontSize = MOBILE ? '13px' : '30px'; }
 function secs(h, m, s, ms) { return (+h) * 3600 + (+m) * 60 + (+s) + (+('0.' + ms)); }
+// Subtitle files often carry ads / site credits ("%url", "become a premium member"): drop those cues
+var SUB_AD = /%url|https?:|www\.|\.(com|net|org|io|tv|me)\b|opensubtitles|subscene|osdb|yts|premium member|\u0627\u062f\u0639\u0645\u0646\u0627|\u0627\u0644\u0625\u0639\u0644\u0627\u0646\u0627\u062a|\u0639\u0636\u0648 \u0645\u0645\u064a\u0632/i;
+function dropAds(t) { return String(t || '').replace(/\r/g, '').split(/\n\s*\n/).filter(function (b) { return !SUB_AD.test(b.split('-->').pop()); }).join('\n\n'); }
 function parseSrt(t) {
   var out = [];
   t.replace(/^﻿/, '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (b) {
@@ -2098,6 +2153,7 @@ function setSub(i) {
   subNote('Subtitles: loading ' + label + '...');
   fetchSub(s.url, function (text) {
     if (subIdx !== i) return;
+    text = text && dropAds(text);
     cues = text ? parseSrt(text) : [];
     if (!cues.length) {
       for (var j = i + 1; j < subs.length; j++) if (langOf(subs[j]) === langOf(s)) return setSub(j);
@@ -2130,6 +2186,12 @@ function playQueue(q, i, title) { pq = { q: q, i: i, title: title, tried: {} }; 
 var QORDER = ['1080P', '720P', '4K', '480P', '360P', 'Auto'];
 function isFast(s) { return /\u26a1|fast|\u0623\u0633\u0631\u0639|\u0627\u0644\u0623\u0633\u0631\u0639/i.test((s.name || '') + ' ' + (s.title || '')) ? 1 : 0; }
 // playable formats first, then the addon's "fastest server" picks, then 1080p > 720p > 4K > 480p
+function iosOk(s) { var f = fmtOf(s), x = hints(s); return !x.proxyHeaders && !isHevc(s) && (f === 'MP4' || f === 'HLS' || (f === 'FILE' && !x.notWebReady)); }
+function iosList(list) { // MP4 / HLS first; at most 2 unlabelled files (each costs up to 10 s when it is really an MKV)
+  var files = 0;
+  return list.filter(function (s) { if (!iosOk(s)) return false; if (fmtOf(s) !== 'FILE') return true; return ++files <= 2; });
+}
+console.assert(iosOk({ url: 'https://a/b.mp4' }) && !iosOk({ url: 'https://a/b.mkv' }) && !iosOk({ url: 'https://a/b.m3u8', behaviorHints: { proxyHeaders: {} } }) && !iosOk({ url: 'https://a/x', behaviorHints: { notWebReady: true } }), 'iosOk');
 function iosPenalty(s) { return IS_IOS && (fmtOf(s) === 'MKV' || isHevc(s)) ? 20 : 0; }
 function sortForAuto(list) {
   return list.map(function (s, i) { return [s, i]; }).sort(function (a, b) {
@@ -2215,6 +2277,8 @@ function autoPlay(type, id, title, meta, sub) {
   fetchStreams(type, id, function (list) {
     if (!isPlaying() || pq !== mine) return;
     if (!list.length) { history.back(); return alert('No playable sources found for this title.'); }
+    pq.all = list.slice();
+    if (IS_IOS) { list = iosList(list); if (!list.length) return showExtSheet(); }
     pq.q = list.slice(); renderQ();
     pq.i = 0; pq.tried[0] = 1;
     startSrc(pq.q[0].url); renderQ();
@@ -2232,6 +2296,44 @@ function extUrl(url, app) {
 console.assert(extUrl('https://a.com/v.mkv?x=1').indexOf('intent://a.com/v.mkv?x=1#Intent;scheme=https;type=video/*;end') === 0 || IS_IOS, 'extUrl');
 function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i].url; video.pause(); location.href = extUrl(u, app); }
 
+var xsheet = el('div'); xsheet.id = 'xsheet'; pl.appendChild(xsheet);
+function extPool() { return ((pq && (pq.all || pq.q)) || []).filter(function (s) { return !hints(s).proxyHeaders; }); }
+function showExtSheet() {
+  clearTimeout(watchdog); stopProbes(); closeMovi(); stopSubs(); subNote('');
+  try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
+  var pool = extPool();
+  if (!pool.length) { history.back(); return alert('No stream could be played on this device. Try another title.'); }
+  var qs = [];
+  pool.forEach(function (s) { var q = qualityOf(s); if (qs.indexOf(q) < 0) qs.push(q); });
+  qs.sort(function (a, b) { return QORDER.indexOf(a) - QORDER.indexOf(b); });
+  var pick = qs[0];
+  function streamFor(q) { return pool.filter(function (s) { return qualityOf(s) === q; }).sort(function (a, b) { return isFast(b) - isFast(a); })[0]; }
+  function go(app) { var s = streamFor(pick); if (s) location.href = extUrl(s.url, app); }
+  pl.className = pl.className.replace(/\bloading\b/g, '').replace(/ xs\b/g, '') + ' xs';
+  xsheet.innerHTML = '';
+  var card = el('div', 'xs-card');
+  card.appendChild(el('div', 'xs-ic')).innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="M10 8.5v5l4.5-2.5z" fill="currentColor"/><path d="M8 21h8"/></svg>';
+  card.appendChild(el('h3', '', IS_IOS ? 'Play it in a player app' : 'Open it in a video app'));
+  card.appendChild(el('p', '', IS_IOS ? "This title only comes as MKV files, and the iPhone browser can't play MKV. VLC or Infuse open it in seconds, at full quality, with subtitles." : "Your browser can't play this file. VLC or MX Player open it in seconds."));
+  if (qs.length > 1) {
+    var chips = el('div', 'xs-q');
+    qs.forEach(function (q) {
+      var c = el('span', 'chip f' + (q === pick ? ' sel' : ''), q === 'Auto' ? 'Default' : q.replace('P', 'p'));
+      c.onok = function () { pick = q; [].forEach.call(chips.childNodes, function (x) { x.className = x.className.replace(/ sel\b/g, ''); }); c.className += ' sel'; };
+      chips.appendChild(c);
+    });
+    card.appendChild(chips);
+  }
+  var b1 = ibtn('btn redbtn f', 'play', IS_IOS ? 'Play in VLC' : 'Open in video app'); b1.onok = function () { go(); }; card.appendChild(b1);
+  if (IS_IOS) { var b2 = el('div', 'wbtn f', 'Play in Infuse'); b2.onok = function () { go('infuse'); }; card.appendChild(b2); }
+  var b3 = el('div', 'gbtn f', 'Copy link');
+  b3.onok = function () { var u = streamFor(pick).url; try { navigator.clipboard.writeText(u).then(function () { toast('Link copied'); }, function () { prompt('Copy this link', u); }); } catch (e) { prompt('Copy this link', u); } };
+  card.appendChild(b3);
+  if (IS_IOS) { var gv = el('div', 'alink dim f', "No VLC yet? Get it free"); gv.onok = function () { location.href = 'https://apps.apple.com/app/vlc-media-player/id650377962'; }; card.appendChild(gv); }
+  xsheet.appendChild(card); xsheet.className = 'on';
+  setFocus(b1);
+}
+function hideExtSheet() { xsheet.className = ''; xsheet.innerHTML = ''; pl.className = pl.className.replace(/ xs\b/g, ''); }
 function nextStream() {
   clearTimeout(watchdog); var wasAt = media().currentTime || 0; closeMovi();
   if (!pq || !pq.q.length) { // a single link (M3U / direct): nothing else to try, so say so instead of spinning forever
@@ -2249,7 +2351,7 @@ function nextStream() {
     toast('Switching to another source\u2026');
     startSrc(pq.q[pq.i].url, wasAt); renderQ();
   } else {
-    if (MOBILE && pq.q.length && confirm('This video format does not play in the browser. Open it in ' + (IS_IOS ? 'VLC' : 'a video player app (VLC / MX Player)') + '?')) { pq.i = 0; return openExternal(); }
+    if (MOBILE) return showExtSheet();
     history.back();
     alert('No stream could be played on this device. Try another quality or title.');
   }
@@ -2282,7 +2384,7 @@ function useHls(url) {
 // ---------- universal player: Movi-Player plays MKV / HEVC / AC3 / DTS in the browser (WebCodecs + FFmpeg WASM) ----------
 var moviEl = null, moviTried = {};
 function media() { return moviEl || video; }
-function canMovi() { return !IS_TV && !!window.customElements && typeof WebAssembly === 'object' && (!IS_IOS || 'VideoDecoder' in window); }
+function canMovi() { return !IS_TV && !IS_IOS && !!window.customElements && typeof WebAssembly === 'object'; }
 function loadMovi(cb) {
   if (!window.customElements) return cb(false);
   if (customElements.get('movi-player')) return cb(true);
@@ -2375,7 +2477,7 @@ function onVideoError() {
 function play(url, title) { openPlayer(title); startSrc(url); }
 function openPlayer(title, sub) {
   if (!isPlaying()) { history.pushState(null, '', BASE + '/watch/' + slug(title || 'video')); setTitle('Watching ' + (title || '')); }
-  video.style.display = 'block'; pl.style.display = 'block';
+  video.style.display = 'block'; pl.style.display = 'block'; hideExtSheet();
   $('nBtn').style.display = nextEpFn ? '' : 'none';
   $('pTitle').textContent = sub && /^S\d+ E\d+/.test(sub) ? String(title || '').replace(/ · S\d+ E\d+$/, '') : (title || ''); $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
   video.onerror = onVideoError;
@@ -2399,6 +2501,7 @@ function openPlayer(title, sub) {
   if (document.documentElement.className.indexOf(' playing') < 0) document.documentElement.className += ' playing';
 }
 function closePlayer() {
+  hideExtSheet();
   document.documentElement.className = document.documentElement.className.replace(/ playing\b/g, '');
   try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
   try { var fe = document.fullscreenElement || document.webkitFullscreenElement; if (fe && MOBILE) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {}
