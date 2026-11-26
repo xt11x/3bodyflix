@@ -677,11 +677,22 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v28 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v28';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v29 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v29';
 </script>
 <script>
-var APP_VERSION = 'v28';
+var APP_VERSION = 'v29';
+(function () {
+  try {
+    var x = new XMLHttpRequest();
+    x.open('GET', (/^\/3bodyflix(\/|$)/.test(location.pathname) ? '/3bodyflix/' : '/') + '?vc=' + new Date().getTime());
+    x.onload = function () {
+      var m = /APP_VERSION = '([^']+)'/.exec(x.responseText || '');
+      if (m && m[1] !== APP_VERSION && sessionStorage.vreload !== m[1]) { sessionStorage.vreload = m[1]; location.reload(); }
+    };
+    x.send();
+  } catch (e) {}
+})();
 var CINEMETA = 'https://v3-cinemeta.strem.io';
 function $(id) { return document.getElementById(id); }
 var main = $('main'), top_ = $('top'), video = $('video'), dbg = $('dbg'), subEl = $('sub'), closeBtn = $('closeBtn');
@@ -1931,7 +1942,7 @@ function useHls(url) {
 // ---------- universal player: Movi-Player plays MKV / HEVC / AC3 / DTS in the browser (WebCodecs + FFmpeg WASM) ----------
 var moviEl = null, moviTried = {};
 function media() { return moviEl || video; }
-function canMovi() { return !IS_TV && !!window.customElements && typeof WebAssembly === 'object'; }
+function canMovi() { return !IS_TV && !!window.customElements && typeof WebAssembly === 'object' && (!IS_IOS || 'VideoDecoder' in window); }
 function loadMovi(cb) {
   if (!window.customElements) return cb(false);
   if (customElements.get('movi-player')) return cb(true);
