@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=1920">
 <title>3BodyFlix</title>
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="logo.svg?v=2" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <script>
@@ -409,10 +409,17 @@ html.desk{zoom:.72}
 .mobile .prof .pic .ic{width:32px;height:32px}
 .mobile .add .ic{width:14px;height:14px}
 .mobile #main > h1:first-child{margin-top:70px}
+/* ===== v16: A logo, footer credits ===== */
+#logo img{width:58px;height:50px;margin:-4px 18px 0 0}
+.mobile #logo img{width:34px;height:29px;margin:0}
+#foot{text-align:center;line-height:1.7}
+#foot b{display:block;color:#e50914;font-weight:800;letter-spacing:-.02em;font-size:22px;margin-bottom:4px}
+#foot .ar{direction:rtl;color:#7a7a82}
+.mobile #foot b{font-size:14px}
 </style>
 </head>
 <body>
-<div id="top"><span id="logo"><img src="logo.svg" alt="">3Body<b>Flix</b></span></div>
+<div id="top"><span id="logo" title="3BodyFlix"><img src="logo.svg?v=2" alt="3BodyFlix"></span></div>
 <div id="main"></div>
 <video id="video" playsinline webkit-playsinline></video>
 <div id="sub"></div>
@@ -435,11 +442,11 @@ html.desk{zoom:.72}
 <div id="tabbar"><span class="tab f act" id="tHome"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span class="tab f" id="tMov"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><span class="tab f" id="tSer"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/></svg></span><span class="tab f" id="tList"><svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.7l6.2-.9z"/></svg></span><span class="tsep"></span><span class="tab f" id="tSearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg></span><span class="tab f" id="tProf"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span></div>
 <div id="trailer"></div>
 <span class="f" id="closeBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
-<div id="dbg">v15 · no JS yet</div>
+<div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v15 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v15';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v16 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v16';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -683,7 +690,10 @@ function home() {
       metas.forEach(function (m, i) { wcard(m, R.strip, r[4] ? i + 1 : 0, r[4] && i === 0); });
     });
   });
-  var foot = el('div', '', '\u00a9 2026 3BodyFlix'); foot.id = 'foot'; main.appendChild(foot);
+  var foot = el('div'); foot.id = 'foot'; main.appendChild(foot);
+  foot.appendChild(el('b', '', '3BodyFlix'));
+  foot.appendChild(el('div', '', '© 2026 All rights reserved to Abdullah Mohammed'));
+  foot.appendChild(el('div', 'ar', 'جميع الحقوق محفوظة لـ عبدالله محمد'));
 }
 
 // Full ranked "best of all time" pages, fetched page by page (the addon serves 20 or 100 per page)

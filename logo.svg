@@ -1,22 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <circle cx="32" cy="32" r="31" fill="#141414"/>
-  <!-- three stars: the "3" in 3BodyFlix -->
-  <circle cx="13" cy="15" r="2.2" fill="#fff"/>
-  <circle cx="50" cy="50" r="1.8" fill="#fff"/>
-  <circle cx="17" cy="48" r="1.4" fill="#fff" opacity=".7"/>
-  <g transform="rotate(45 32 32)">
-    <!-- flame -->
-    <path d="M26.5 45 Q32 60 37.5 45 Z" fill="#f5c518"/>
-    <path d="M29 45 Q32 54 35 45 Z" fill="#ff7a00"/>
-    <!-- fins -->
-    <path d="M24.5 35 L17.5 46 L24.5 44 Z" fill="#a3060d"/>
-    <path d="M39.5 35 L46.5 46 L39.5 44 Z" fill="#a3060d"/>
-    <!-- body -->
-    <path d="M32 7 C42 15 42 33 39.5 45 L24.5 45 C22 33 22 15 32 7 Z" fill="#e50914"/>
-    <!-- nose cone -->
-    <path d="M32 7 C35.6 9.9 38 13.6 39.2 17.5 L24.8 17.5 C26 13.6 28.4 9.9 32 7 Z" fill="#fff"/>
-    <!-- window -->
-    <circle cx="32" cy="27" r="4.6" fill="#141414" stroke="#fff" stroke-width="2"/>
-    <circle cx="30.6" cy="25.6" r="1.2" fill="#9cf"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="262 296 500 430">
+  <!-- folded red "A": main body with the counter cut out -->
+  <path fill="#d8232f" fill-rule="evenodd" d="M453 313H572L740 705H625L577 583L440 615L400 705H283Z M512 452L540 515L476 530Z"/>
+  <!-- darker facets give the folded look -->
+  <path fill="#b51e2a" d="M453 313L512 452L476 530L345 570Z"/>
+  <path fill="#c11f2b" d="M486 313L512 452L522 313Z"/>
+  <path fill="#a91b26" d="M512 452L540 515L572 313Z" opacity=".55"/>
+  <path fill="#b51e2a" d="M660 523L577 583L625 705Z"/>
+  <path fill="#c62230" d="M345 570L476 530L540 515L660 523L577 583L440 615Z" opacity=".35"/>
 </svg>
