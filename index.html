@@ -730,7 +730,8 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 .xs-q{margin:0 0 8px}
 .xs-q .chip{margin:0 4px 8px}
 .xs-card .redbtn{margin:10px 0 10px;border-radius:10px}
-.xs-card .redbtn svg{width:20px;height:20px;vertical-align:-3px;margin-right:8px;fill:#fff;stroke:none}
+.xs-card .redbtn svg{width:20px;height:20px;vertical-align:-3px;margin-right:8px;fill:none;stroke:#fff;stroke-width:2}
+.xs-card .redbtn svg.fill{fill:#fff;stroke:none}
 .xs-card .wbtn,.xs-card .gbtn{display:block;text-align:center;margin:0 0 10px;border-radius:10px}
 .xs-card .alink.dim{margin-top:6px}
 .mobile .xs-card{padding:24px 20px 16px;border-radius:18px}
@@ -768,11 +769,11 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v32 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v32';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v33 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v33';
 </script>
 <script>
-var APP_VERSION = 'v32';
+var APP_VERSION = 'v33';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -806,6 +807,7 @@ var ICONS = {
   list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
   next: '<path d="M6 5.5l9 6.5-9 6.5z"/><path d="M18 5v14"/>',
   home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
   tv: '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
@@ -2191,6 +2193,8 @@ function playQueue(q, i, title) { pq = { q: q, i: i, title: title, tried: {} }; 
 var QORDER = ['1080P', '720P', '4K', '480P', '360P', 'Auto'];
 function isFast(s) { return /\u26a1|fast|\u0623\u0633\u0631\u0639|\u0627\u0644\u0623\u0633\u0631\u0639/i.test((s.name || '') + ' ' + (s.title || '')) ? 1 : 0; }
 // playable formats first, then the addon's "fastest server" picks, then 1080p > 720p > 4K > 480p
+function browserDead(s) { return !!hints(s).proxyHeaders || /\/\/(www\.)?pixeldrain\.|\/\/[^\/]*hubcloud\.|\/drive\//i.test(s.url); }
+console.assert(browserDead({ url: 'https://pixeldrain.dev/api/file/x?download' }) && browserDead({ url: 'https://hubcloud.mov/drive/abc' }) && !browserDead({ url: 'https://a.b/v.mp4' }), 'browserDead');
 function iosOk(s) { var f = fmtOf(s), x = hints(s); return !x.proxyHeaders && !isHevc(s) && (f === 'MP4' || f === 'HLS' || (f === 'FILE' && !x.notWebReady)); }
 function iosList(list) { // MP4 / HLS first; at most 2 unlabelled files (each costs up to 10 s when it is really an MKV)
   var files = 0;
@@ -2283,7 +2287,9 @@ function autoPlay(type, id, title, meta, sub) {
     if (!isPlaying() || pq !== mine) return;
     if (!list.length) { history.back(); return alert('No playable sources found for this title.'); }
     pq.all = list.slice();
-    if (IS_IOS) { list = iosList(list); if (!list.length) return showExtSheet(); }
+    list = list.filter(function (s) { return !browserDead(s); });
+    if (IS_IOS) list = iosList(list);
+    if (!list.length) { if (IS_TV) { history.back(); return alert('No stream could be played on this device. Try another title.'); } return showExtSheet(); }
     pq.q = list.slice(); renderQ();
     pq.i = 0; pq.tried[0] = 1;
     startSrc(pq.q[0].url); renderQ();
@@ -2302,7 +2308,7 @@ console.assert(extUrl('https://a.com/v.mkv?x=1').indexOf('intent://a.com/v.mkv?x
 function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i].url; video.pause(); location.href = extUrl(u, app); }
 
 var xsheet = el('div'); xsheet.id = 'xsheet'; pl.appendChild(xsheet);
-function extPool() { return ((pq && (pq.all || pq.q)) || []).filter(function (s) { return !hints(s).proxyHeaders; }); }
+function extPool() { return ((pq && (pq.all || pq.q)) || []).filter(function (s) { return !hints(s).proxyHeaders && !/\/\/[^\/]*hubcloud\.|\/drive\//i.test(s.url); }); }
 function showExtSheet() {
   clearTimeout(watchdog); stopProbes(); closeMovi(); stopSubs(); subNote('');
   try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
@@ -2318,8 +2324,11 @@ function showExtSheet() {
   xsheet.innerHTML = '';
   var card = el('div', 'xs-card');
   card.appendChild(el('div', 'xs-ic')).innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="3"/><path d="M10 8.5v5l4.5-2.5z" fill="currentColor"/><path d="M8 21h8"/></svg>';
-  card.appendChild(el('h3', '', IS_IOS ? 'Play it in a player app' : 'Open it in a video app'));
-  card.appendChild(el('p', '', IS_IOS ? "This title only comes as MKV files, and the iPhone browser can't play MKV. VLC or Infuse open it in seconds, at full quality, with subtitles." : "Your browser can't play this file. VLC or MX Player open it in seconds."));
+  var PC = !MOBILE;
+  card.appendChild(el('h3', '', PC ? 'Play it in VLC' : IS_IOS ? 'Play it in a player app' : 'Open it in a video app'));
+  card.appendChild(el('p', '', PC ? "This title's sources don't play in a browser right now. Copy the link, then in VLC choose Media → Open Network Stream and paste it." :
+    IS_IOS ? "This title's sources don't play in the iPhone browser. VLC or Infuse open them in seconds, at full quality, with subtitles." :
+    "Your browser can't play this title's sources. VLC or MX Player open them in seconds."));
   if (qs.length > 1) {
     var chips = el('div', 'xs-q');
     qs.forEach(function (q) {
@@ -2329,12 +2338,17 @@ function showExtSheet() {
     });
     card.appendChild(chips);
   }
-  var b1 = ibtn('btn redbtn f', 'play', IS_IOS ? 'Play in VLC' : 'Open in video app'); b1.onok = function () { go(); }; card.appendChild(b1);
-  if (IS_IOS) { var b2 = el('div', 'wbtn f', 'Play in Infuse'); b2.onok = function () { go('infuse'); }; card.appendChild(b2); }
-  var b3 = el('div', 'gbtn f', 'Copy link');
-  b3.onok = function () { var u = streamFor(pick).url; try { navigator.clipboard.writeText(u).then(function () { toast('Link copied'); }, function () { prompt('Copy this link', u); }); } catch (e) { prompt('Copy this link', u); } };
-  card.appendChild(b3);
-  if (IS_IOS) { var gv = el('div', 'alink dim f', "No VLC yet? Get it free"); gv.onok = function () { location.href = 'https://apps.apple.com/app/vlc-media-player/id650377962'; }; card.appendChild(gv); }
+  function copyLink() { var u = streamFor(pick).url; try { navigator.clipboard.writeText(u).then(function () { toast('Link copied'); }, function () { prompt('Copy this link', u); }); } catch (e) { prompt('Copy this link', u); } }
+  var b1;
+  if (PC) { b1 = ibtn('btn redbtn f', 'copy', 'Copy link for VLC'); b1.onok = copyLink; card.appendChild(b1); }
+  else {
+    b1 = ibtn('btn redbtn f', 'play', IS_IOS ? 'Play in VLC' : 'Open in video app'); b1.onok = function () { go(); }; card.appendChild(b1);
+    if (IS_IOS) { var b2 = el('div', 'wbtn f', 'Play in Infuse'); b2.onok = function () { go('infuse'); }; card.appendChild(b2); }
+    var b3 = el('div', 'gbtn f', 'Copy link'); b3.onok = copyLink; card.appendChild(b3);
+  }
+  var gv = el('div', 'alink dim f', PC ? 'Get VLC free (videolan.org)' : IS_IOS ? 'No VLC yet? Get it free' : 'No player app? Get VLC free');
+  gv.onok = function () { location.href = PC ? 'https://www.videolan.org/vlc/' : IS_IOS ? 'https://apps.apple.com/app/vlc-media-player/id650377962' : 'https://play.google.com/store/apps/details?id=org.videolan.vlc'; };
+  card.appendChild(gv);
   xsheet.appendChild(card); xsheet.className = 'on';
   setFocus(b1);
 }
@@ -2356,7 +2370,7 @@ function nextStream() {
     toast('Switching to another source\u2026');
     startSrc(pq.q[pq.i].url, wasAt); renderQ();
   } else {
-    if (MOBILE) return showExtSheet();
+    if (!IS_TV) return showExtSheet();
     history.back();
     alert('No stream could be played on this device. Try another quality or title.');
   }
