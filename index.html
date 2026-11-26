@@ -497,6 +497,82 @@ html:not(.kbd) .wc.on .ph{box-shadow:none}
 .movi-on #pl #ptop{pointer-events:auto}
 .mobile #movi{top:58px}
 .ios.movi-on video{display:none !important}
+/* ===== v22: profile screens ===== */
+.gate #nav,.gate #tabbar,.gate #topR{display:none !important}
+.gatebox{text-align:center;padding:13vh 0 40px}
+.gatebox h1{font-size:66px;font-weight:600;letter-spacing:-.02em;margin:0 0 14px}
+.gsub{color:#9a9aa3;font-size:21px;margin:0 0 50px;max-width:none}
+.plist{white-space:normal}
+.ptile{display:inline-block;vertical-align:top;width:190px;margin:0 16px 20px;text-align:center;border:0;background:transparent !important;position:relative}
+.pav{position:relative;width:190px;height:190px;border-radius:10px;overflow:hidden;border:4px solid transparent;-webkit-transition:border-color .2s,-webkit-transform .2s;transition:border-color .2s,transform .2s}
+.pav svg.avs{display:block;width:100%;height:100%}
+.ptile.on .pav,.ptile:hover .pav{border-color:#fff}
+.ptile.on,.ptile:hover{-webkit-transform:none !important;transform:none !important;box-shadow:none !important}
+.pname{color:#9a9aa3;font-size:23px;margin-top:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptile.on .pname,.ptile:hover .pname{color:#fff}
+.addt .pav{background:#26262c}
+.addt .pav .ic{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;color:#9a9aa3;stroke-width:1.6}
+.pedit,.plock{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);line-height:0}
+.pedit .ic,.plock .ic{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;color:#fff}
+.plock{background:rgba(0,0,0,.25)}
+.plock .ic{width:30px;height:30px;top:auto;bottom:10px;left:auto;right:10px;margin:0}
+.kidtag{position:absolute;top:150px;left:50%;-webkit-transform:translateX(-50%);transform:translateX(-50%);background:#fff;color:#000;font-size:13px;font-weight:800;padding:2px 8px;border-radius:4px}
+.obtn{display:inline-block;margin-top:40px;border:2px solid #666;color:#9a9aa3;padding:14px 34px;letter-spacing:.2em;font-size:19px;border-radius:0;background:transparent}
+.obtn.on,.obtn:hover{border-color:#fff;color:#fff}
+#nav .av svg,.tav svg{display:block;width:100%;height:100%;border-radius:50%}
+#nav .av{overflow:hidden;background:none}
+.tav{display:block;width:26px;height:26px;border-radius:50%;overflow:hidden}
+.edit{max-width:1240px;margin:20px auto 40px;white-space:nowrap}
+.eleft{display:inline-block;vertical-align:top;width:300px;text-align:center;white-space:normal}
+.bigav{width:250px;height:250px;margin:0 auto 14px;border-radius:50%;overflow:hidden}
+.bigav svg{display:block;width:100%;height:100%}
+.eright{display:inline-block;vertical-align:top;width:calc(100% - 350px);margin-left:46px;white-space:normal}
+.eright h1{font-size:64px;font-weight:600;letter-spacing:-.02em;margin:0 0 20px}
+.flabel{color:#bdbdc4;font-size:18px;font-weight:600;margin:22px 0 10px}
+.flabel span{float:right;color:#9a9aa3;font-weight:400}
+.fin{display:block;width:100%;box-sizing:border-box;background:#2a2a2e;border:2px solid transparent;color:#fff;font-size:24px;padding:15px 18px;border-radius:4px;outline:none}
+.fin.on{border-color:#fff}
+input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
+.avgrid{max-height:320px;overflow-y:auto;padding:4px 0}
+.avopt{display:inline-block;width:92px;height:92px;margin:0 10px 10px 0;border-radius:8px;overflow:hidden;border:3px solid transparent;padding:0;vertical-align:top}
+.avopt svg{display:block;width:100%;height:100%}
+.avopt.sel{border-color:#fff}
+.avopt.on{border-color:#e50914}
+.trow{border-top:1px solid #2c2c32;padding:20px 0;overflow:hidden}
+.ttxt b{display:block;font-size:22px;font-weight:600}
+.ttxt small{display:block;color:#9a9aa3;font-size:17px;margin-top:4px}
+.sw{float:right;width:58px;height:32px;border-radius:16px;background:#3a3a40;position:relative;margin:4px 0 0 20px;padding:0}
+.sw:after{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#bbb;-webkit-transition:left .2s;transition:left .2s}
+.sw.yes{background:#e50914}
+.sw.yes:after{left:30px;background:#fff}
+.ebtns{margin-top:28px;overflow:hidden}
+.wbtn{display:inline-block;background:#fff;color:#000;font-weight:700;font-size:21px;padding:14px 32px;margin-right:12px;border-radius:4px}
+.gbtn{display:inline-block;border:2px solid #666;color:#fff;font-size:21px;padding:12px 28px;border-radius:4px;margin-right:12px;background:transparent}
+.gbtn.on,.wbtn.on{border-color:#e50914}
+.gbtn.rt{float:right;margin:0}
+.mobile .gatebox{padding-top:15vh}
+.mobile .gatebox h1{font-size:30px}
+.mobile .gsub{font-size:13px;margin-bottom:28px;padding:0 20px}
+.mobile .ptile{width:100px;margin:0 8px 14px}
+.mobile .pav{width:100px;height:100px;border-width:3px;border-radius:8px}
+.mobile .pname{font-size:14px;margin-top:8px}
+.mobile .kidtag{top:80px;font-size:9px}
+.mobile .addt .pav .ic{width:36px;height:36px;margin:-18px 0 0 -18px}
+.mobile .pedit .ic{width:28px;height:28px;margin:-14px 0 0 -14px}
+.mobile .plock .ic{width:18px;height:18px;bottom:6px;right:6px}
+.mobile .obtn{font-size:12px;padding:10px 20px;margin-top:20px}
+.mobile .edit{white-space:normal;margin:66px 0 30px}
+.mobile .eleft,.mobile .eright{display:block;width:auto;margin:0}
+.mobile .bigav{width:110px;height:110px}
+.mobile .eright h1{font-size:26px;text-align:center;margin:10px 0}
+.mobile .flabel{font-size:13px}
+.mobile .fin{font-size:16px;padding:12px 14px}
+.mobile .avgrid{max-height:220px}
+.mobile .avopt{width:56px;height:56px;margin:0 6px 6px 0;border-width:2px}
+.mobile .ttxt b{font-size:15px}
+.mobile .ttxt small{font-size:12px}
+.mobile .wbtn,.mobile .gbtn{display:block;text-align:center;margin:0 0 10px;font-size:15px;padding:12px}
+.mobile .gbtn.rt{float:none}
 </style>
 </head>
 <body>
@@ -527,8 +603,8 @@ html:not(.kbd) .wc.on .ph{box-shadow:none}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v21 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v21';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v22 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v22';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -557,7 +633,9 @@ var ICONS = {
   grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
   search: '<circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.2 6l2.1 2.1M17.7 15.9l2.1 2.1M2.5 12h3M18.5 12h3M4.2 18l2.1-2.1M17.7 8.1L19.8 6"/>',
-  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  pencil: '<path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
 };
 function ico(n) { return '<svg class="ic' + (n === 'play' ? ' fill' : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[n] + '</svg>'; }
 // Button with icon + label. Label is set as text, never HTML.
@@ -604,7 +682,7 @@ function get(url, cb) {
   x.onerror = x.ontimeout = function () { if (v === view) cb(null); };
   x.send();
 }
-function clear(title) { view++; main.innerHTML = ''; main.scrollTop = 0; if (MOBILE) window.scrollTo(0, 0); if (title) main.appendChild(el('h1', '', title)); }
+function clear(title) { document.documentElement.className = document.documentElement.className.replace(/ gate\b/g, ''); view++; main.innerHTML = ''; main.scrollTop = 0; if (MOBILE) window.scrollTo(0, 0); if (title) main.appendChild(el('h1', '', title)); }
 function msg(t) { main.appendChild(el('p', 'muted', t)); }
 function item(parent, text, ok) { var i = el('div', 'item f', text); i.onok = ok; parent.appendChild(i); return i; }
 
@@ -765,7 +843,7 @@ function home() {
   clear();
   var feat = el('div'); main.appendChild(feat);
   // Rotating banner: the 5 most popular movies with a backdrop. Pauses while the remote is on it or the user pressed pause.
-  get(tmdb('/trending/movie/day'), function (res) {
+  get(isKids() ? tmdb('/discover/movie', 'with_genres=10751&sort_by=popularity.desc&certification_country=US&certification.lte=PG') : tmdb('/trending/movie/day'), function (res) {
     var list = ((res && res.results) || []).map(function (x) { return fromTmdb(x, 'movie'); }).filter(function (x) { return x && x.background && x.description; }).slice(0, 5);
     list.forEach(function (m) {
       m.background = m.background.replace('/w780/', '/w1280/');
@@ -814,7 +892,7 @@ function home() {
   }
   var cw = watched();
   if (cw.length) {
-    var r0 = newRow('Continue Watching' + (profile ? ' \u2014 ' + profile : ''));
+    var r0 = newRow('Continue Watching' + (curProf() ? ' \u2014 ' + curProf().name : ''));
     cw.forEach(function (x) {
       var c = wcard({ name: x.label, poster: x.poster, background: x.bg, _land: true }, r0.strip), bar = el('div', 'prog'), fill = el('i');
       c.firstChild.appendChild(el('span', 'left', fmtTime(Math.max(0, x.d - x.t)) + ' left'));
@@ -841,6 +919,12 @@ function home() {
     ['Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc'],
     ['Crime Shows', '/discover/tv', 'tv', 'with_genres=80&sort_by=popularity.desc'],
     ['Sci-Fi & Fantasy Shows', '/discover/tv', 'tv', 'with_genres=10765&sort_by=popularity.desc']
+  ];
+  if (isKids()) TROWS = [
+    ['Popular Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc&certification_country=US&certification.lte=PG'],
+    ['Family Movies', '/discover/movie', 'movie', 'with_genres=10751&sort_by=popularity.desc&certification_country=US&certification.lte=PG'],
+    ['Kids Shows', '/discover/tv', 'tv', 'with_genres=10762&sort_by=popularity.desc'],
+    ['Animated Shows', '/discover/tv', 'tv', 'with_genres=16&with_genres=10762&sort_by=popularity.desc']
   ];
   TROWS.forEach(function (r) {
     var R = newRow(r[0]);
@@ -1237,7 +1321,28 @@ function m3uView(name, entries) {
 
 // ---------- profiles (saved on this device) + continue watching ----------
 var profile = localStorage.profile || '', nowPlaying = null, resumeAt = 0, lastSave = 0;
-function profilesList() { try { return JSON.parse(localStorage.profiles) || []; } catch (e) { return []; } }
+function profilesList() {
+  var a; try { a = JSON.parse(localStorage.profiles) || []; } catch (e) { a = []; }
+  return a.map(function (p, i) { return typeof p === 'string' ? { id: p, name: p, av: (i * 7) % 36 } : p; });
+}
+function saveProfiles(a) { localStorage.profiles = JSON.stringify(a); }
+function curProf() { return profilesList().filter(function (p) { return p.id === profile; })[0] || null; }
+function isKids() { var c = curProf(); return !!(c && c.kids); }
+function pinHash(s) { var x = 5381; s = 'bf:' + s; for (var i = 0; i < s.length; i++) x = ((x * 33) ^ s.charCodeAt(i)) >>> 0; return x.toString(36); }
+// Our own avatar set: 12 colours x 3 face styles, drawn as SVG
+var AV_BG = ['#e50914', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#db2777', '#0891b2', '#ea580c', '#4f46e5', '#0d9488', '#65a30d', '#475569'];
+function avatarSVG(i) {
+  i = Math.abs(parseInt(i, 10) || 0) % 36;
+  var bg = AV_BG[i % 12], v = Math.floor(i / 12), m = i % 3;
+  var eyes = v === 0 ? '<circle cx="34" cy="42" r="6.5" fill="#fff"/><circle cx="66" cy="42" r="6.5" fill="#fff"/>'
+    : v === 1 ? '<rect x="25" y="38" width="18" height="8" rx="4" fill="#fff"/><rect x="57" y="38" width="18" height="8" rx="4" fill="#fff"/>'
+    : '<path d="M27 45q7-9 14 0M59 45q7-9 14 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>';
+  var mouth = m === 0 ? '<path d="M33 63q17 15 34 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>'
+    : m === 1 ? '<path d="M38 66h24" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>'
+    : '<ellipse cx="50" cy="66" rx="8" ry="7" fill="#fff"/>';
+  return '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true"><rect width="100" height="100" fill="' + bg + '"/>' +
+    '<path d="M0 0h100v38Q50 58 0 38z" fill="#fff" opacity=".09"/>' + eyes + mouth + '</svg>';
+}
 function pkey(k) { return 'p:' + profile + ':' + k; }
 function myList() { try { return JSON.parse(localStorage[pkey('list')]) || []; } catch (e) { return []; } }
 function inList(id) { return myList().some(function (x) { return x.id === id; }); }
@@ -1270,35 +1375,107 @@ function saveProgress() {
   if (t / d < 0.95) { var e = {}; for (var k in nowPlaying) e[k] = nowPlaying[k]; e.t = t; e.d = d; e.at = new Date().getTime(); list.unshift(e); }
   localStorage[pkey('cw')] = JSON.stringify(list.slice(0, 30));
 }
+var managing = false;
+function gateOn() { if (!/ gate\b/.test(document.documentElement.className)) document.documentElement.className += ' gate'; }
 function profilesPage() {
-  clear("Who's watching?");
-  var first = null;
-  profilesList().forEach(function (n, i) {
-    var c = el('div', 'prof f'), pic = el('span', 'pic'); pic.innerHTML = ico('user'); c.appendChild(pic); c.appendChild(document.createTextNode(n));
-    c.onok = function () { profile = n; localStorage.profile = n; updateProfileBtn(); stack = []; show(home, '/'); };
-    main.appendChild(c); first = first || c;
+  clear(); gateOn();
+  var box = el('div', 'gatebox'), row = el('div', 'plist'), first = null, list = profilesList();
+  box.appendChild(el('h1', '', managing ? 'Manage Profiles' : "Who's watching?"));
+  box.appendChild(el('p', 'gsub', managing ? 'Choose a profile to edit.' : 'Each profile keeps its own list, progress and settings.'));
+  box.appendChild(row); main.appendChild(box);
+  list.forEach(function (p) {
+    var c = el('div', 'ptile f'), pic = el('div', 'pav');
+    pic.innerHTML = avatarSVG(p.av);
+    if (managing) { var pe = el('span', 'pedit'); pe.innerHTML = ico('pencil'); pic.appendChild(pe); }
+    else if (p.pin) { var lk = el('span', 'plock'); lk.innerHTML = ico('lock'); pic.appendChild(lk); }
+    c.appendChild(pic); c.appendChild(el('div', 'pname', p.name));
+    if (p.kids) c.appendChild(el('span', 'kidtag', 'KIDS'));
+    c.onok = function () { if (managing) show(editProfile(p.id), '/profiles/edit', 'Edit Profile'); else enterProfile(p); };
+    row.appendChild(c); first = first || c;
   });
-  main.appendChild(el('div', 'sec', 'Add profile'));
-  var inp = el('input', 'f'), add = el('button', 'f', 'Add');
-  inp.placeholder = 'Name';
-  inp.onok = add.onok = function () {
-    var n = inp.value.trim().slice(0, 20); if (!n) return;
-    var a = profilesList(); if (a.indexOf(n) < 0) a.push(n); localStorage.profiles = JSON.stringify(a); profilesPage();
-  };
-  main.appendChild(inp); main.appendChild(add);
-  profilesList().forEach(function (n, i) {
-    var del = ibtn('chip', 'trash', n);
-    del.onok = function () {
-      if (!confirm('Delete profile "' + n + '" and its watch history?')) return;
-      var a = profilesList(); a.splice(i, 1); localStorage.profiles = JSON.stringify(a);
-      localStorage.removeItem('p:' + n + ':cw');
-      if (profile === n) { profile = ''; localStorage.removeItem('profile'); updateProfileBtn(); }
-      profilesPage();
+  if (list.length < 5) {
+    var add = el('div', 'ptile addt f'), ap = el('div', 'pav'); ap.innerHTML = ico('plus');
+    add.appendChild(ap); add.appendChild(el('div', 'pname', 'Add Profile'));
+    add.onok = function () { show(editProfile(null), '/profiles/new', 'Add Profile'); };
+    row.appendChild(add); first = first || add;
+  }
+  if (list.length) {
+    var mb = el('div', 'obtn f', managing ? 'DONE' : 'MANAGE PROFILES');
+    mb.onok = function () { managing = !managing; profilesPage(); };
+    box.appendChild(el('div')).appendChild(mb);
+  }
+  setFocus(first);
+}
+function enterProfile(p) {
+  function go() { profile = p.id; localStorage.profile = p.id; managing = false; updateProfileBtn(); stack = []; show(home, '/'); }
+  if (!p.pin) return go();
+  var v = prompt('Enter the 4-digit PIN for ' + p.name);
+  if (v === null) return;
+  if (pinHash(v.trim()) === p.pin) go(); else alert('Wrong PIN.');
+}
+function editProfile(id) {
+  return function () {
+    clear(); gateOn();
+    var list = profilesList(), isNew = !id;
+    var p = list.filter(function (x) { return x.id === id; })[0];
+    p = p ? JSON.parse(JSON.stringify(p)) : { id: 'p' + new Date().getTime().toString(36), name: '', av: Math.floor(Math.random() * 36), kids: false, pin: '' };
+    var wrap = el('div', 'edit'), left = el('div', 'eleft'), right = el('div', 'eright'), big = el('div', 'bigav'), cap = el('div', 'gsub', p.name || 'New profile');
+    big.innerHTML = avatarSVG(p.av); left.appendChild(big); left.appendChild(cap);
+    right.appendChild(el('h1', '', isNew ? 'Add Profile' : 'Edit Profile'));
+    var nl = el('div', 'flabel', 'Name'), cnt = el('span', '', (p.name || '').length + '/20'); nl.appendChild(cnt); right.appendChild(nl);
+    var nm = el('input', 'fin f'); nm.value = p.name; nm.maxLength = 20; nm.placeholder = 'Profile name';
+    nm.oninput = function () { cnt.textContent = nm.value.length + '/20'; cap.textContent = nm.value || 'New profile'; };
+    right.appendChild(nm);
+    right.appendChild(el('div', 'flabel', 'Picture'));
+    var grid = el('div', 'avgrid');
+    for (var i = 0; i < 36; i++) (function (i) {
+      var o = el('div', 'avopt f' + (p.av === i ? ' sel' : '')); o.innerHTML = avatarSVG(i);
+      o.onok = function () { p.av = i; big.innerHTML = avatarSVG(i); [].forEach.call(grid.childNodes, function (x) { x.className = x.className.replace(/ sel\b/g, ''); }); o.className += ' sel'; };
+      grid.appendChild(o);
+    })(i);
+    right.appendChild(grid);
+    function toggleRow(title, text, on, flip) {
+      var r = el('div', 'trow'), t = el('div', 'ttxt'), sw = el('span', 'sw f' + (on ? ' yes' : ''));
+      t.appendChild(el('b', '', title)); t.appendChild(el('small', '', text));
+      sw.onok = function () { if (flip()) sw.className = sw.className.indexOf(' yes') < 0 ? sw.className + ' yes' : sw.className.replace(/ yes\b/g, ''); };
+      r.appendChild(sw); r.appendChild(t); right.appendChild(r);
+    }
+    toggleRow('Kids profile', 'Only family and animation titles on the home page.', p.kids, function () { p.kids = !p.kids; return true; });
+    toggleRow('Lock with a PIN', 'Ask for a 4-digit PIN before this profile opens.', !!p.pin, function () {
+      if (p.pin) { p.pin = ''; return true; }
+      var a = prompt('Choose a 4-digit PIN'); if (a === null) return false;
+      a = a.trim(); if (!/^\d{4}$/.test(a)) { alert('The PIN must be 4 digits.'); return false; }
+      var b = prompt('Type the PIN again'); if (b === null || b.trim() !== a) { alert('The PINs did not match.'); return false; }
+      p.pin = pinHash(a); return true;
+    });
+    var btns = el('div', 'ebtns'), save = el('div', 'wbtn f', 'Save'), cancel = el('div', 'gbtn f', 'Cancel');
+    save.onok = function () {
+      var n = nm.value.trim().slice(0, 20);
+      if (!n) { alert('Please type a name.'); return setFocus(nm); }
+      var all = profilesList();
+      if (all.some(function (x) { return x.id !== p.id && x.name.toLowerCase() === n.toLowerCase(); })) { alert('Another profile already uses this name.'); return setFocus(nm); }
+      p.name = n;
+      var at = -1; all.forEach(function (x, k) { if (x.id === p.id) at = k; });
+      if (at >= 0) all[at] = p; else all.push(p);
+      saveProfiles(all); updateProfileBtn(); history.back();
     };
-    if (i === 0) main.appendChild(el('div', 'sec', 'Remove'));
-    main.appendChild(del);
-  });
-  setFocus(first || inp);
+    cancel.onok = function () { history.back(); };
+    btns.appendChild(save); btns.appendChild(cancel);
+    if (!isNew) {
+      var del = el('div', 'gbtn rt f', 'Delete profile');
+      del.onok = function () {
+        if (!confirm('Delete "' + p.name + '"? Its list and watch progress will be removed.')) return;
+        saveProfiles(profilesList().filter(function (x) { return x.id !== p.id; }));
+        localStorage.removeItem('p:' + p.id + ':cw'); localStorage.removeItem('p:' + p.id + ':list');
+        if (profile === p.id) { profile = ''; localStorage.removeItem('profile'); updateProfileBtn(); }
+        history.back();
+      };
+      btns.appendChild(del);
+    }
+    right.appendChild(btns);
+    wrap.appendChild(left); wrap.appendChild(right); main.appendChild(wrap);
+    setFocus(nm);
+  };
 }
 
 function settings() {
@@ -1828,7 +2005,11 @@ nav.appendChild(srchBtn);
 var profBtn = el('button', 'f ib');
 profBtn.onok = function () { show(profilesPage, '/profiles', 'Profiles'); };
 nav.appendChild(profBtn);
-function updateProfileBtn() { profBtn.innerHTML = '<span class="av">' + ico('user') + '</span>'; profBtn.title = profile || 'Profile'; }
+function updateProfileBtn() {
+  var c = curProf();
+  profBtn.innerHTML = '<span class="av">' + (c ? avatarSVG(c.av) : ico('user')) + '</span>'; profBtn.title = c ? c.name : 'Profile';
+  var t = $('tProf'); if (t) t.innerHTML = c ? '<span class="tav">' + avatarSVG(c.av) + '</span>' : ico('user');
+}
 updateProfileBtn();
 var setBtn = el('button', 'f ib'); setBtn.innerHTML = ico('gear'); setBtn.title = 'Settings';
 setBtn.onok = function () { show(settings, '/settings', 'Settings'); };
