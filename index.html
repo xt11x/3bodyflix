@@ -769,11 +769,11 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v33 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v33';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v34 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v34';
 </script>
 <script>
-var APP_VERSION = 'v33';
+var APP_VERSION = 'v34';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -1825,82 +1825,36 @@ function readAvatar(f, cb) {
   rd.readAsDataURL(f);
 }
 // Originals: our own cartoon characters (blob monsters, kids, robots, animals) with accessories
-// Deep, premium backgrounds with one glowing accent colour; characters get soft shading, eye highlights and a floor shadow
+// Profile tiles in the classic streaming style: one bold colour, a big simple face (our own set: 12 colours x 5 faces)
 var OR_N = 60;
-var OR_BG = [['#1b2140', '#090c1c'], ['#3b1222', '#14060b'], ['#0f302b', '#051311'], ['#2c1b42', '#100a1c'], ['#3a2a12', '#160f05'], ['#14293f', '#060e19'],
-  ['#2a2a30', '#0d0d10'], ['#3e0f10', '#150405'], ['#10301d', '#05120a'], ['#22183f', '#0b0716'], ['#3b2511', '#150c04'], ['#11323d', '#05141a']];
-var OR_AC = ['#e50914', '#f5a524', '#2dd4bf', '#a78bfa', '#60a5fa', '#f472b6', '#34d399', '#fb923c', '#facc15', '#38bdf8', '#f87171', '#c084fc'];
-var SKIN = ['#f3c7a2', '#dda077', '#b5774c', '#87522f', '#fbd9bd'], HAIR = ['#24170c', '#55311a', '#121214', '#b8761c', '#6f2a1a'];
-var FUR = [['#efe3d3', '#fff6ea'], ['#d99a5b', '#f6d7b0'], ['#7d5136', '#c79c7a'], ['#3a3a44', '#8a8a96']];
+var OR_COL = [['#2f6fed', '#2258c9'], ['#f2b21b', '#d99a0b'], ['#e4413a', '#c42f29'], ['#1fa463', '#16854f'], ['#8b5cf6', '#7344e0'], ['#ec4899', '#cf3380'],
+  ['#0ea5a4', '#0a8786'], ['#f97316', '#da5f0b'], ['#5b6b82', '#46546a'], ['#d6336c', '#b02456'], ['#0891d1', '#0874ab'], ['#7c3aed', '#6427cf']];
 function avatarOrig(n) {
   n = Math.abs(parseInt(n, 10) || 0) % OR_N;
-  var bg = OR_BG[(n + Math.floor(n / 12)) % 12], ac = OR_AC[(n * 5 + Math.floor(n / 12)) % 12];
-  var kind = (n + Math.floor(n / 4)) % 4, acc = Math.floor(n / 4) % 6, mood = Math.floor(n / 12) % 4, id = 'o' + n;
-  var s = '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true"><defs>' +
-    '<linearGradient id="' + id + 'b" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="' + bg[0] + '"/><stop offset="1" stop-color="' + bg[1] + '"/></linearGradient>' +
-    '<radialGradient id="' + id + 'g" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="' + ac + '" stop-opacity=".42"/><stop offset="1" stop-color="' + ac + '" stop-opacity="0"/></radialGradient>' +
-    '<linearGradient id="' + id + 's" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>' +
-    '</defs><rect width="100" height="100" fill="url(#' + id + 'b)"/><rect width="100" height="100" fill="url(#' + id + 'g)"/>' +
-    '<ellipse cx="50" cy="95" rx="32" ry="5" fill="#000" opacity=".4"/>';
-  function shade(shape) { return shape + shape.replace(/fill="[^"]*"/, 'fill="url(#' + id + 's)"'); }
-  function eye(x, y, r, pupil) {
-    return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff"/><circle cx="' + (x + r * .15) + '" cy="' + (y + r * .15) + '" r="' + (r * pupil) + '" fill="#0b0b10"/>' +
-      '<circle cx="' + (x - r * .12) + '" cy="' + (y - r * .2) + '" r="' + (r * .18) + '" fill="#fff"/>';
+  var c = OR_COL[n % 12], face = Math.floor(n / 12) % 5, id = 'o' + n, F = '#fff';
+  var s = '<svg viewBox="0 0 100 100" class="avs" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>' +
+    '<rect width="100" height="100" fill="url(#' + id + ')"/><g transform="translate(-9 -6) scale(1.18)">';
+  var L = 'fill="none" stroke="' + F + '" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"';
+  if (face === 0) { // tall eyes, wide smile
+    s += '<rect x="28" y="30" width="9" height="17" rx="4.5" fill="' + F + '"/><rect x="63" y="30" width="9" height="17" rx="4.5" fill="' + F + '"/>';
+    s += '<path d="M24 60q26 22 52 0" ' + L + '/>';
+  } else if (face === 1) { // happy closed eyes, open grin
+    s += '<path d="M25 42q7-9 14 0M61 42q7-9 14 0" ' + L + '/>';
+    s += '<path d="M28 58h44q-3 20-22 20q-19 0-22-20z" fill="' + F + '"/><path d="M38 70q12 6 24 0q-4 7-12 7q-8 0-12-7z" fill="' + c[1] + '"/>';
+  } else if (face === 2) { // round eyes, small smile, cheeks
+    s += '<circle cx="33" cy="39" r="6.5" fill="' + F + '"/><circle cx="67" cy="39" r="6.5" fill="' + F + '"/>';
+    s += '<circle cx="24" cy="57" r="6" fill="' + F + '" opacity=".22"/><circle cx="76" cy="57" r="6" fill="' + F + '" opacity=".22"/>';
+    s += '<path d="M38 60q12 11 24 0" ' + L + '/>';
+  } else if (face === 3) { // wink, lopsided smile
+    s += '<circle cx="33" cy="38" r="6.5" fill="' + F + '"/><path d="M60 39h15" ' + L + '/>';
+    s += '<path d="M30 60q20 18 42-4" ' + L + '/>';
+  } else { // brows up, big "o" of surprise-joy
+    s += '<path d="M24 26l12-4M76 26l-12-4" ' + L + ' stroke-width="5"/>';
+    s += '<rect x="28" y="33" width="9" height="13" rx="4.5" fill="' + F + '"/><rect x="63" y="33" width="9" height="13" rx="4.5" fill="' + F + '"/>';
+    s += '<ellipse cx="50" cy="66" rx="10" ry="12" fill="' + F + '"/><ellipse cx="50" cy="69" rx="5.5" ry="6" fill="' + c[1] + '"/>';
   }
-  var ey, ex, my, mc = '#14090b';
-  if (kind === 0) { // blob creature
-    if (n % 3 === 1) s += '<path d="M30 30L26 12L40 24z" fill="' + ac + '"/><path d="M70 30L74 12L60 24z" fill="' + ac + '"/>';
-    if (n % 3 === 2) s += '<path d="M50 22V9" stroke="' + ac + '" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="8" r="4.5" fill="#fff"/><circle cx="50" cy="8" r="2.6" fill="' + ac + '"/>';
-    s += shade('<path d="M16 97C12 58 20 22 50 21C80 22 88 58 84 97Z" fill="' + ac + '"/>');
-    s += '<ellipse cx="50" cy="78" rx="20" ry="12" fill="#fff" opacity=".14"/>';
-    ey = 50; ex = 14;
-    s += eye(50 - ex, ey, 10, .52) + eye(50 + ex, ey, 10, .52);
-    my = 72;
-  } else if (kind === 1) { // person
-    var sk = SKIN[n % 5], hr = HAIR[(n >> 2) % 5];
-    s += shade('<path d="M14 100C16 80 31 72 50 72C69 72 84 80 86 100Z" fill="' + ac + '"/>');
-    s += '<path d="M42 64h16v12q-8 5-16 0z" fill="' + sk + '"/><path d="M42 68h16v4q-8 3-16 0z" fill="#000" opacity=".15"/>';
-    s += '<circle cx="26" cy="50" r="5" fill="' + sk + '"/><circle cx="74" cy="50" r="5" fill="' + sk + '"/>';
-    s += shade('<circle cx="50" cy="47" r="24" fill="' + sk + '"/>');
-    if (n % 2) s += '<path d="M25 47C22 22 38 16 52 18C68 19 79 28 75 48C72 37 62 30 49 31C38 32 30 38 25 47Z" fill="' + hr + '"/>';
-    else s += '<path d="M24 52C20 26 34 15 50 16C67 16 81 27 76 52C74 40 70 36 66 34C58 38 44 38 33 33C29 37 26 43 24 52Z" fill="' + hr + '"/>';
-    ey = 49; ex = 9;
-    s += eye(50 - ex, ey, 3.8, .7) + eye(50 + ex, ey, 3.8, .7);
-    s += '<circle cx="35" cy="58" r="3.6" fill="#ff6b6b" opacity=".28"/><circle cx="65" cy="58" r="3.6" fill="#ff6b6b" opacity=".28"/>';
-    my = 60;
-  } else if (kind === 2) { // robot
-    s += '<path d="M50 24V12" stroke="#9aa3b2" stroke-width="3"/><circle cx="50" cy="10" r="4.5" fill="' + ac + '"/><circle cx="50" cy="10" r="8" fill="' + ac + '" opacity=".25"/>';
-    s += shade('<path d="M20 100v-12q0-10 10-10h40q10 0 10 10v12z" fill="#6b7383"/>');
-    s += '<circle cx="21" cy="50" r="5" fill="#8a93a3"/><circle cx="79" cy="50" r="5" fill="#8a93a3"/>';
-    s += shade('<rect x="22" y="24" width="56" height="50" rx="15" fill="#d9dde5"/>');
-    s += '<rect x="29" y="37" width="42" height="24" rx="12" fill="#0b0f17"/>';
-    ey = 49; ex = 10;
-    s += '<rect x="' + (50 - ex - 5) + '" y="' + (ey - 3.5) + '" width="10" height="7" rx="3.5" fill="' + ac + '"/><rect x="' + (50 + ex - 5) + '" y="' + (ey - 3.5) + '" width="10" height="7" rx="3.5" fill="' + ac + '"/>';
-    s += '<rect x="29" y="37" width="42" height="24" rx="12" fill="' + ac + '" opacity=".1"/>';
-    my = 68; mc = '#3a4150';
-  } else { // animal: cat, bear, fox
-    var fur = FUR[n % 4], sp = n % 3;
-    if (sp === 0) s += '<path d="M24 44L26 14L46 30z" fill="' + fur[0] + '"/><path d="M76 44L74 14L54 30z" fill="' + fur[0] + '"/><path d="M29 36L30 22L40 30z" fill="#ff9fb2" opacity=".8"/><path d="M71 36L70 22L60 30z" fill="#ff9fb2" opacity=".8"/>';
-    else if (sp === 1) s += '<circle cx="28" cy="30" r="11" fill="' + fur[0] + '"/><circle cx="72" cy="30" r="11" fill="' + fur[0] + '"/><circle cx="28" cy="30" r="5.5" fill="#000" opacity=".18"/><circle cx="72" cy="30" r="5.5" fill="#000" opacity=".18"/>';
-    else s += '<path d="M22 46L22 12L46 30z" fill="' + fur[0] + '"/><path d="M78 46L78 12L54 30z" fill="' + fur[0] + '"/><path d="M26 38L26 22L38 31z" fill="#111" opacity=".55"/><path d="M74 38L74 22L62 31z" fill="#111" opacity=".55"/>';
-    s += shade('<circle cx="50" cy="55" r="30" fill="' + fur[0] + '"/>');
-    s += '<ellipse cx="50" cy="68" rx="15" ry="11" fill="' + fur[1] + '"/><path d="M45.5 62h9q-1 5-4.5 5.5q-3.5-.5-4.5-5.5z" fill="#2a1a12"/>';
-    ey = 52; ex = 12;
-    s += eye(50 - ex, ey, 4.4, .72) + eye(50 + ex, ey, 4.4, .72);
-    my = 73;
-  }
-  // mouth
-  if (mood === 0) s += '<path d="M' + (50 - 8) + ' ' + my + 'q8 7 16 0" fill="none" stroke="' + mc + '" stroke-width="3" stroke-linecap="round"/>';
-  else if (mood === 1) s += '<path d="M' + (50 - 9) + ' ' + (my - 2) + 'h18q-1.5 10-9 10q-7.5 0-9-10z" fill="' + mc + '"/><path d="M' + (50 - 5) + ' ' + (my + 5) + 'q5-3 10 0q-2 3-5 3q-3 0-5-3z" fill="#ff6b81"/>';
-  else if (mood === 2) s += '<ellipse cx="50" cy="' + (my + 2) + '" rx="4.2" ry="4.8" fill="' + mc + '"/>';
-  else s += '<path d="M' + (50 - 7) + ' ' + (my + 2) + 'q7-4 14 1" fill="none" stroke="' + mc + '" stroke-width="3" stroke-linecap="round"/>';
-  // accessory
-  if (acc === 1) s += '<g fill="#fff" fill-opacity=".12" stroke="#0b0b10" stroke-width="2.6"><circle cx="' + (50 - ex) + '" cy="' + ey + '" r="8.5"/><circle cx="' + (50 + ex) + '" cy="' + ey + '" r="8.5"/></g><path d="M' + (50 - ex + 8.5) + ' ' + ey + 'h' + (2 * ex - 17) + '" stroke="#0b0b10" stroke-width="2.6"/>';
-  else if (acc === 2) s += '<path d="M' + (50 - ex - 11) + ' ' + (ey - 5) + 'h' + (2 * ex + 22) + 'v4q-1 8-9 8h-4q-5 0-6-6h-' + (2 * ex - 20) + 'q-1 6-6 6h-4q-8 0-9-8z" fill="#0b0b10"/><path d="M' + (50 - ex - 7) + ' ' + (ey - 3) + 'h5" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>';
-  else if (acc === 3) s += '<path d="M' + (50 - 13) + ' ' + (my - 4) + 'q6-6 13-1q7-5 13 1q-6 4-13 0q-7 4-13 0z" fill="#24170c"/>';
-  else if (acc === 4) s += '<path d="M15 56Q15 10 50 10Q85 10 85 56" fill="none" stroke="#1b1b22" stroke-width="5"/><rect x="9" y="47" width="13" height="22" rx="6" fill="' + ac + '"/><rect x="78" y="47" width="13" height="22" rx="6" fill="' + ac + '"/><rect x="11" y="50" width="4" height="16" rx="2" fill="#fff" opacity=".3"/>';
-  else if (acc === 5) s += '<path d="M32 22l6 10 6-12 6 12 6-12 6 12 6-10v13H32z" fill="#f5c542" stroke="#a66a00" stroke-width="1.2" stroke-linejoin="round"/><circle cx="50" cy="29" r="2.2" fill="' + ac + '"/>';
-  return s + '</svg>';
+  return s + '</g></svg>';
 }
 function avatarFace(i) {
   i = Math.abs(parseInt(i, 10) || 0) % 36;
