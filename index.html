@@ -630,6 +630,16 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
 .mobile #cFs{padding:6px}
 .mobile #cFs svg{width:26px !important;height:26px !important}
 .mobile #ptoast{top:auto;bottom:110px}
+/* ===== v26: avatar library ===== */
+img.avs{display:block;width:100%;height:100%;object-fit:cover}
+.avgrid{max-height:420px}
+.avsec{display:block;color:#d6d6da;font-size:19px;font-weight:600;margin:14px 0 10px}
+.upav{display:inline-block;margin:4px 0 6px}
+.avcredit{color:#6e6e76;font-size:13px;margin-top:10px;line-height:1.5}
+.mobile .avgrid{max-height:52vh}
+.mobile .avsec{font-size:14px;margin:12px 0 8px}
+.mobile .avopt{width:62px;height:62px}
+.mobile .avcredit{font-size:10px}
 </style>
 </head>
 <body>
@@ -660,8 +670,8 @@ input.fin.f,.mobile input.fin.f{width:100% !important;cursor:text}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v25 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v25';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v26 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v26';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -1419,7 +1429,36 @@ function isKids() { var c = curProf(); return !!(c && c.kids); }
 function pinHash(s) { var x = 5381; s = 'bf:' + s; for (var i = 0; i < s.length; i++) x = ((x * 33) ^ s.charCodeAt(i)) >>> 0; return x.toString(36); }
 // Our own avatar set: 12 colours x 3 face styles, drawn as SVG
 var AV_BG = ['#e50914', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#db2777', '#0891b2', '#ea580c', '#4f46e5', '#0d9488', '#65a30d', '#475569'];
+// Licensed avatar art from DiceBear (licenses are embedded in each SVG; CC BY sets are credited on the profile pages)
+var AV_DB_BG = 'b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf';
+var AV_SEEDS = ['Felix', 'Luna', 'Max', 'Milo', 'Nova', 'Zara', 'Leo', 'Kai', 'Ruby', 'Oscar', 'Nala', 'Rocky', 'Coco', 'Jade', 'Finn', 'Sage'];
+var AV_SETS = [['Characters', 'avataaars'], ['Adventurers', 'adventurer'], ['Robots', 'bottts'], ['Fun', 'fun-emoji'], ['Smiles', 'big-smile'], ['Sketch', 'notionists'], ['Portraits', 'lorelei']];
 function avatarSVG(i) {
+  if (typeof i === 'string') {
+    var m = /^db:([a-z-]+):([A-Za-z0-9]+)$/.exec(i);
+    if (m) return '<img class="avs" alt="" src="https://api.dicebear.com/9.x/' + m[1] + '/svg?seed=' + m[2] + '&backgroundColor=' + AV_DB_BG + '">';
+    if (/^img:data:image\/(jpeg|png);base64,[A-Za-z0-9+\/=]+$/.test(i)) return '<img class="avs" alt="" src="' + i.slice(4) + '">';
+    i = 0;
+  }
+  return avatarFace(i);
+}
+// Uploaded photo -> 256x256 centre-cropped JPEG kept with the profile
+function readAvatar(f, cb) {
+  if (!window.FileReader || !/^image\//.test(f.type)) return cb(null);
+  var rd = new FileReader();
+  rd.onload = function () {
+    var im = new Image();
+    im.onload = function () {
+      var c = document.createElement('canvas'), s = Math.min(im.width, im.height); c.width = c.height = 256;
+      c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 256, 256);
+      try { cb(c.toDataURL('image/jpeg', 0.85)); } catch (e) { cb(null); }
+    };
+    im.onerror = function () { cb(null); };
+    im.src = rd.result;
+  };
+  rd.readAsDataURL(f);
+}
+function avatarFace(i) {
   i = Math.abs(parseInt(i, 10) || 0) % 36;
   var bg = AV_BG[i % 12], v = Math.floor(i / 12), m = i % 3;
   var eyes = v === 0 ? '<circle cx="34" cy="42" r="6.5" fill="#fff"/><circle cx="66" cy="42" r="6.5" fill="#fff"/>'
@@ -1506,7 +1545,7 @@ function editProfile(id) {
     clear(); gateOn();
     var list = profilesList(), isNew = !id;
     var p = list.filter(function (x) { return x.id === id; })[0];
-    p = p ? JSON.parse(JSON.stringify(p)) : { id: 'p' + new Date().getTime().toString(36), name: '', av: Math.floor(Math.random() * 36), kids: false, pin: '' };
+    p = p ? JSON.parse(JSON.stringify(p)) : { id: 'p' + new Date().getTime().toString(36), name: '', av: 'db:avataaars:' + AV_SEEDS[Math.floor(Math.random() * AV_SEEDS.length)], kids: false, pin: '' };
     var wrap = el('div', 'edit'), left = el('div', 'eleft'), right = el('div', 'eright'), big = el('div', 'bigav'), cap = el('div', 'gsub', p.name || 'New profile');
     big.innerHTML = avatarSVG(p.av); left.appendChild(big); left.appendChild(cap);
     right.appendChild(el('h1', '', isNew ? 'Add Profile' : 'Edit Profile'));
@@ -1515,13 +1554,32 @@ function editProfile(id) {
     nm.oninput = function () { cnt.textContent = nm.value.length + '/20'; cap.textContent = nm.value || 'New profile'; };
     right.appendChild(nm);
     right.appendChild(el('div', 'flabel', 'Picture'));
-    var grid = el('div', 'avgrid');
-    for (var i = 0; i < 36; i++) (function (i) {
-      var o = el('div', 'avopt f' + (p.av === i ? ' sel' : '')); o.innerHTML = avatarSVG(i);
-      o.onok = function () { p.av = i; big.innerHTML = avatarSVG(i); [].forEach.call(grid.childNodes, function (x) { x.className = x.className.replace(/ sel\b/g, ''); }); o.className += ' sel'; };
-      grid.appendChild(o);
-    })(i);
+    var grid = el('div', 'avgrid'), opts = [];
+    function pickAv(val, o) {
+      p.av = val; big.innerHTML = avatarSVG(val);
+      opts.forEach(function (x) { x.className = x.className.replace(/ sel\b/g, ''); });
+      if (o) o.className += ' sel';
+    }
+    function section(title, vals) {
+      grid.appendChild(el('div', 'avsec', title));
+      vals.forEach(function (val) {
+        var o = el('div', 'avopt f' + (p.av === val ? ' sel' : '')); o.innerHTML = avatarSVG(val);
+        o.onok = function () { pickAv(val, o); };
+        grid.appendChild(o); opts.push(o);
+      });
+    }
+    if (!IS_TV && window.FileReader) { // phones / computers: use your own photo
+      var file = el('input'), up = ibtn('chip upav', 'plus', 'Upload your photo');
+      file.type = 'file'; file.accept = 'image/*'; file.style.display = 'none';
+      up.onok = function () { file.click(); };
+      file.onchange = function () { var f = file.files && file.files[0]; if (f) readAvatar(f, function (d) { if (d) pickAv('img:' + d, null); else alert('Could not read this picture.'); }); };
+      grid.appendChild(up); grid.appendChild(file);
+    }
+    AV_SETS.forEach(function (s) { section(s[0], AV_SEEDS.map(function (seed) { return 'db:' + s[1] + ':' + seed; })); });
+    var mine = []; for (var i = 0; i < 36; i++) mine.push(i);
+    section('Classics', mine);
     right.appendChild(grid);
+    right.appendChild(el('div', 'avcredit', 'Avatars by DiceBear: Adventurer & Lorelei by Lisa Wischofsky (CC BY 4.0 / CC0), Fun Emoji by Davis Uche (CC BY 4.0), Big Smile by Ashley Seo (CC BY 4.0), Avataaars & Bottts by Pablo Stanley, Notionists by Zoish (CC0).'));
     function toggleRow(title, text, on, flip) {
       var r = el('div', 'trow'), t = el('div', 'ttxt'), sw = el('span', 'sw f' + (on ? ' yes' : ''));
       t.appendChild(el('b', '', title)); t.appendChild(el('small', '', text));
