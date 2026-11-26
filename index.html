@@ -416,6 +416,55 @@ html.desk{zoom:.72}
 #foot b{display:block;color:#e50914;font-weight:800;letter-spacing:-.02em;font-size:22px;margin-bottom:4px}
 #foot .ar{direction:rtl;color:#7a7a82}
 .mobile #foot b{font-size:14px}
+/* ===== v17: TMDB visuals ===== */
+.tlogo{display:block;max-width:560px;max-height:190px;width:auto;height:auto;margin-bottom:6px}
+.feat .tlogo{max-width:620px;max-height:220px}
+.arov{color:#c9c9cf;font-size:22px;line-height:1.6;margin-top:-6px}
+.person{display:inline-block;vertical-align:top;width:150px;margin-right:18px;text-align:center;white-space:normal}
+.person img{display:block;width:124px;height:124px;margin:0 auto;border-radius:50%;object-fit:cover;background:#2a2a2e}
+.person b{display:block;font-size:18px;margin-top:10px;font-weight:600}
+.person small{display:block;color:#9a9aa3;font-size:15px;margin-top:2px}
+.mobile .tlogo,.mobile .feat .tlogo{max-width:72vw;max-height:110px}
+.mobile .arov{font-size:13px}
+.mobile .person{width:86px;margin-right:10px}
+.mobile .person img{width:72px;height:72px}
+.mobile .person b{font-size:12px}
+.mobile .person small{font-size:10px}
+/* ===== v18: header pill like streaming apps, lighter type ===== */
+#top #q{display:none !important}
+#nav{float:right;padding:5px;border-radius:14px;background:rgba(22,22,26,.82);border:1px solid #2c2c32}
+#nav .f{font-size:19px;font-weight:500;padding:9px 16px;margin:0 1px;border-radius:10px;color:#c8c8ce;border-width:2px}
+#nav .f .ic{width:1.05em;height:1.05em;margin-right:.5em;stroke-width:1.9}
+#nav .f.act{background:#34343b;color:#fff;font-weight:600}
+#nav .ib{padding:9px 12px}
+#nav .ib .ic{margin:0;width:22px;height:22px}
+#nav .nsep{display:inline-block;width:1px;height:24px;background:#3a3a40;margin:0 8px;vertical-align:middle}
+#nav .av{display:inline-block;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e50914,#5b0aa8);line-height:0;vertical-align:middle;text-align:center}
+#nav .av .ic{width:18px;height:18px;margin:7px 0 0;color:#fff}
+#logo img{margin-top:2px}
+.feat h1{font-size:72px;font-weight:800;letter-spacing:-.03em}
+.feat .tlogo{max-width:560px;max-height:200px}
+.topline{font-size:24px;font-weight:600;margin:6px 0 16px}
+.badge.t10{display:inline-block;width:34px;height:36px;padding:3px 0 0;text-align:center;border-radius:5px;line-height:1;vertical-align:middle;margin-right:14px}
+.badge.t10 i{display:block;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em}
+.badge.t10 b{display:block;font-size:17px;font-weight:900;margin-top:1px}
+.meta{font-size:21px;font-weight:500;color:#e2e2e6}
+.meta .rt{margin-right:2px}
+.meta .rt .ic{color:#e50914;width:1em;height:1em;vertical-align:-0.1em;margin-right:.3em}
+.meta .dot{color:#8a8a92;margin:0 .55em}
+.feat p{font-size:22px;font-weight:400;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:780px}
+.btn{font-weight:600;font-size:22px;box-shadow:none;padding:14px 32px 14px 26px}
+.row h2{font-weight:600;font-size:28px}
+.wc h3{font-weight:500}
+html:not(.kbd) .f.on{border-color:transparent;box-shadow:none;-webkit-transform:none;transform:none}
+html:not(.kbd) #nav .f.on:not(.act){background:transparent}
+html:not(.kbd) .wc.on .ph{box-shadow:none}
+.mobile .meta{font-size:13px}
+.mobile .feat p{font-size:14px}
+.mobile .badge.t10{width:24px;height:26px}
+.mobile .badge.t10 i{font-size:6px}
+.mobile .badge.t10 b{font-size:12px}
+.mobile .topline{font-size:15px}
 </style>
 </head>
 <body>
@@ -445,8 +494,8 @@ html.desk{zoom:.72}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v16 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v16';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v18 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v18';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -469,7 +518,13 @@ var ICONS = {
   trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 6h3v1.5A3.5 3.5 0 0 1 17 11M7 6H4v1.5A3.5 3.5 0 0 0 7 11"/>',
   star: '<path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.9l-5.25 2.8 1-5.85L3.5 9.7l5.9-.9z"/>',
   list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
-  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  tv: '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  search: '<circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.2 6l2.1 2.1M17.7 15.9l2.1 2.1M2.5 12h3M18.5 12h3M4.2 18l2.1-2.1M17.7 8.1L19.8 6"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'
 };
 function ico(n) { return '<svg class="ic' + (n === 'play' ? ' fill' : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[n] + '</svg>'; }
 // Button with icon + label. Label is set as text, never HTML.
@@ -519,6 +574,35 @@ function get(url, cb) {
 function clear(title) { view++; main.innerHTML = ''; main.scrollTop = 0; if (MOBILE) window.scrollTo(0, 0); if (title) main.appendChild(el('h1', '', title)); }
 function msg(t) { main.appendChild(el('p', 'muted', t)); }
 function item(parent, text, ok) { var i = el('div', 'item f', text); i.onok = ok; parent.appendChild(i); return i; }
+
+// ---------- TMDB (lists, logos, cast, recommendations, Arabic overviews) ----------
+// Public read-only v3 key: a static site cannot hide it, and it only reads public catalog data.
+var TMDB_KEY = '3b27b79de582bf3c5ea724a9df152dac', TMDB = 'https://api.themoviedb.org/3', TIMG = 'https://image.tmdb.org/t/p/';
+function tmdb(path, params) { return TMDB + path + (path.indexOf('?') < 0 ? '?' : '&') + 'api_key=' + TMDB_KEY + (params ? '&' + params : ''); }
+function tPath(t) { return t === 'series' || t === 'tv' ? 'tv' : 'movie'; }
+function fromTmdb(r, fallbackType) {
+  var t = r.media_type || fallbackType;
+  if (t !== 'movie' && t !== 'tv') return null;
+  var date = r.release_date || r.first_air_date || '';
+  return { tmdb: r.id, type: t === 'tv' ? 'series' : 'movie', name: r.title || r.name, description: r.overview,
+    poster: r.poster_path ? TIMG + 'w342' + r.poster_path : '', background: r.backdrop_path ? TIMG + 'w780' + r.backdrop_path : '',
+    releaseInfo: date.slice(0, 4), imdbRating: r.vote_average ? r.vote_average.toFixed(1) : '' };
+}
+console.assert(fromTmdb({ id: 1, media_type: 'tv', name: 'X', first_air_date: '2010-10-31', vote_average: 8.12 }).type === 'series' && fromTmdb({ id: 2, media_type: 'person' }) === null, 'fromTmdb');
+// Streams and title pages use IMDb ids; TMDB list items are resolved on demand (cached)
+var ttCache = {};
+function toImdb(m, cb) {
+  if (m.id && /^tt/.test(m.id)) return cb(m.id);
+  var k = m.type + ':' + m.tmdb;
+  if (ttCache[k]) { m.id = ttCache[k]; return cb(m.id); }
+  if (!m.tmdb) return cb(null);
+  var x = new XMLHttpRequest();
+  x.open('GET', tmdb('/' + tPath(m.type) + '/' + m.tmdb + '/external_ids'));
+  x.onload = function () { var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} var id = r && r.imdb_id; if (id) { ttCache[k] = id; m.id = id; } cb(id || null); };
+  x.onerror = function () { cb(null); };
+  x.send();
+}
+function openAny(m) { toImdb(m, function (id) { if (id) openTitle(m.type, id); else alert('Details for this title are not available yet.'); }); }
 
 // ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
 function focusables() {
@@ -587,7 +671,7 @@ function card(m, parent, rank) {
   if (m.releaseInfo) c.appendChild(el('div', 'yr', String(m.releaseInfo)));
   if (rating(m)) c.appendChild(el('span', 'rate', '★ ' + rating(m)));
   if (rank) c.appendChild(el('span', 'rank', '#' + rank));
-  c.onok = function () { openTitle(m.type, m.id); };
+  c.onok = function () { openAny(m); };
   parent.appendChild(c);
   return c;
 }
@@ -599,15 +683,15 @@ function wcard(m, parent, topN, big) {
   if (isHttp(img)) ph.style.backgroundImage = 'url(' + JSON.stringify(img) + ')';
   ph.appendChild(el('b', '', m.name));
   if (topN) ph.appendChild(el('span', 'tb', 'TOP ' + topN));
-  if (m.id && m.type) {
+  if (m.type && (m.id || m.tmdb)) {
     var add = el('span', 'add' + (inList(m.id) ? ' in' : '')); add.innerHTML = ico(inList(m.id) ? 'check' : 'plus');
-    add.onclick = function (ev) { ev.stopPropagation(); var now = toggleList(m); add.innerHTML = ico(now ? 'check' : 'plus'); add.className = 'add' + (now ? ' in' : ''); };
+    add.onclick = function (ev) { ev.stopPropagation(); toImdb(m, function (id) { if (!id) return; var now = toggleList(m); add.innerHTML = ico(now ? 'check' : 'plus'); add.className = 'add' + (now ? ' in' : ''); }); };
     ph.appendChild(add);
   }
   c.appendChild(ph); c.appendChild(el('h3', '', m.name));
   var bits = [rating(m) ? '\u2605 ' + rating(m) : '', m.releaseInfo, m.type === 'series' ? 'Show' : m.type === 'movie' ? 'Movie' : ''].filter(function (b) { return b; });
   c.appendChild(el('small', '', bits.join(' \u00b7 ')));
-  c.onok = function () { openTitle(m.type, m.id); };
+  c.onok = function () { openAny(m); };
   parent.appendChild(c);
   return c;
 }
@@ -637,18 +721,28 @@ function home() {
   clear();
   var feat = el('div'); main.appendChild(feat);
   // Rotating banner: the 5 most popular movies with a backdrop. Pauses while the remote is on it or the user pressed pause.
-  get(CINEMETA + '/catalog/movie/top.json', function (res) {
-    var list = ((res && res.metas) || []).filter(function (x) { return isHttp(x.background) && x.description; }).slice(0, 5);
+  get(tmdb('/trending/movie/day'), function (res) {
+    var list = ((res && res.results) || []).map(function (x) { return fromTmdb(x, 'movie'); }).filter(function (x) { return x && x.background && x.description; }).slice(0, 5);
+    list.forEach(function (m) {
+      m.background = m.background.replace('/w780/', '/w1280/');
+      toImdb(m, function () {}); // ready before the viewer presses Play / My List
+      get(tmdb('/movie/' + m.tmdb + '/images', 'include_image_language=en,null'), function (im) {
+        var lg = im && im.logos && im.logos[0];
+        if (lg) { m.logo = TIMG + 'w500' + lg.file_path; if (list[idx] === m && !((IS_TV || kbdUsed) && cur && feat.contains(cur))) render(idx, false); }
+      });
+    });
     if (!list.length) return;
     var v = view, idx = 0, paused = false;
     function render(i, focus) {
       var m = list[i], hb = heroBox(m, 'feat'), inner = hb.inner;
+      if (m.logo) { var h1 = inner.querySelector('h1'), li = el('img', 'tlogo'); li.src = m.logo; li.alt = m.name; h1.innerHTML = ''; h1.appendChild(li); }
       if (!MOBILE) hb.hero.style.marginTop = -parseInt(main.style.paddingTop || '0', 10) + 'px'; // banner runs under the see-through header
-      var tl = el('div', 'topline'); tl.appendChild(el('span', 'badge', 'TOP')); tl.appendChild(document.createTextNode('#' + (i + 1) + ' in movies today'));
+      var tl = el('div', 'topline'), bd = el('span', 'badge t10'); bd.appendChild(el('i', '', 'TOP')); bd.appendChild(el('b', '', '10'));
+      tl.appendChild(bd); tl.appendChild(document.createTextNode('#' + (i + 1) + ' in movies'));
       inner.insertBefore(tl, inner.childNodes[1]);
       var playB = ibtn('btn', 'play', 'Play'), infoB = ibtn('btn ghost', 'info', 'More info');
-      playB.onok = function () { autoPlay('movie', m.id, m.name, m); };
-      infoB.onok = function () { openTitle('movie', m.id); };
+      playB.onok = function () { toImdb(m, function (id) { if (id) autoPlay('movie', id, m.name, m); }); };
+      infoB.onok = function () { openAny(m); };
       inner.appendChild(playB); inner.appendChild(listBtn(m)); inner.appendChild(infoB);
       var dots = el('div', 'dots'), pz = el('span', 'pz f'); pz.innerHTML = ico(paused ? 'play' : 'pause');
       list.forEach(function (x, j) { var d = el('i', j === i ? 'a' : ''); d.onclick = function () { idx = j; render(j, false); }; dots.appendChild(d); });
@@ -660,7 +754,7 @@ function home() {
     render(0, !(cur && main.contains(cur)));
     var timer = setInterval(function () {
       if (view !== v) return clearInterval(timer);
-      if (paused || cur && feat.contains(cur) || video.style.display === 'block' || trailerEl.style.display === 'block') return;
+      if (paused || (IS_TV || kbdUsed) && cur && feat.contains(cur) || video.style.display === 'block' || trailerEl.style.display === 'block') return;
       idx = (idx + 1) % list.length; render(idx, false);
     }, 7000);
   });
@@ -681,13 +775,30 @@ function home() {
   }
   var ml = myList();
   if (ml.length) { var rl = newRow('My List'); ml.slice(0, 20).forEach(function (m) { wcard(m, rl.strip); }); }
-  // [title, type, catalog path, how many, top-N badges]
-  [['Top 10 on 3BodyFlix', 'movie', 'top', 10, true]].concat(ROWS).forEach(function (r) {
+  // [title, TMDB path, media type, extra query, how many, top-N badges]
+  var TROWS = [
+    ['Top 10 Movies Today', '/trending/movie/day', 'movie', '', 10, true],
+    ['Trending This Week', '/trending/all/week', null, ''],
+    ['Popular Movies', '/movie/popular', 'movie', ''],
+    ['Popular Shows', '/tv/popular', 'tv', ''],
+    ['Now Playing in Theaters', '/movie/now_playing', 'movie', ''],
+    ['Top 10 Shows Today', '/trending/tv/day', 'tv', '', 10, true],
+    ['Top Rated Movies', '/movie/top_rated', 'movie', ''],
+    ['Top Rated Shows', '/tv/top_rated', 'tv', ''],
+    ['Airing Today', '/tv/airing_today', 'tv', ''],
+    ['Coming Soon', '/movie/upcoming', 'movie', ''],
+    ['Action', '/discover/movie', 'movie', 'with_genres=28&sort_by=popularity.desc'],
+    ['Comedy', '/discover/movie', 'movie', 'with_genres=35&sort_by=popularity.desc'],
+    ['Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc'],
+    ['Crime Shows', '/discover/tv', 'tv', 'with_genres=80&sort_by=popularity.desc'],
+    ['Sci-Fi & Fantasy Shows', '/discover/tv', 'tv', 'with_genres=10765&sort_by=popularity.desc']
+  ];
+  TROWS.forEach(function (r) {
     var R = newRow(r[0]);
-    get(CINEMETA + '/catalog/' + r[1] + '/' + r[2] + '.json', function (res) {
-      var metas = ((res && res.metas) || []).slice(0, r[3] || 20);
-      if (!metas.length) return main.removeChild(R.row); // drop rows the catalog does not offer
-      metas.forEach(function (m, i) { wcard(m, R.strip, r[4] ? i + 1 : 0, r[4] && i === 0); });
+    get(tmdb(r[1], r[3]), function (res) {
+      var metas = ((res && res.results) || []).map(function (x) { return fromTmdb(x, r[2]); }).filter(function (x) { return x && (x.poster || x.background); }).slice(0, r[4] || 20);
+      if (!metas.length) return main.removeChild(R.row); // drop rows that came back empty
+      metas.forEach(function (m, i) { wcard(m, R.strip, r[5] ? i + 1 : 0, r[5] && i === 0); });
     });
   });
   var foot = el('div'); foot.id = 'foot'; main.appendChild(foot);
@@ -818,8 +929,11 @@ function heroBox(m, cls) {
   if (isHttp(m.background)) hero.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
   hero.appendChild(el('div', 'shade')); hero.appendChild(inner);
   inner.appendChild(el('h1', '', m.name));
-  var bits = [m.releaseInfo, m.runtime, (m.genres || []).slice(0, 3).join(', '), rating(m) ? '★ IMDb ' + rating(m) : ''].filter(function (b) { return b; });
-  inner.appendChild(el('div', 'meta', bits.join('   •   ')));
+  var bits = [m.releaseInfo, m.type === 'series' ? 'Show' : 'Movie', m.runtime].concat((m.genres || []).slice(0, 2));
+  var meta = el('div', 'meta');
+  if (rating(m)) { var st = el('span', 'rt'); st.innerHTML = '<svg class="ic fill" viewBox="0 0 24 24">' + ICONS.star + '</svg>'; st.appendChild(document.createTextNode(rating(m))); meta.appendChild(st); }
+  bits.filter(function (b) { return b; }).forEach(function (b) { if (meta.childNodes.length) meta.appendChild(el('span', 'dot', '·')); meta.appendChild(document.createTextNode(String(b))); });
+  inner.appendChild(meta);
   var d = m.description || '';
   inner.appendChild(el('p', '', cls && d.length > 260 ? d.slice(0, 257) + '…' : d));
   return { hero: hero, inner: inner };
@@ -838,7 +952,7 @@ function detail(type, id) {
       var yt = (m.trailerStreams && m.trailerStreams[0] && m.trailerStreams[0].ytId) || (m.trailers && m.trailers[0] && m.trailers[0].source);
       var trailerB = null;
       if (yt) { trailerB = ibtn('chip', 'film', 'Trailer'); trailerB.onok = function () { openTrailer(yt); }; }
-      moreLikeThis(m, type);
+      tmdbEnrich(m, type, hb);
       var link = location.origin + location.pathname + '#/' + type + '/' + m.id, shareB = ibtn('chip', 'share', 'Share'), linkP = el('p', 'link');
       shareB.onok = function () {
         linkP.textContent = link;
@@ -894,6 +1008,40 @@ function detail(type, id) {
       setFocus(inner.querySelector('.btn') || chipsBox.firstChild);
     });
   };
+}
+
+function tmdbEnrich(m, type, hb) {
+  get(tmdb('/find/' + m.id, 'external_source=imdb_id'), function (f) {
+    var hit = f && (type === 'movie' ? f.movie_results : f.tv_results);
+    if (!hit || !hit[0]) return moreLikeThis(m, type);
+    get(tmdb('/' + tPath(type) + '/' + hit[0].id, 'append_to_response=credits,images,recommendations,translations&include_image_language=en,null'), function (d) {
+      if (!d) return moreLikeThis(m, type);
+      var inner = hb.inner, lg = d.images && d.images.logos && d.images.logos[0];
+      if (lg) { var h1 = inner.querySelector('h1'), li = el('img', 'tlogo'); li.src = TIMG + 'w500' + lg.file_path; li.alt = m.name; h1.innerHTML = ''; h1.appendChild(li); }
+      if (isHttp(m.background) === false && d.backdrop_path) hb.hero.style.backgroundImage = 'url(' + JSON.stringify(TIMG + 'w1280' + d.backdrop_path) + ')';
+      var ar = ((d.translations && d.translations.translations) || []).filter(function (t) { return t.iso_639_1 === 'ar' && t.data && t.data.overview; })[0];
+      var en = inner.querySelector('p');
+      if (ar && en) { var pa = el('p', 'arov', ar.data.overview); pa.dir = 'rtl'; inner.insertBefore(pa, en.nextSibling); }
+      var cast = ((d.credits && d.credits.cast) || []).slice(0, 16);
+      if (cast.length) {
+        var row = el('div', 'row'), strip = el('div', 'strip');
+        row.appendChild(el('h2', '', 'Cast')); row.appendChild(strip);
+        cast.forEach(function (c) {
+          var pc = el('div', 'person'), im = el('img');
+          if (c.profile_path) im.src = TIMG + 'w185' + c.profile_path;
+          pc.appendChild(im); pc.appendChild(el('b', '', c.name)); pc.appendChild(el('small', '', c.character || ''));
+          strip.appendChild(pc);
+        });
+        main.appendChild(row);
+      }
+      var recs = ((d.recommendations && d.recommendations.results) || []).map(function (x) { return fromTmdb(x, tPath(type)); }).filter(function (x) { return x && (x.poster || x.background); }).slice(0, 16);
+      if (!recs.length) return moreLikeThis(m, type);
+      var rr = el('div', 'row'), rs = el('div', 'strip');
+      rr.appendChild(el('h2', '', 'More Like This')); rr.appendChild(rs);
+      recs.forEach(function (x) { wcard(x, rs); });
+      main.appendChild(rr);
+    });
+  });
 }
 
 // Similar titles: same main genre, most popular first, the title itself left out (added at the end of the page)
@@ -1042,6 +1190,7 @@ function pkey(k) { return 'p:' + profile + ':' + k; }
 function myList() { try { return JSON.parse(localStorage[pkey('list')]) || []; } catch (e) { return []; } }
 function inList(id) { return myList().some(function (x) { return x.id === id; }); }
 function toggleList(m) {
+  if (!m.id) return false;
   var l = myList(), had = inList(m.id);
   l = had ? l.filter(function (x) { return x.id !== m.id; }) : [{ id: m.id, type: m.type, name: m.name, poster: m.poster, background: m.background, releaseInfo: m.releaseInfo, imdbRating: m.imdbRating }].concat(l);
   localStorage[pkey('list')] = JSON.stringify(l.slice(0, 200));
@@ -1120,6 +1269,7 @@ function settings() {
 // ---------- subtitles ----------
 // Drawn in our own overlay, synced to currentTime: TV video planes often ignore <track>, and old engines lack TextDecoder / Blob tracks.
 var subs = [], subIdx = -1, cues = [], subTimer = null;
+function langOf(s) { var l = String(s.lang || '').toLowerCase(); return /^(ara|ar|arabic)$/.test(l) ? 'ar' : /^(eng|en|english)$/.test(l) ? 'en' : l; }
 function subRank(s) { return /^(ara|ar|arabic)$/i.test(s.lang || '') ? 0 : /^(eng|en|english)$/i.test(s.lang || '') ? 1 : 2; }
 function loadSubs(type, id) {
   subs = []; subIdx = -1;
@@ -1182,7 +1332,10 @@ function setSub(i) {
   fetchSub(s.url, function (text) {
     if (subIdx !== i) return;
     cues = text ? parseSrt(text) : [];
-    if (!cues.length) return subNote('Subtitle ' + label + ' failed, press ▲ for next');
+    if (!cues.length) {
+      for (var j = i + 1; j < subs.length; j++) if (langOf(subs[j]) === langOf(s)) return setSub(j);
+      return subNote('Subtitle ' + label + ' failed');
+    }
     if (IS_IOS) { nativeTrack(text, s.lang); cues = []; return; } // shown by the iPhone player itself
     subTimer = setInterval(showCue, 200);
     subNote('Subtitles: ' + label + (MOBILE ? '' : '  (▲▼ to change)'));
@@ -1237,6 +1390,16 @@ function autoPlay(type, id, title, meta, sub) {
   });
 }
 // Unsupported formats either fire 'error' or just never start on some TVs: both move on to the next stream
+// External players play every format (MKV, HEVC, AC3) that phone browsers cannot
+function extUrl(url, app) {
+  if (app === 'infuse') return 'infuse://x-callback-url/play?url=' + encodeURIComponent(url);
+  if (IS_IOS) return 'vlc-x-callback://x-callback-url/stream?url=' + encodeURIComponent(url);
+  var m = /^(https?):\/\/(.*)$/.exec(url); // Android: system chooser (VLC, MX Player, ...)
+  return m ? 'intent://' + m[2] + '#Intent;scheme=' + m[1] + ';type=video/*;end' : url;
+}
+console.assert(extUrl('https://a.com/v.mkv?x=1').indexOf('intent://a.com/v.mkv?x=1#Intent;scheme=https;type=video/*;end') === 0 || IS_IOS, 'extUrl');
+function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i].url; video.pause(); location.href = extUrl(u, app); }
+
 function nextStream() {
   clearTimeout(watchdog);
   if (!pq || !pq.q.length) return;
@@ -1249,6 +1412,7 @@ function nextStream() {
     toast('Switching to another source\u2026');
     startSrc(pq.q[pq.i].url, video.currentTime); renderQ();
   } else {
+    if (MOBILE && pq.q.length && confirm('This video format does not play in the browser. Open it in ' + (IS_IOS ? 'VLC' : 'a video player app (VLC / MX Player)') + '?')) { pq.i = 0; return openExternal(); }
     history.back();
     alert('No stream could be played on this device. Try another quality or title.');
   }
@@ -1420,6 +1584,10 @@ function renderQ() {
     $('qLabel').textContent = pq.auto ? 'Auto' : curQ;
     pq.q.forEach(function (s, j) { var q = qualityOf(s); if (!groups[q]) { groups[q] = []; order.push(q); } groups[q].push(j); });
     order.sort(function (a, b) { return ['4K', '1080P', '720P', '480P', '360P', 'Auto'].indexOf(a) - ['4K', '1080P', '720P', '480P', '360P', 'Auto'].indexOf(b); });
+    if (MOBILE) {
+      opt(box, 'Open in ' + (IS_IOS ? 'VLC' : 'VLC / MX Player'), false, function () { openExternal(); });
+      if (IS_IOS) opt(box, 'Open in Infuse', false, function () { openExternal('infuse'); });
+    }
     opt(box, 'Auto  (fastest)', pq.auto, function () {
       pq.auto = true; closeMenus();
       if (pq.i !== 0) { pq.i = 0; startSrc(pq.q[0].url, video.currentTime); }
@@ -1445,8 +1613,12 @@ function renderSubs() {
   var box = $('subList'); box.innerHTML = '';
   opt(box, 'Off', subIdx < 0, function () { setSub(-1); renderSubs(); toast('Subtitles off'); });
   if (!subs.length) box.appendChild(el('div', 'pempty', 'No subtitles found'));
-  subs.forEach(function (s, i) {
-    opt(box, (/^(ara|ar)$/i.test(s.lang || '') ? '\u0627\u0644\u0639\u0631\u0628\u064a\u0629' : /^(eng|en)$/i.test(s.lang || '') ? 'English' : (s.lang || '?')) + '  #' + (i + 1), i === subIdx, function () { setSub(i); renderSubs(); });
+  var curLang = subIdx >= 0 && subs[subIdx] ? langOf(subs[subIdx]) : '';
+  [['ar', 'Arabic \u2014 \u0627\u0644\u0639\u0631\u0628\u064a\u0629'], ['en', 'English']].forEach(function (L) {
+    var first = -1;
+    for (var i = 0; i < subs.length; i++) if (langOf(subs[i]) === L[0]) { first = i; break; }
+    if (first < 0) return;
+    opt(box, L[1], curLang === L[0], function () { setSub(first); renderSubs(); });
   });
   var sz = $('szList'); sz.innerHTML = '';
   [['S', 34], ['M', 46], ['L', 58], ['XL', 72]].forEach(function (z) {
@@ -1466,6 +1638,9 @@ function renderAudio() {
 subNote = function (t) { if (isPlaying() && /failed/i.test(t)) toast('Subtitle unavailable'); };
 
 // ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing; 412-417 are remote media keys) ----------
+var kbdUsed = IS_TV;
+if (IS_TV) document.documentElement.className += ' kbd';
+document.addEventListener('keydown', function (ev) { var k = ev.keyCode; if (!kbdUsed && k >= 37 && k <= 40) { kbdUsed = true; document.documentElement.className += ' kbd'; } }, true);
 var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, MediaPlayPause: 179, MediaRewind: 412, MediaFastForward: 417 };
 function isBack(k) { return k === 8 || k === 27 || k === 461 || k === 10009; }
 document.onkeydown = function (ev) {
@@ -1509,8 +1684,10 @@ document.onkeydown = function (ev) {
 var nav = el('span'), topR = el('span');
 nav.id = 'nav'; topR.id = 'topR';
 top_.appendChild(nav); top_.appendChild(topR);
+var NAV_ICON = { Home: 'home', Movies: 'film', Shows: 'tv', Catalogs: 'grid', 'My List': 'star', M3U: 'list' };
 function topBtn(text, ok, parent) {
-  var b = el('button', 'f', text);
+  var b = el('button', 'f');
+  if (NAV_ICON[text]) setIbtn(b, NAV_ICON[text], text); else b.textContent = text;
   b.onok = function () {
     if (b.parentNode === nav) { [].forEach.call(nav.childNodes, function (x) { x.className = x.className.replace(/ act\b/g, ''); }); b.className += ' act'; }
     ok();
@@ -1520,19 +1697,25 @@ function topBtn(text, ok, parent) {
 }
 topBtn('Home', function () { show(home); }).className += ' act';
 topBtn('Movies', function () { show(catalog('movie')); });
-topBtn('Series', function () { show(catalog('series')); });
+topBtn('Shows', function () { show(catalog('series')); });
 topBtn('Catalogs', function () { show(catalogs); });
 topBtn('My List', function () { show(myListPage); });
-topBtn('M3U Player', function () { show(m3uHome); });
+topBtn('M3U', function () { show(m3uHome); });
 var q = el('input', 'f'); q.id = 'q'; q.placeholder = 'Search movies & series…';
 q.onok = function () { if (q.value.trim()) show(searchPage(q.value.trim())); };
 topR.appendChild(q);
-var profBtn = el('button', 'f', '');
+nav.appendChild(el('span', 'nsep'));
+var srchBtn = el('button', 'f ib'); srchBtn.innerHTML = ico('search'); srchBtn.title = 'Search';
+srchBtn.onok = function () { show(searchPage()); };
+nav.appendChild(srchBtn);
+var profBtn = el('button', 'f ib');
 profBtn.onok = function () { show(profilesPage); };
-topR.appendChild(profBtn);
-function updateProfileBtn() { setIbtn(profBtn, 'user', profile || 'Profile'); }
+nav.appendChild(profBtn);
+function updateProfileBtn() { profBtn.innerHTML = '<span class="av">' + ico('user') + '</span>'; profBtn.title = profile || 'Profile'; }
 updateProfileBtn();
-topBtn('Settings', function () { show(settings); }, topR);
+var setBtn = el('button', 'f ib'); setBtn.innerHTML = ico('gear'); setBtn.title = 'Settings';
+setBtn.onok = function () { show(settings); };
+nav.appendChild(setBtn);
 if (MOBILE) top_.appendChild(q); // (hidden on phones: the tab bar has its own search page)
 function tabGo(id, fn) {
   $(id).onok = function () {
