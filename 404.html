@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>document.write('<base href="' + (/^\/3bodyflix(\/|$)/.test(location.pathname) ? '/3bodyflix/' : '/') + '">');</script>
+<meta name="viewport" content="width=1920">
+<title>3BodyFlix</title>
+<link rel="icon" href="logo.svg?v=2" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<script>
+// Phones/tablets get a responsive touch layout; TVs (and desktop) keep the fixed 1920 canvas
+var UA = navigator.userAgent;
+var IS_TV = /TV|VIDAA|Hisense|Tizen|Web0S|webOS|HbbTV|AFT|BRAVIA|CrKey|SmartTV/i.test(UA);
+var MOBILE = !IS_TV && (/iPhone|iPad|iPod|Android|Mobile/i.test(UA) || (/Macintosh/.test(UA) && 'ontouchend' in document));
+if (MOBILE) {
+  document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1');
+  document.documentElement.className = 'mobile';
+}
+var IS_IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && 'ontouchend' in document);
+if (IS_IOS) document.documentElement.className += ' ios';
+if (!IS_TV && !MOBILE) document.documentElement.className += ' desk';
+</script>
+<!-- ES5 + old CSS only: the VIDAA 2021 browser is an old engine (no flex gap, no arrow functions, no inset) -->
+<style>
+body{margin:0;background:#111;color:#eee;font-family:Arial,sans-serif;font-size:28px;overflow:hidden}
+#top{padding:16px 40px;background:#181818;white-space:nowrap}
+#top .f{display:inline-block;margin-right:8px;font-size:26px;padding:10px 14px}
+#top #q{width:440px;padding:12px 22px 12px 58px;margin:0 14px 0 10px;border-radius:32px;border:2px solid #3a3a3a;background:#262626 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23bbbbbb' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7'/%3E%3Cpath d='M16 16l5 5'/%3E%3C/svg%3E") no-repeat 20px center;background-size:26px 26px;color:#fff;font-size:26px;vertical-align:middle}
+#top #q.on{border-color:#e50914;background-color:#333;box-shadow:0 0 0 4px rgba(229,9,20,.25)}
+#logo{display:inline-block;margin-right:22px;font-size:40px;font-weight:bold;color:#fff;vertical-align:middle;letter-spacing:-1px}
+#logo b{color:#e50914}
+#logo img{width:52px;height:52px;vertical-align:middle;margin:-6px 12px 0 0}
+.f{outline:none;border:4px solid transparent;border-radius:10px;cursor:pointer}
+.f.on{border-color:#fff;background:#2a2a2a}
+button.f,input.f{background:#222;color:#eee;font-size:28px;padding:12px 24px}
+input.f{width:300px;cursor:text}
+#main{position:absolute;top:100px;left:0;right:0;bottom:0;overflow-y:auto;padding:0 40px}
+h1{margin:20px 0 10px}
+p{max-width:1400px;color:#bbb}
+.row{margin:6px 0 10px}
+.row h2{margin:12px 0 6px;font-size:32px}
+.strip{position:relative;white-space:nowrap;overflow:hidden;padding:6px 0}
+.card{display:inline-block;vertical-align:top;width:220px;margin:0 16px 20px 0;padding:4px;white-space:normal}
+.card img{width:220px;height:325px;background:#333;border-radius:6px;display:block}
+.card div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.strip .card{width:200px;margin:0 14px 0 0}
+.strip .card img{width:200px;height:296px}
+.card.on{border-color:#e50914;background:transparent}
+.card{position:relative}
+.rate{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.8);color:#f5c518;font-size:20px;font-weight:bold;padding:2px 9px;border-radius:6px}
+.rank{position:absolute;top:12px;left:12px;background:#e50914;color:#fff;font-size:20px;font-weight:bold;padding:2px 9px;border-radius:6px}
+.card .yr{color:#888;font-size:18px;margin-top:0}
+.feat{min-height:640px}
+.feat p{max-width:900px}
+.prog{height:6px;background:#444;border-radius:3px;margin-top:6px}
+.prog i{display:block;height:6px;background:#e50914;border-radius:3px}
+.sec{margin:26px 0 8px;font-size:30px;color:#ddd}
+.ch{display:inline-block;vertical-align:top;width:220px;margin:0 16px 20px 0;padding:4px;white-space:normal}
+.ch img{width:220px;height:124px;object-fit:contain;background:#1c1c1c;border-radius:6px;display:block}
+.ch div{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.ch.on{border-color:#e50914;background:transparent}
+.prof{display:inline-block;width:220px;margin:0 24px 24px 0;padding:24px 10px;text-align:center;background:#1c1c1c;font-size:30px}
+.prof b{display:block;font-size:80px;margin-bottom:10px}
+.link{word-break:break-all;color:#9cf}
+.dots{margin-top:18px}
+.dots i{display:inline-block;width:14px;height:14px;border-radius:7px;background:#555;margin-right:10px}
+.dots i.a{background:#e50914;width:34px}
+.crew{color:#bbb;font-size:24px;margin:4px 0}
+.crew b{color:#fff;font-weight:normal}
+#trailer{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:12;background:#000}
+#trailer iframe{width:100%;height:100%;border:0}
+.hero{position:relative;min-height:560px;margin:0 -40px;padding:50px 40px 20px;background-size:cover;background-position:center top}
+.hero .shade{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to right,#111 25%,rgba(17,17,17,.65) 60%,rgba(17,17,17,.25));background-color:rgba(17,17,17,.4)}
+.hero .in{position:relative;max-width:1150px}
+.hero h1{font-size:60px;margin:0 0 10px}
+.meta{color:#ddd;font-size:26px;margin:6px 0 14px}
+.btn{display:inline-block;padding:14px 34px;margin:0 14px 14px 0;background:#e50914;color:#fff;font-weight:bold}
+.btn.on{background:#ff2a35}
+.chip{display:inline-block;padding:10px 22px;margin:0 10px 10px 0;background:#262626}
+.chip.sel{background:#e50914;color:#fff}
+.item{padding:14px 20px;margin:8px 0;background:#1c1c1c}
+.tag{display:inline-block;font-size:20px;padding:2px 10px;margin-right:12px;border-radius:6px;background:#444;vertical-align:middle}
+.tag.good{background:#1d7a32}
+.tag.bad{background:#7a1d1d}
+.muted{color:#888}
+video{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9}
+#sub{display:none;position:fixed;left:5%;right:5%;bottom:70px;z-index:11;text-align:center;font-size:46px;line-height:1.3;color:#fff;white-space:pre-line;text-shadow:0 0 6px #000,2px 2px 3px #000;pointer-events:none}
+#osd{display:none;position:fixed;left:0;right:0;bottom:0;z-index:12;padding:60px 60px 40px;background:linear-gradient(to top,rgba(0,0,0,.92),rgba(0,0,0,0))}
+#osdTitle{font-size:34px;font-weight:bold}
+#osdBar{height:10px;background:#555;border-radius:5px;margin:18px 0;cursor:pointer}
+#osdFill{height:10px;background:#e50914;border-radius:5px;width:0}
+#osd .ctl{display:inline-block;font-size:36px;padding:6px 24px;margin-right:10px;background:rgba(255,255,255,.12)}
+#osdTime{float:right;font-size:30px;margin-top:14px}
+#closeBtn{display:none;position:fixed;top:20px;left:20px;z-index:13;font-size:34px;padding:6px 20px;background:rgba(0,0,0,.6);color:#fff}
+#dbg{display:none;position:fixed;right:10px;bottom:6px;font-size:16px;color:#f88;z-index:14;pointer-events:none}
+/* phones / tablets */
+.mobile body{font-size:16px;overflow:auto}
+.mobile #top{padding:8px;white-space:nowrap;overflow-x:auto;position:-webkit-sticky;position:sticky;top:0;z-index:5}
+.mobile #top .f{margin-right:6px;font-size:15px;padding:8px 12px}
+.mobile #top #q{display:none;width:100%;box-sizing:border-box;padding:11px 14px 11px 42px;background-position:14px center;background-size:18px 18px;font-size:16px;margin:10px 0 2px}
+.mobile #logo{font-size:20px;margin-right:10px}
+.mobile #logo img{width:28px;height:28px;margin:-3px 6px 0 0}
+.mobile button.f,.mobile input.f{font-size:15px;padding:8px 12px}
+.mobile input.f{width:130px}
+.mobile .f{border-width:2px}
+.mobile #main{position:static;padding:0 10px 30px}
+.mobile h1{font-size:22px}
+.mobile .row h2{font-size:18px}
+.mobile .strip{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mobile .card,.mobile .strip .card{width:110px;margin:0 8px 10px 0;padding:2px}
+.mobile .card img,.mobile .strip .card img{width:110px;height:163px}
+.mobile .card div{font-size:13px}
+.mobile .hero{min-height:0;margin:0 -10px;padding:20px 10px 10px}
+.mobile .hero h1{font-size:26px}
+.mobile .feat{min-height:0}
+.mobile .rate,.mobile .rank{font-size:11px;top:6px;padding:1px 5px}
+.mobile .rate{right:6px}.mobile .rank{left:6px}
+.mobile .card .yr{font-size:11px}
+.mobile .sec{font-size:17px}
+.mobile .ch{width:110px;margin:0 8px 10px 0;padding:2px}
+.mobile .ch img{width:110px;height:62px}
+.mobile .ch div{font-size:12px}
+.mobile .prof{width:120px;padding:12px 6px;font-size:15px;margin:0 10px 10px 0}
+.mobile .prof b{font-size:40px}
+.mobile .crew{font-size:13px}
+.mobile .dots i{width:8px;height:8px;margin-right:6px}
+.mobile .dots i.a{width:20px}
+.mobile .meta{font-size:14px}
+.mobile .btn{padding:10px 22px}
+.mobile .chip{padding:6px 12px}
+.mobile .item{padding:10px;font-size:15px}
+.mobile .tag{font-size:12px;padding:1px 6px;margin-right:6px}
+.mobile #sub{font-size:20px;bottom:70px}
+.mobile #osd{display:none !important}
+.mobile #closeBtn{font-size:20px;top:10px;left:10px;padding:4px 12px}
+.mobile #dbg{font-size:11px}
+/* ===== v10 design: floating pill nav, full-bleed hero, landscape rows ===== */
+body{background:#0e0e10;color:#f2f2f4;font-family:"Segoe UI",Roboto,Arial,sans-serif}
+#top{position:absolute;top:0;left:0;right:0;z-index:6;padding:22px 5vw 30px;background:linear-gradient(#0e0e10,rgba(14,14,16,.8) 55%,rgba(14,14,16,0))}
+#top .f{background:transparent;color:#9a9aa3;border-radius:12px;border-width:3px}
+#top .f.on{background:#34343b;color:#f2f2f4;border-color:#f2f2f4}
+#nav{display:inline-block;padding:6px;background:rgba(30,30,34,.85);border:1px solid #2c2c32;border-radius:16px;vertical-align:middle}
+#nav .f{margin-right:2px}
+#nav .f.act{background:#34343b;color:#f2f2f4}
+#topR{float:right}
+#top #q{width:380px;background-color:#1b1b1f}
+#main{padding:0 5vw}
+.hero{margin:0 -5vw;padding:60px 5vw 30px}
+.hero .shade{background:linear-gradient(90deg,#0e0e10 10%,rgba(14,14,16,0) 65%),linear-gradient(0deg,#0e0e10,rgba(14,14,16,0) 40%)}
+.feat{height:88vh;min-height:620px;padding:0 5vw}
+.feat .in{position:absolute;left:5vw;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);max-width:820px}
+.feat h1{font-size:84px;line-height:1;margin-bottom:22px}
+.topline{font-weight:bold;font-size:26px;margin-bottom:14px}
+.badge{display:inline-block;background:#e50914;color:#fff;font-weight:900;font-size:16px;padding:3px 8px;border-radius:5px;margin-right:12px;vertical-align:middle}
+.btn{background:#f2f2f4;color:#000;border-radius:10px;padding:14px 30px}
+.btn.on{background:#fff;border-color:#e50914}
+.btn.ghost{background:rgba(120,120,128,.45);color:#f2f2f4}
+.chip{background:#1b1b1f;border:3px solid #2c2c32;color:#bdbdc4;border-radius:10px}
+.chip.on{border-color:#e50914;color:#f2f2f4;background:#1b1b1f}
+.chip.sel{background:#e50914;border-color:#e50914;color:#fff}
+.dots{position:absolute;right:5vw;bottom:12vh;margin:0;z-index:2}
+.dots i{width:28px;height:4px;border-radius:2px;background:#555;margin-right:10px;vertical-align:middle}
+.dots i.a{background:#f2f2f4;width:42px}
+.pz{display:inline-block;width:46px;height:46px;line-height:40px;text-align:center;border-radius:50%;background:#222;border:3px solid #444;font-size:18px;vertical-align:middle;padding:0}
+.row h2{font-size:30px}
+.wc{display:inline-block;vertical-align:top;width:340px;margin:0 16px 0 0;padding:4px;white-space:normal;position:relative}
+.wc.big{width:620px}
+.wc .ph{position:relative;height:191px;border-radius:10px;overflow:hidden;background-color:#1b1b1f;background-size:cover;background-position:center}
+.wc.big .ph{height:349px}
+.wc .ph b{position:absolute;left:14px;bottom:10px;right:14px;font-size:24px;text-shadow:0 2px 6px #000}
+.wc .tb{position:absolute;top:0;left:14px;background:#e50914;color:#fff;font-weight:900;font-size:16px;padding:3px 8px;border-radius:0 0 5px 5px}
+.wc h3{font-size:22px;margin:8px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wc small{color:#9a9aa3;font-size:18px}
+.wc.on{border-color:#e50914;background:transparent}
+.wc .prog{margin-top:6px}
+.item{background:#1b1b1f;border-radius:10px}
+#foot{padding:40px 0;color:#9a9aa3;font-size:20px;border-top:1px solid #222;margin-top:30px}
+.mobile #top{position:-webkit-sticky;position:sticky;padding:8px 10px 10px;background:#0e0e10}
+.mobile #nav{padding:3px;border-radius:12px}
+.mobile #topR{float:none}
+.mobile #main{padding:0 10px 30px}
+.mobile .hero{margin:0 -10px;padding:20px 10px 10px}
+.mobile .feat{height:auto;min-height:62vh}
+.mobile .feat .in{position:relative;left:auto;top:auto;-webkit-transform:none;transform:none;padding-top:24vh}
+.mobile .feat h1{font-size:34px;margin-bottom:10px}
+.mobile .topline{font-size:14px}
+.mobile .wc{width:220px;margin-right:10px}
+.mobile .wc.big{width:82vw}
+.mobile .wc .ph{height:124px}
+.mobile .wc.big .ph{height:46vw}
+.mobile .wc h3{font-size:14px}
+.mobile .wc small{font-size:12px}
+.mobile .wc .ph b{font-size:15px}
+.mobile .badge,.mobile .wc .tb{font-size:11px}
+.mobile .dots{bottom:14px;right:12px}
+.mobile .dots i{width:16px;height:3px}
+.mobile .dots i.a{width:26px}
+.mobile .pz{width:30px;height:30px;line-height:24px;font-size:12px}
+.mobile #foot{font-size:12px}
+/* ===== v11: typography + motion ===== */
+body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-size:24px;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+h1{font-weight:800;letter-spacing:-.03em}
+.feat h1{font-size:88px;font-weight:900;letter-spacing:-.04em}
+.hero h1{font-size:64px}
+.meta{font-size:22px;color:#c8c8ce;font-weight:500}
+.hero p{font-size:24px;line-height:1.55;color:#d6d6dc;max-width:820px}
+.row{margin:10px 0 18px}
+.row h2{font-size:28px;font-weight:700;letter-spacing:-.02em;margin:18px 0 12px}
+.sec{font-weight:700}
+#top .f,#top #q{font-size:22px;font-weight:600}
+#logo{font-weight:900;letter-spacing:-.04em}
+.btn{font-weight:700;font-size:24px}
+.chip{font-weight:600;font-size:22px}
+.wc h3{font-size:21px;font-weight:600}
+.wc small{font-size:17px}
+.item{font-size:22px}
+/* motion: transform/opacity only, cheap enough for TV chips */
+.f{-webkit-transition:transform .22s ease,box-shadow .22s ease,background-color .2s,border-color .2s,color .2s;transition:transform .22s ease,box-shadow .22s ease,background-color .2s,border-color .2s,color .2s}
+.wc.on,.card.on,.ch.on{-webkit-transform:scale(1.07);transform:scale(1.07);z-index:3;box-shadow:0 14px 40px rgba(0,0,0,.7)}
+.wc .ph{-webkit-transition:transform .4s ease;transition:transform .4s ease}
+.wc.on .ph{box-shadow:0 0 0 3px #e50914}
+.btn.on,.chip.on,.item.on,#nav .f.on{-webkit-transform:scale(1.05);transform:scale(1.05)}
+.item.on{background:#26262c}
+@media (hover:hover){.wc:hover,.card:hover,.ch:hover{-webkit-transform:scale(1.05);transform:scale(1.05);z-index:3}.btn:hover{-webkit-transform:scale(1.04);transform:scale(1.04)}}
+@-webkit-keyframes fadeUp{from{opacity:0;-webkit-transform:translateY(24px)}to{opacity:1;-webkit-transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@-webkit-keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@-webkit-keyframes zoomOut{from{-webkit-transform:scale(1.08)}to{-webkit-transform:scale(1)}}
+@keyframes zoomOut{from{transform:scale(1.08)}to{transform:scale(1)}}
+#main > *{-webkit-animation:fadeIn .35s ease both;animation:fadeIn .35s ease both}
+.feat{-webkit-animation:fadeIn .8s ease both;animation:fadeIn .8s ease both}
+.feat .in > *{-webkit-animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) both;animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) both}
+.feat .in > :nth-child(2){-webkit-animation-delay:.08s;animation-delay:.08s}
+.feat .in > :nth-child(3){-webkit-animation-delay:.16s;animation-delay:.16s}
+.feat .in > :nth-child(4){-webkit-animation-delay:.24s;animation-delay:.24s}
+.feat .in > :nth-child(n+5){-webkit-animation-delay:.32s;animation-delay:.32s}
+.strip .wc,.strip .card,.strip .ch{-webkit-animation:fadeUp .5s ease both;animation:fadeUp .5s ease both}
+.strip > :nth-child(2){-webkit-animation-delay:.04s;animation-delay:.04s}
+.strip > :nth-child(3){-webkit-animation-delay:.08s;animation-delay:.08s}
+.strip > :nth-child(4){-webkit-animation-delay:.12s;animation-delay:.12s}
+.strip > :nth-child(5){-webkit-animation-delay:.16s;animation-delay:.16s}
+.strip > :nth-child(n+6){-webkit-animation-delay:.2s;animation-delay:.2s}
+.dots i{-webkit-transition:width .4s ease,background .4s;transition:width .4s ease,background .4s}
+.strip{padding:14px 6px 18px;margin:0 -6px}
+@media (prefers-reduced-motion:reduce){*{-webkit-animation:none !important;animation:none !important;-webkit-transition:none !important;transition:none !important}}
+.mobile body{font-size:15px}
+.mobile .feat h1{font-size:36px}
+.mobile .hero h1{font-size:28px}
+.mobile .meta{font-size:13px}
+.mobile .hero p{font-size:14px}
+.mobile .row h2{font-size:18px;margin:12px 0 6px}
+.mobile #top .f,.mobile #top #q{font-size:14px}
+.mobile .btn{font-size:15px}
+.mobile .chip{font-size:13px}
+.mobile .wc h3{font-size:14px}
+.mobile .wc small{font-size:12px}
+.mobile .item{font-size:14px}
+.mobile .wc.on,.mobile .card.on,.mobile .ch.on,.mobile .btn.on,.mobile .chip.on,.mobile .item.on{-webkit-transform:none;transform:none;box-shadow:none}
+/* ===== v12 player ===== */
+#pl{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:12;color:#fff}
+#pl svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+#ptop,#pbot{position:absolute;left:0;right:0;-webkit-transition:opacity .3s;transition:opacity .3s}
+#ptop{top:0;padding:30px 50px 70px;background:linear-gradient(rgba(0,0,0,.85),rgba(0,0,0,0));white-space:nowrap}
+#pbot{bottom:0;padding:80px 50px 34px;background:linear-gradient(to top,rgba(0,0,0,.9),rgba(0,0,0,0))}
+#pl.hid #ptop,#pl.hid #pbot{opacity:0}
+#pl.hid{cursor:none}
+.pb{display:inline-block;padding:8px 12px;border-radius:12px;vertical-align:middle}
+.pt{display:inline-block;vertical-align:middle;margin-left:18px;max-width:900px;overflow:hidden}
+.pt h3{font-size:30px;font-weight:700;margin:0;overflow:hidden;text-overflow:ellipsis}
+.pt small{color:#9a9aa3;font-size:20px}
+.pr{float:right}
+.pill{display:inline-block;padding:10px 18px;margin-left:10px;border-radius:12px;font-size:22px;font-weight:600;background:rgba(30,30,34,.6)}
+.pill svg{width:26px !important;height:26px !important;margin-right:10px}
+.pill i{font-style:normal;color:#9a9aa3;margin-left:10px;font-weight:500}
+.pill.on,.pb.on,.cb.on{background:#2a2a2e;border-color:#f2f2f4}
+.pill.open{background:#2a2a2e}
+.pmenu{display:none;position:absolute;top:110px;right:50px;width:560px;background:rgba(28,28,30,.97);border:1px solid #333338;border-radius:16px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.6);z-index:5}
+.pmenu.open{display:block;-webkit-animation:fadeUp .2s ease both;animation:fadeUp .2s ease both}
+#qMenu{width:460px}
+.pcols{white-space:nowrap}
+.pcol{display:inline-block;vertical-align:top;width:48%;white-space:normal}
+.pcol + .pcol{border-left:1px solid #333338;padding-left:16px;margin-left:1%}
+.plabel{font-size:15px;letter-spacing:.14em;color:#8a8a92;font-weight:600;margin:0 10px 10px;text-transform:uppercase}
+.plist{max-height:430px;overflow-y:auto}
+.opt{display:block;padding:12px 14px;border-radius:9px;font-size:21px;font-weight:600;color:#d6d6da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-width:2px}
+.opt.sel{background:#3a3a3f;color:#fff}
+.opt.on{background:#46464c;border-color:#e50914}
+.opt .tag{font-size:15px}
+.pempty{color:#8a8a92;font-size:18px;text-align:center;padding:50px 10px}
+.speed{border-top:1px solid #333338;margin-top:14px;padding-top:14px;white-space:nowrap}
+.speed .plabel{display:inline-block;margin:0 12px 0 6px}
+.sp{display:inline-block;padding:7px 13px;border-radius:20px;font-size:18px;color:#bbb;border-width:2px}
+.sp.sel{background:#fff;color:#000;font-weight:700}
+#ptime{text-align:right;font-size:20px;font-weight:600;margin-bottom:8px}
+#pbar{position:relative;height:24px;cursor:pointer}
+#pbar .trk{position:absolute;left:0;right:0;top:9px;height:6px;background:#444;border-radius:3px}
+#pbuf,#pfill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;width:0}
+#pbuf{background:#777}
+#pfill{background:#e50914}
+#pknob{position:absolute;top:3px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;left:0}
+.ctrls{margin-top:14px;white-space:nowrap}
+.cb{display:inline-block;padding:8px 12px;margin-right:14px;border-radius:12px;position:relative;vertical-align:middle}
+.cb.end{float:right;margin-right:0}
+.skip b{position:absolute;left:4px;bottom:2px;font-size:13px}
+#spin{display:none;position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px;border:4px solid transparent;border-top-color:#fff;border-radius:50%;-webkit-animation:spin .8s linear infinite;animation:spin .8s linear infinite}
+#pl.loading #spin{display:block}
+@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#ptoast{position:absolute;left:50%;top:120px;-webkit-transform:translateX(-50%);transform:translateX(-50%);background:rgba(0,0,0,.6);padding:8px 18px;border-radius:20px;font-size:18px;font-weight:600;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center}
+#ptoast.show{opacity:1}
+.add{position:absolute;top:10px;right:10px;width:40px;height:40px;line-height:34px;text-align:center;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.55);color:#fff;font-size:22px;font-weight:700;opacity:0;-webkit-transition:opacity .2s,background .2s;transition:opacity .2s,background .2s;cursor:pointer;z-index:2}
+.wc:hover .add,.wc.on .add,.add.in{opacity:1}
+.add.in{background:#e50914;border-color:#e50914}
+.mobile #pl svg{width:24px;height:24px}
+.mobile #ptop{padding:12px 12px 40px}
+.mobile #pbot{padding:40px 12px 14px}
+.mobile .pt{margin-left:8px;max-width:45vw}
+.mobile .pt h3{font-size:15px}
+.mobile .pt small{font-size:11px}
+.mobile .pill{padding:6px 10px;font-size:13px;margin-left:4px}
+.mobile .pill b{display:none}
+.mobile .pill svg{width:20px !important;height:20px !important;margin-right:0}
+.mobile .pmenu,.mobile #qMenu{top:60px;left:8px;right:8px;width:auto;padding:12px}
+.mobile .opt{font-size:14px;padding:9px 10px}
+.mobile .plabel{font-size:11px}
+.mobile .plist{max-height:45vh}
+.mobile .sp{font-size:13px;padding:5px 9px}
+.mobile #ptime{font-size:12px}
+.mobile .cb{margin-right:8px;padding:6px 8px}
+.mobile #ptoast{font-size:12px;top:64px;padding:5px 12px}
+.mobile .add{opacity:1;width:28px;height:28px;line-height:24px;font-size:15px;top:6px;right:6px}
+/* ===== v13: episodes, phone layout, simple playback ===== */
+.ep{display:block;padding:12px;background:#1b1b1f;border-radius:16px;margin:12px 0;overflow:hidden;max-width:1300px}
+.ep img{float:left;width:240px;height:135px;object-fit:cover;border-radius:10px;margin-right:24px;background:#2a2a2e}
+.ep b{display:block;font-size:26px;font-weight:700;margin-top:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ep small{display:block;color:#9a9aa3;font-size:20px;margin-top:6px}
+.ep.on{background:#26262c;border-color:#e50914}
+.wc .left{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.75);font-size:16px;font-weight:700;padding:3px 8px;border-radius:6px}
+#tabbar{display:none}
+#pmid{display:none}
+.srch{width:100%;max-width:900px;box-sizing:border-box;font-size:26px;padding:16px 22px 16px 60px;border-radius:32px;border:2px solid #3a3a3a;background:#1b1b1f;color:#fff;margin:10px 0 16px;outline:none}
+.recent{max-width:900px;background:#1b1b1f;border-radius:16px;padding:10px 16px;margin-bottom:16px}
+.recent .item{background:transparent;margin:2px 0}
+.mobile #nav,.mobile #topR{display:none}
+.mobile #top{position:absolute;padding:14px 16px 30px;background:linear-gradient(#0e0e10,rgba(14,14,16,0))}
+.mobile #logo{font-size:22px}
+.mobile #main{padding:0 14px 120px}
+.mobile .feat{min-height:78vh}
+.mobile .feat .in{padding-top:40vh}
+.mobile .feat h1{font-size:38px}
+.mobile #tabbar{display:block;position:fixed;left:50%;bottom:18px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:8;white-space:nowrap;padding:6px;border-radius:34px;background:rgba(28,28,32,.88);border:1px solid #333;box-shadow:0 10px 30px rgba(0,0,0,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.mobile .tab{display:inline-block;padding:9px 13px;border-radius:26px;color:#bdbdc4;border:0;vertical-align:middle}
+.mobile .tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+.mobile .tab.act{background:#3a3a40;color:#fff}
+.mobile .tsep{display:inline-block;width:1px;height:26px;background:#444;margin:0 6px;vertical-align:middle}
+.mobile .wc.pt{width:150px}
+.mobile .wc.pt .ph{height:222px}
+.mobile .wc.pt .ph b{display:none}
+.mobile .hero:not(.feat) .in > .btn{display:block;text-align:center;margin:6px 0 12px}
+.mobile .hero:not(.feat) .in > .chip{width:30%}
+.mobile .hero:not(.feat){padding-top:76px}
+.mobile .hero .in > .chip{width:30%;text-align:center;background:transparent;border:0;margin:0 1% 8px 0;padding:8px 0;font-size:13px}
+.mobile .ep{padding:8px;border-radius:12px;margin:8px 0}
+.mobile .ep img{width:130px;height:73px;margin-right:12px}
+.mobile .ep b{font-size:15px;margin-top:14px}
+.mobile .ep small{font-size:12px}
+.mobile .srch{font-size:16px;padding:12px 16px 12px 44px;margin-top:70px}
+.mobile .wc .left{font-size:11px}
+.mobile #pmid{display:block;position:absolute;left:0;right:0;top:50%;margin-top:-40px;text-align:center;-webkit-transition:opacity .3s;transition:opacity .3s}
+.mobile #pl.hid #pmid{opacity:0}
+.mobile .mb{display:inline-block;margin:0 28px;padding:10px;border:0;position:relative;vertical-align:middle}
+.mobile .mb svg{width:38px !important;height:38px !important}
+.mobile .mb.big svg{width:56px !important;height:56px !important}
+.mobile .mb b{position:absolute;left:4px;bottom:4px;font-size:12px}
+.mobile #cPlay,.mobile #cBack,.mobile #cFwd{display:none}
+.mobile #pDur{font-size:12px}
+/* ===== v14: iPhone native player, desktop scale ===== */
+.ios #pl{pointer-events:none}
+.ios #ptop{pointer-events:auto;background:#000;padding:10px 12px 10px;opacity:1 !important}
+.ios #pbot,.ios #pmid,.ios #spin{display:none !important}
+.ios #pl.hid #ptop{opacity:1}
+.ios video{top:64px;height:calc(100% - 64px)}
+.ios .pmenu{pointer-events:auto}
+html.desk{zoom:.72}
+.desk .feat{height:118vh}
+.desk #main{padding-left:4vw;padding-right:4vw}
+/* ===== v15: icon set + button polish ===== */
+.ic{width:1.15em;height:1.15em;vertical-align:-0.2em;margin-right:.55em;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.fill{fill:currentColor;stroke:none}
+.btn{display:inline-block;padding:15px 34px 15px 28px;border-radius:12px;font-weight:700;letter-spacing:-.01em;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.btn .ic{width:1.2em;height:1.2em}
+.btn.ghost{box-shadow:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.chip .ic{width:1.05em;height:1.05em}
+.hero .chip{background:rgba(40,40,46,.7);border-color:rgba(255,255,255,.08)}
+.pz{line-height:0}
+.pz .ic{margin:0;width:18px;height:18px;vertical-align:middle}
+.add{line-height:0}
+.add .ic{margin:0;width:20px;height:20px;vertical-align:middle;stroke-width:2.6}
+.add{display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;-webkit-box-pack:center;justify-content:center}
+.prof .pic{display:block;width:96px;height:96px;margin:0 auto 14px;border-radius:24px;background:linear-gradient(135deg,#e50914,#5b0aa8);color:#fff;line-height:0;padding:20px;box-sizing:border-box}
+.prof .pic .ic{width:56px;height:56px;margin:0;stroke-width:1.8}
+#closeBtn{line-height:0;padding:10px}
+#closeBtn .ic{margin:0;width:30px;height:30px}
+#topR .ic{width:1.1em;height:1.1em}
+.mobile .hero:not(.feat) .in > .chip .ic{display:block;margin:0 auto 6px;width:24px;height:24px}
+.mobile .btn{padding:12px 22px 12px 18px}
+.mobile .prof .pic{width:56px;height:56px;padding:12px;border-radius:16px}
+.mobile .prof .pic .ic{width:32px;height:32px}
+.mobile .add .ic{width:14px;height:14px}
+.mobile #main > h1:first-child{margin-top:70px}
+/* ===== v16: A logo, footer credits ===== */
+#logo img{width:58px;height:50px;margin:-4px 18px 0 0}
+.mobile #logo img{width:34px;height:29px;margin:0}
+#foot{text-align:center;line-height:1.7}
+#foot b{display:block;color:#e50914;font-weight:800;letter-spacing:-.02em;font-size:22px;margin-bottom:4px}
+#foot .ar{direction:rtl;color:#7a7a82}
+.mobile #foot b{font-size:14px}
+/* ===== v17: TMDB visuals ===== */
+.tlogo{display:block;max-width:560px;max-height:190px;width:auto;height:auto;margin-bottom:6px}
+.feat .tlogo{max-width:620px;max-height:220px}
+.arov{color:#c9c9cf;font-size:22px;line-height:1.6;margin-top:-6px}
+.person{display:inline-block;vertical-align:top;width:150px;margin-right:18px;text-align:center;white-space:normal}
+.person img{display:block;width:124px;height:124px;margin:0 auto;border-radius:50%;object-fit:cover;background:#2a2a2e}
+.person b{display:block;font-size:18px;margin-top:10px;font-weight:600}
+.person small{display:block;color:#9a9aa3;font-size:15px;margin-top:2px}
+.mobile .tlogo,.mobile .feat .tlogo{max-width:72vw;max-height:110px}
+.mobile .arov{font-size:13px}
+.mobile .person{width:86px;margin-right:10px}
+.mobile .person img{width:72px;height:72px}
+.mobile .person b{font-size:12px}
+.mobile .person small{font-size:10px}
+/* ===== v18: header pill like streaming apps, lighter type ===== */
+#top #q{display:none !important}
+#nav{float:right;padding:5px;border-radius:14px;background:rgba(22,22,26,.82);border:1px solid #2c2c32}
+#nav .f{font-size:19px;font-weight:500;padding:9px 16px;margin:0 1px;border-radius:10px;color:#c8c8ce;border-width:2px}
+#nav .f .ic{width:1.05em;height:1.05em;margin-right:.5em;stroke-width:1.9}
+#nav .f.act{background:#34343b;color:#fff;font-weight:600}
+#nav .ib{padding:9px 12px}
+#nav .ib .ic{margin:0;width:22px;height:22px}
+#nav .nsep{display:inline-block;width:1px;height:24px;background:#3a3a40;margin:0 8px;vertical-align:middle}
+#nav .av{display:inline-block;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e50914,#5b0aa8);line-height:0;vertical-align:middle;text-align:center}
+#nav .av .ic{width:18px;height:18px;margin:7px 0 0;color:#fff}
+#logo img{margin-top:2px}
+.feat h1{font-size:72px;font-weight:800;letter-spacing:-.03em}
+.feat .tlogo{max-width:560px;max-height:200px}
+.topline{font-size:24px;font-weight:600;margin:6px 0 16px}
+.badge.t10{display:inline-block;width:34px;height:36px;padding:3px 0 0;text-align:center;border-radius:5px;line-height:1;vertical-align:middle;margin-right:14px}
+.badge.t10 i{display:block;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em}
+.badge.t10 b{display:block;font-size:17px;font-weight:900;margin-top:1px}
+.meta{font-size:21px;font-weight:500;color:#e2e2e6}
+.meta .rt{margin-right:2px}
+.meta .rt .ic{color:#e50914;width:1em;height:1em;vertical-align:-0.1em;margin-right:.3em}
+.meta .dot{color:#8a8a92;margin:0 .55em}
+.feat p{font-size:22px;font-weight:400;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:780px}
+.btn{font-weight:600;font-size:22px;box-shadow:none;padding:14px 32px 14px 26px}
+.row h2{font-weight:600;font-size:28px}
+.wc h3{font-weight:500}
+html:not(.kbd) .f.on{border-color:transparent;box-shadow:none;-webkit-transform:none;transform:none}
+html:not(.kbd) #nav .f.on:not(.act){background:transparent}
+html:not(.kbd) .wc.on .ph{box-shadow:none}
+.mobile .meta{font-size:13px}
+.mobile .feat p{font-size:14px}
+.mobile .badge.t10{width:24px;height:26px}
+.mobile .badge.t10 i{font-size:6px}
+.mobile .badge.t10 b{font-size:12px}
+.mobile .topline{font-size:15px}
+/* ===== v20: banner motion ===== */
+.feat-host,.feat{position:relative}
+.hero{overflow:hidden;background:none !important}
+.hero .bgl{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center top}
+.feat .bgl{-webkit-animation:kenburns 9s ease-out both;animation:kenburns 9s ease-out both;-webkit-transform-origin:70% 30%;transform-origin:70% 30%}
+@-webkit-keyframes kenburns{from{-webkit-transform:scale(1.12)}to{-webkit-transform:scale(1)}}
+@keyframes kenburns{from{transform:scale(1.12)}to{transform:scale(1)}}
+.hero .shade,.hero .in,.hero .dots{z-index:1}
+.feat.leaving{position:absolute !important;top:0;left:0;right:0;z-index:0;-webkit-animation:fadeOut .9s ease both;animation:fadeOut .9s ease both}
+.feat.entering{position:relative;z-index:1;-webkit-animation:fadeIn .9s ease both;animation:fadeIn .9s ease both}
+@-webkit-keyframes fadeOut{from{opacity:1}to{opacity:0}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.feat .in > *{-webkit-animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both;animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both}
+.feat .in > :nth-child(1){-webkit-animation-delay:.15s;animation-delay:.15s}
+.feat .in > :nth-child(2){-webkit-animation-delay:.25s;animation-delay:.25s}
+.feat .in > :nth-child(3){-webkit-animation-delay:.35s;animation-delay:.35s}
+.feat .in > :nth-child(4){-webkit-animation-delay:.45s;animation-delay:.45s}
+.feat .in > :nth-child(n+5){-webkit-animation-delay:.55s;animation-delay:.55s}
+.dots i.a{position:relative;overflow:hidden;background:#555}
+.dots i.a:after{content:"";position:absolute;top:0;left:0;bottom:0;width:100%;background:#f2f2f4;-webkit-transform-origin:left;transform-origin:left;-webkit-animation:slidebar 7s linear both;animation:slidebar 7s linear both}
+@-webkit-keyframes slidebar{from{-webkit-transform:scaleX(0)}to{-webkit-transform:scaleX(1)}}
+@keyframes slidebar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+</style>
+</head>
+<body>
+<div id="top"><span id="logo" title="3BodyFlix"><img src="logo.svg?v=2" alt="3BodyFlix"></span></div>
+<div id="main"></div>
+<video id="video" playsinline webkit-playsinline></video>
+<div id="sub"></div>
+<div id="pl">
+  <div id="ptop">
+    <span class="pb f" id="pBack"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></span>
+    <div class="pt"><h3 id="pTitle"></h3><small id="pDur"></small></div>
+    <span class="pr"><span class="pill f" id="qBtn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/></svg><b>Quality</b><i id="qLabel"></i></span><span class="pill f" id="sBtn"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 10.5a2 2 0 1 0 0 3M16 10.5a2 2 0 1 0 0 3"/></svg><b>Audio &amp; Subtitles</b></span></span>
+  </div>
+  <div class="pmenu" id="qMenu"><div class="plabel">Quality</div><div class="plist" id="srvList"></div><div class="speed"><span class="plabel">Speed</span><span id="spList"></span></div></div>
+  <div class="pmenu" id="sMenu"><div class="pcols"><div class="pcol"><div class="plabel">Audio</div><div class="plist" id="aList"></div></div><div class="pcol"><div class="plabel">Subtitles</div><div class="plist" id="subList"></div></div></div><div class="speed"><span class="plabel">Size</span><span id="szList"></span></div></div>
+  <div id="spin"></div><div id="ptoast"></div>
+  <div id="pmid"><span class="mb f skip" id="mBack"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg><b>10</b></span><span class="mb f big" id="mPlay"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg></span><span class="mb f skip" id="mFwd"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v4h-4"/></svg><b>10</b></span></div>
+  <div id="pbot">
+    <div id="ptime">0:00 / 0:00</div>
+    <div id="pbar"><div class="trk"><div id="pbuf"></div><div id="pfill"></div></div><div id="pknob"></div></div>
+    <div class="ctrls"><span class="cb f" id="cPlay"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg></span><span class="cb f skip" id="cBack"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg><b>10</b></span><span class="cb f skip" id="cFwd"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v4h-4"/></svg><b>10</b></span><span class="cb f" id="cMute"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor"/><path id="waves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></span><span class="cb f end" id="cFs"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span></div>
+  </div>
+</div>
+<div id="tabbar"><span class="tab f act" id="tHome"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span><span class="tab f" id="tMov"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span><span class="tab f" id="tSer"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/></svg></span><span class="tab f" id="tList"><svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.8 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.7l6.2-.9z"/></svg></span><span class="tsep"></span><span class="tab f" id="tSearch"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/></svg></span><span class="tab f" id="tProf"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span></div>
+<div id="trailer"></div>
+<span class="f" id="closeBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+<div id="dbg">v16 · no JS yet</div>
+<script>
+// Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v20 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v20';
+</script>
+<script>
+var CINEMETA = 'https://v3-cinemeta.strem.io';
+function $(id) { return document.getElementById(id); }
+var main = $('main'), top_ = $('top'), video = $('video'), dbg = $('dbg'), subEl = $('sub'), closeBtn = $('closeBtn');
+var cur = null, stack = [], view = 0;
+
+// ---------- helpers ----------
+// One icon set for every button: 24px grid, rounded 2px strokes (play is filled)
+var ICONS = {
+  play: '<path d="M8 5.2v13.6a1 1 0 0 0 1.53.85l10.9-6.8a1 1 0 0 0 0-1.7L9.53 4.35A1 1 0 0 0 8 5.2z"/>',
+  pause: '<path d="M8 5v14M16 5v14"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.01"/>',
+  share: '<path d="M4 13v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6M16 7l-4-4-4 4M12 3v12"/>',
+  film: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10.5 9.5l4 2.5-4 2.5z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 6h3v1.5A3.5 3.5 0 0 1 17 11M7 6H4v1.5A3.5 3.5 0 0 0 7 11"/>',
+  star: '<path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.15 1 5.85L12 16.9l-5.25 2.8 1-5.85L3.5 9.7l5.9-.9z"/>',
+  list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  tv: '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
+  grid: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  search: '<circle cx="10.5" cy="10.5" r="7"/><path d="M16 16l5 5"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.2 6l2.1 2.1M17.7 15.9l2.1 2.1M2.5 12h3M18.5 12h3M4.2 18l2.1-2.1M17.7 8.1L19.8 6"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'
+};
+function ico(n) { return '<svg class="ic' + (n === 'play' ? ' fill' : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[n] + '</svg>'; }
+// Button with icon + label. Label is set as text, never HTML.
+function ibtn(cls, icon, label) {
+  var b = el('div', cls + ' f'); setIbtn(b, icon, label); return b;
+}
+function setIbtn(b, icon, label) { b.innerHTML = ico(icon); var s = document.createElement('span'); s.textContent = label; b.appendChild(s); }
+// tabIndex makes items reachable by the browser's own remote navigation too (VIDAA may not pass arrows to the page)
+function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; if (isF(e)) e.tabIndex = 0; return e; }
+function isF(e) { return e && typeof e.className === 'string' && /(^| )f( |$)/.test(e.className); }
+function isHttp(u) { return typeof u === 'string' && /^https?:\/\//.test(u); }
+var DEFAULT_ADDONS = ['https://3body-self.vercel.app/manifest.json'];
+function addons() { try { return JSON.parse(localStorage.addons) || DEFAULT_ADDONS.slice(); } catch (e) { return DEFAULT_ADDONS.slice(); } }
+function saveAddons(a) { localStorage.addons = JSON.stringify(a); }
+function base(url) { return url.replace(/\/manifest\.json$/, '').replace(/\/$/, ''); }
+// Browsers can only play http(s) streams; torrent (infoHash) streams need the Stremio server.
+// Hindi-dubbed / dual-audio releases usually default to Hindi audio, so they are dropped (user wants English audio).
+function hints(s) { return s.behaviorHints || {}; }
+function fileName(s) { var u = s.url; try { u = decodeURIComponent(u); } catch (e) {} return (hints(s).filename || '') + ' ' + u.split('?')[0]; }
+function isHindi(s) { return /hindi|\bhin\b|org\.hind|dual[ .-]?audio/i.test([s.name, s.title, s.description, fileName(s)].join(' ')); }
+function playable(streams) { return (streams || []).filter(function (s) { return s && isHttp(s.url) && !isHindi(s); }); }
+function fmtOf(s) {
+  var f = (hints(s).filename || s.url.split('?')[0]).toLowerCase();
+  return /\.m3u8$/.test(f) ? 'HLS' : /\.(mp4|m4v)$/.test(f) ? 'MP4' : /\.mkv$/.test(f) ? 'MKV' : /\.webm$/.test(f) ? 'WEBM' : 'FILE';
+}
+function isHevc(s) { return /x265|hevc|h\.?265|10.?bit/i.test(fileName(s) + ' ' + (s.title || '')); }
+// TV browsers reliably play MP4/HLS (H.264). Ranked last: streams the addon flags notWebReady (Stremio needs its
+// transcoding server for those), HEVC/10-bit, MKV, and streams needing custom headers a browser cannot send.
+function streamRank(s) {
+  var f = fmtOf(s), h = hints(s);
+  return (h.proxyHeaders ? 8 : 0) + (h.notWebReady ? 4 : 0) + (isHevc(s) ? 2 : 0) + (f === 'MP4' || f === 'HLS' ? 0 : f === 'FILE' ? 1 : 2);
+}
+console.assert(base('https://a.b/x/manifest.json') === 'https://a.b/x', 'base');
+console.assert(playable([{ url: 'https://v.mp4' }, { infoHash: 'abc' }, { url: 'magnet:x' }, { url: 'https://x/Film.Hindi.English.mkv' }]).length === 1, 'playable');
+console.assert(streamRank({ url: 'https://a/b.mp4?x=1' }) < streamRank({ url: 'https://a/b.mkv' }) && streamRank({ url: 'https://a/b.mkv' }) < streamRank({ url: 'https://a/b.mp4', behaviorHints: { proxyHeaders: {} } }), 'streamRank');
+console.assert(streamRank({ url: 'https://a/x', behaviorHints: { filename: 'F.x264.mp4' } }) < streamRank({ url: 'https://a/y', behaviorHints: { notWebReady: true } }) && isHindi({ url: 'https://p/api/file/1', behaviorHints: { filename: 'M.HEVC.Hindi.English.mkv' } }), 'rank/hindi via filename');
+
+// XHR, not fetch: safest on old TV engines. Drops responses for a view the user already left.
+function get(url, cb) {
+  var v = view, x = new XMLHttpRequest();
+  x.open('GET', url);
+  x.timeout = 60000; // 3body scrapes live and often needs ~20s
+  x.onload = function () { if (v !== view) return; var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} cb(r); };
+  x.onerror = x.ontimeout = function () { if (v === view) cb(null); };
+  x.send();
+}
+function clear(title) { view++; main.innerHTML = ''; main.scrollTop = 0; if (MOBILE) window.scrollTo(0, 0); if (title) main.appendChild(el('h1', '', title)); }
+function msg(t) { main.appendChild(el('p', 'muted', t)); }
+function item(parent, text, ok) { var i = el('div', 'item f', text); i.onok = ok; parent.appendChild(i); return i; }
+
+// ---------- TMDB (lists, logos, cast, recommendations, Arabic overviews) ----------
+// Public read-only v3 key: a static site cannot hide it, and it only reads public catalog data.
+var TMDB_KEY = '3b27b79de582bf3c5ea724a9df152dac', TMDB = 'https://api.themoviedb.org/3', TIMG = 'https://image.tmdb.org/t/p/';
+function tmdb(path, params) { return TMDB + path + (path.indexOf('?') < 0 ? '?' : '&') + 'api_key=' + TMDB_KEY + (params ? '&' + params : ''); }
+function tPath(t) { return t === 'series' || t === 'tv' ? 'tv' : 'movie'; }
+function fromTmdb(r, fallbackType) {
+  var t = r.media_type || fallbackType;
+  if (t !== 'movie' && t !== 'tv') return null;
+  var date = r.release_date || r.first_air_date || '';
+  return { tmdb: r.id, type: t === 'tv' ? 'series' : 'movie', name: r.title || r.name, description: r.overview,
+    poster: r.poster_path ? TIMG + 'w342' + r.poster_path : '', background: r.backdrop_path ? TIMG + 'w780' + r.backdrop_path : '',
+    releaseInfo: date.slice(0, 4), imdbRating: r.vote_average ? r.vote_average.toFixed(1) : '' };
+}
+console.assert(fromTmdb({ id: 1, media_type: 'tv', name: 'X', first_air_date: '2010-10-31', vote_average: 8.12 }).type === 'series' && fromTmdb({ id: 2, media_type: 'person' }) === null, 'fromTmdb');
+// Streams and title pages use IMDb ids; TMDB list items are resolved on demand (cached)
+var ttCache = {};
+function toImdb(m, cb) {
+  if (m.id && /^tt/.test(m.id)) return cb(m.id);
+  var k = m.type + ':' + m.tmdb;
+  if (ttCache[k]) { m.id = ttCache[k]; return cb(m.id); }
+  if (!m.tmdb) return cb(null);
+  var x = new XMLHttpRequest();
+  x.open('GET', tmdb('/' + tPath(m.type) + '/' + m.tmdb + '/external_ids'));
+  x.onload = function () { var r = null; try { r = JSON.parse(x.responseText); } catch (e) {} var id = r && r.imdb_id; if (id) { ttCache[k] = id; m.id = id; } cb(id || null); };
+  x.onerror = function () { cb(null); };
+  x.send();
+}
+function openAny(m) { toImdb(m, function (id) { if (id) openTitle(m.type, id, m.name); else alert('Details for this title are not available yet.'); }); }
+
+// ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
+function focusables() {
+  var scope = document, sel = '.f';
+  if (typeof pl !== 'undefined' && pl.style.display === 'block') { scope = openMenu ? $(openMenu) : pl; if (!openMenu) sel = '#ptop .f, #pbot .f, #pmid .f'; }
+  return [].slice.call(scope.querySelectorAll(sel)).filter(function (e) { return e.offsetParent !== null && e !== closeBtn && (scope !== document || !pl.contains(e)); });
+}
+function mark(e) { if (cur) cur.className = cur.className.replace(/ on\b/g, ''); cur = e; e.className += ' on'; }
+function setFocus(e) {
+  if (!e) return;
+  mark(e);
+  if (MOBILE) return; // no focus ring jumping / keyboard popping on touch screens
+  try { e.focus(); } catch (x) {}
+  if (!(typeof pl !== 'undefined' && pl.contains(e))) e.scrollIntoView({ block: 'center' });
+  var p = e.parentNode;
+  if (p && /(^| )strip( |$)/.test(p.className)) p.scrollLeft = Math.max(0, e.offsetLeft - 20);
+}
+// Browser moved focus itself (native remote navigation) -> follow it
+document.addEventListener('focus', function (ev) { if (isF(ev.target) && ev.target !== cur) mark(ev.target); }, true);
+// Touch, pointer/cursor mode, or OK turned into a click by the browser
+document.addEventListener('click', function (ev) {
+  var t = ev.target;
+  while (t && !isF(t)) t = t.parentNode;
+  if (t && t.onok && t.tagName !== 'INPUT') { mark(t); t.onok(ev); }
+});
+function move(dx, dy) {
+  if (!cur || !cur.offsetParent) return setFocus(focusables()[0]);
+  var a = cur.getBoundingClientRect(), ax = a.left + a.width / 2, ay = a.top + a.height / 2, best = null, bd = 1e9;
+  focusables().forEach(function (e) {
+    if (e === cur) return;
+    var b = e.getBoundingClientRect(), ddx = b.left + b.width / 2 - ax, ddy = b.top + b.height / 2 - ay;
+    if (dx && ddx * dx <= 0) return;
+    if (dy && ddy * dy <= 0) return;
+    var d = dx ? Math.abs(ddx) + Math.abs(ddy) * 3 : Math.abs(ddy) + Math.abs(ddx) * 3;
+    if (d < bd) { bd = d; best = e; }
+  });
+  setFocus(best);
+}
+
+// ---------- views ----------
+// Each screen is a history entry, so the browser's own Back (which VIDAA may keep for itself) goes back inside the app
+// hash = shareable address of the screen (#/movie/tt..., #/series/tt...); other screens drop it
+// Every screen has a readable address (/movies, /show/breaking-bad-tt0903747 ...) and tab title
+var BASE = /^\/3bodyflix(\/|$)/.test(location.pathname) ? '/3bodyflix' : '';
+function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60); }
+console.assert(slug('The Walking Dead: Dead City!') === 'the-walking-dead-dead-city', 'slug');
+function titlePath(type, id, name) { return '/' + (type === 'series' ? 'show' : 'movie') + '/' + (name ? slug(name) + '-' : '') + id; }
+function setTitle(t) { document.title = t ? t + ' \u00b7 3BodyFlix' : '3BodyFlix \u2014 Movies & Shows'; }
+function show(fn, path, title) {
+  var url = path ? BASE + path : location.pathname + location.search;
+  if (stack.length) history.pushState(null, '', url); else history.replaceState(null, '', url);
+  fn._url = url; fn._title = title; setTitle(title);
+  stack.push(fn); fn();
+}
+function openTitle(type, id, name) { show(detail(type, id), titlePath(type, id, name), name); }
+var trailerEl = $('trailer');
+function openTrailer(yt) {
+  history.pushState(null, '', location.pathname.replace(/\/$/, '') + '/trailer');
+  var f = el('iframe');
+  f.setAttribute('allow', 'autoplay; fullscreen'); f.setAttribute('allowfullscreen', '');
+  f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(yt) + '?autoplay=1&rel=0&playsinline=1';
+  trailerEl.innerHTML = ''; trailerEl.appendChild(f);
+  trailerEl.style.display = 'block'; closeBtn.style.display = 'block';
+}
+function back() {
+  if (trailerEl.style.display === 'block') { trailerEl.innerHTML = ''; trailerEl.style.display = 'none'; closeBtn.style.display = 'none'; return; }
+  if (video.style.display === 'block') return closePlayer();
+  if (stack.length > 1) { stack.pop(); var f = stack[stack.length - 1]; setTitle(f._title); f(); }
+}
+window.onpopstate = back;
+
+function rating(m) { var r = parseFloat(m.imdbRating); return r > 0 ? r.toFixed(1) : ''; }
+function card(m, parent, rank) {
+  var c = el('div', 'card f'), img = el('img');
+  if (isHttp(m.poster)) img.src = m.poster;
+  c.appendChild(img); c.appendChild(el('div', '', m.name));
+  if (m.releaseInfo) c.appendChild(el('div', 'yr', String(m.releaseInfo)));
+  if (rating(m)) c.appendChild(el('span', 'rate', '★ ' + rating(m)));
+  if (rank) c.appendChild(el('span', 'rank', '#' + rank));
+  c.onok = function () { openAny(m); };
+  parent.appendChild(c);
+  return c;
+}
+
+// Wide 16:9 card for home rows: backdrop image, title on it, rating/year/type below
+function wcard(m, parent, topN, big) {
+  var portrait = MOBILE && !big && !m._land && isHttp(m.poster); // phones: tall posters, like most streaming apps
+  var c = el('div', 'wc f' + (big ? ' big' : '') + (portrait ? ' pt' : '')), ph = el('div', 'ph'), img = portrait ? m.poster : isHttp(m.background) ? m.background : m.poster;
+  if (isHttp(img)) ph.style.backgroundImage = 'url(' + JSON.stringify(img) + ')';
+  ph.appendChild(el('b', '', m.name));
+  if (topN) ph.appendChild(el('span', 'tb', 'TOP ' + topN));
+  if (m.type && (m.id || m.tmdb)) {
+    var add = el('span', 'add' + (inList(m.id) ? ' in' : '')); add.innerHTML = ico(inList(m.id) ? 'check' : 'plus');
+    add.onclick = function (ev) { ev.stopPropagation(); toImdb(m, function (id) { if (!id) return; var now = toggleList(m); add.innerHTML = ico(now ? 'check' : 'plus'); add.className = 'add' + (now ? ' in' : ''); }); };
+    ph.appendChild(add);
+  }
+  c.appendChild(ph); c.appendChild(el('h3', '', m.name));
+  var bits = [rating(m) ? '\u2605 ' + rating(m) : '', m.releaseInfo, m.type === 'series' ? 'Show' : m.type === 'movie' ? 'Movie' : ''].filter(function (b) { return b; });
+  c.appendChild(el('small', '', bits.join(' \u00b7 ')));
+  c.onok = function () { openAny(m); };
+  parent.appendChild(c);
+  return c;
+}
+
+function grid(metas) {
+  if (!metas || !metas.length) return msg('Nothing found.');
+  var first = null;
+  metas.forEach(function (m) { var c = card(m, main); first = first || c; });
+  setFocus(first);
+}
+
+// Rating-sorted "all time" lists come from the 3body addon (IMDb Top 250 + acclaimed lists with IMDb ratings)
+var META = base(DEFAULT_ADDONS[0]);
+var BEST = { movie: 'tmdb.critically-acclaimed-movies', series: 'tmdb.critically-acclaimed-series' };
+var ROWS = [
+  ['Popular Movies', 'movie', 'top'],
+  ['Popular Series', 'series', 'top'],
+  ['New & Trending Movies', 'movie', 'imdbRating'],
+  ['New & Trending Series', 'series', 'imdbRating'],
+  ['Action', 'movie', 'top/genre=Action'],
+  ['Comedy', 'movie', 'top/genre=Comedy'],
+  ['Animation', 'movie', 'top/genre=Animation'],
+  ['Crime Series', 'series', 'top/genre=Crime'],
+  ['Drama Series', 'series', 'top/genre=Drama']
+];
+function home() {
+  clear();
+  var feat = el('div'); main.appendChild(feat);
+  // Rotating banner: the 5 most popular movies with a backdrop. Pauses while the remote is on it or the user pressed pause.
+  get(tmdb('/trending/movie/day'), function (res) {
+    var list = ((res && res.results) || []).map(function (x) { return fromTmdb(x, 'movie'); }).filter(function (x) { return x && x.background && x.description; }).slice(0, 5);
+    list.forEach(function (m) {
+      m.background = m.background.replace('/w780/', '/w1280/');
+      toImdb(m, function () {}); // ready before the viewer presses Play / My List
+      get(tmdb('/movie/' + m.tmdb + '/images', 'include_image_language=en,null'), function (im) {
+        var lg = im && im.logos && im.logos[0];
+        if (lg) { m.logo = TIMG + 'w500' + lg.file_path; if (list[idx] === m && !((IS_TV || kbdUsed) && cur && feat.contains(cur))) render(idx, false); }
+      });
+    });
+    if (!list.length) return;
+    var v = view, idx = 0, paused = false;
+    function render(i, focus) {
+      var m = list[i], hb = heroBox(m, 'feat'), inner = hb.inner;
+      if (m.logo) { var h1 = inner.querySelector('h1'), li = el('img', 'tlogo'); li.src = m.logo; li.alt = m.name; h1.innerHTML = ''; h1.appendChild(li); }
+      if (!MOBILE) hb.hero.style.marginTop = -parseInt(main.style.paddingTop || '0', 10) + 'px'; // banner runs under the see-through header
+      var tl = el('div', 'topline'), bd = el('span', 'badge t10'); bd.appendChild(el('i', '', 'TOP')); bd.appendChild(el('b', '', '10'));
+      tl.appendChild(bd); tl.appendChild(document.createTextNode('#' + (i + 1) + ' in movies'));
+      inner.insertBefore(tl, inner.childNodes[1]);
+      var playB = ibtn('btn', 'play', 'Play'), infoB = ibtn('btn ghost', 'info', 'More info');
+      playB.onok = function () { toImdb(m, function (id) { if (id) autoPlay('movie', id, m.name, m); }); };
+      infoB.onok = function () { openAny(m); };
+      inner.appendChild(playB); inner.appendChild(listBtn(m)); inner.appendChild(infoB);
+      var dots = el('div', 'dots'), pz = el('span', 'pz f'); pz.innerHTML = ico(paused ? 'play' : 'pause');
+      list.forEach(function (x, j) { var d = el('i', j === i ? 'a' : ''); d.onclick = function () { idx = j; render(j, false); }; dots.appendChild(d); });
+      pz.onok = function () { paused = !paused; pz.innerHTML = ico(paused ? 'play' : 'pause'); };
+      dots.appendChild(pz); hb.hero.appendChild(dots);
+      var old = feat.firstChild;
+      if (old && !focus) { // crossfade: the new slide fades in over the old one, then the old one is dropped
+        old.className += ' leaving'; hb.hero.className += ' entering';
+        feat.insertBefore(hb.hero, old);
+        setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 900);
+      } else { feat.innerHTML = ''; feat.appendChild(hb.hero); }
+      if (focus) setFocus(playB);
+    }
+    render(0, !(cur && main.contains(cur)));
+    var timer = setInterval(function () {
+      if (view !== v) return clearInterval(timer);
+      if (paused || (IS_TV || kbdUsed) && cur && feat.contains(cur) || video.style.display === 'block' || trailerEl.style.display === 'block') return;
+      idx = (idx + 1) % list.length; render(idx, false);
+    }, 7000);
+  });
+  function newRow(title) {
+    var row = el('div', 'row'), strip = el('div', 'strip');
+    row.appendChild(el('h2', '', title + ' \u203a')); row.appendChild(strip); main.appendChild(row);
+    return { row: row, strip: strip };
+  }
+  var cw = watched();
+  if (cw.length) {
+    var r0 = newRow('Continue Watching' + (profile ? ' \u2014 ' + profile : ''));
+    cw.forEach(function (x) {
+      var c = wcard({ name: x.label, poster: x.poster, background: x.bg, _land: true }, r0.strip), bar = el('div', 'prog'), fill = el('i');
+      c.firstChild.appendChild(el('span', 'left', fmtTime(Math.max(0, x.d - x.t)) + ' left'));
+      fill.style.width = Math.round(x.t / x.d * 100) + '%'; bar.appendChild(fill); c.appendChild(bar);
+      c.onok = function () { autoPlay(x.type, x.vid, x.label, { id: x.metaId, type: x.mtype, name: x.name, poster: x.poster, background: x.bg }); };
+    });
+  }
+  var ml = myList();
+  if (ml.length) { var rl = newRow('My List'); ml.slice(0, 20).forEach(function (m) { wcard(m, rl.strip); }); }
+  // [title, TMDB path, media type, extra query, how many, top-N badges]
+  var TROWS = [
+    ['Top 10 Movies Today', '/trending/movie/day', 'movie', '', 10, true],
+    ['Trending This Week', '/trending/all/week', null, ''],
+    ['Popular Movies', '/movie/popular', 'movie', ''],
+    ['Popular Shows', '/tv/popular', 'tv', ''],
+    ['Now Playing in Theaters', '/movie/now_playing', 'movie', ''],
+    ['Top 10 Shows Today', '/trending/tv/day', 'tv', '', 10, true],
+    ['Top Rated Movies', '/movie/top_rated', 'movie', ''],
+    ['Top Rated Shows', '/tv/top_rated', 'tv', ''],
+    ['Airing Today', '/tv/airing_today', 'tv', ''],
+    ['Coming Soon', '/movie/upcoming', 'movie', ''],
+    ['Action', '/discover/movie', 'movie', 'with_genres=28&sort_by=popularity.desc'],
+    ['Comedy', '/discover/movie', 'movie', 'with_genres=35&sort_by=popularity.desc'],
+    ['Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc'],
+    ['Crime Shows', '/discover/tv', 'tv', 'with_genres=80&sort_by=popularity.desc'],
+    ['Sci-Fi & Fantasy Shows', '/discover/tv', 'tv', 'with_genres=10765&sort_by=popularity.desc']
+  ];
+  TROWS.forEach(function (r) {
+    var R = newRow(r[0]);
+    get(tmdb(r[1], r[3]), function (res) {
+      var metas = ((res && res.results) || []).map(function (x) { return fromTmdb(x, r[2]); }).filter(function (x) { return x && (x.poster || x.background); }).slice(0, r[4] || 20);
+      if (!metas.length) return main.removeChild(R.row); // drop rows that came back empty
+      metas.forEach(function (m, i) { wcard(m, R.strip, r[5] ? i + 1 : 0, r[5] && i === 0); });
+    });
+  });
+  var foot = el('div'); foot.id = 'foot'; main.appendChild(foot);
+  foot.appendChild(el('b', '', '3BodyFlix'));
+  foot.appendChild(el('div', '', '© 2026 All rights reserved to Abdullah Mohammed'));
+  foot.appendChild(el('div', 'ar', 'جميع الحقوق محفوظة لـ عبدالله محمد'));
+}
+
+// Full ranked "best of all time" pages, fetched page by page (the addon serves 20 or 100 per page)
+function best(kind) {
+  return function () {
+    var imdb = kind === 'imdb', type = imdb ? 'movie' : kind, id = imdb ? 'daily.imdb-top-250' : BEST[kind];
+    var per = imdb ? 100 : 20, pages = imdb ? 3 : 5, got = [], n = 0;
+    clear(imdb ? 'IMDb Top 250 Movies' : 'Best ' + (kind === 'movie' ? 'Movies' : 'Series') + ' of All Time');
+    msg('Loading…');
+    for (var p = 0; p < pages; p++) (function (p) {
+      get(META + '/catalog/' + type + '/' + id + (p ? '/skip=' + p * per : '') + '.json', function (res) {
+        got[p] = (res && res.metas) || [];
+        if (++n < pages) return;
+        main.removeChild(main.lastChild);
+        var seen = {}, list = [];
+        got.forEach(function (pg) { pg.forEach(function (m) { if (!seen[m.id]) { seen[m.id] = 1; list.push(m); } }); });
+        if (!list.length) return msg('Could not load the list.');
+        var first = null;
+        list.slice(0, imdb ? 250 : 100).forEach(function (m, i) { var c = card(m, main, i + 1); first = first || c; });
+        setFocus(first);
+      });
+    })(p);
+  };
+}
+
+var GENRES = ['Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western'];
+function catalogs() {
+  clear('Catalogs');
+  var first = null;
+  function sec(title, entries) {
+    main.appendChild(el('div', 'sec', title));
+    entries.forEach(function (e) { var c = e[2] ? ibtn('chip', e[2], e[0]) : el('div', 'chip f', e[0]); c.onok = e[1]; main.appendChild(c); first = first || c; });
+  }
+  sec('Top Lists', [
+    ['Best Movies of All Time', function () { show(best('movie'), '/top/movies', 'Best Movies of All Time'); }, 'trophy'],
+    ['Best Series of All Time', function () { show(best('series'), '/top/shows', 'Best Shows of All Time'); }, 'trophy'],
+    ['IMDb Top 250 Movies', function () { show(best('imdb'), '/top/imdb-250', 'IMDb Top 250'); }, 'star']
+  ]);
+  sec('Movie Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('movie', g), '/genre/movies/' + slug(g), g + ' Movies'); }]; }));
+  sec('Series Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('series', g), '/genre/shows/' + slug(g), g + ' Shows'); }]; }));
+  setFocus(first);
+}
+function genrePage(type, g) {
+  return function () {
+    clear(g + (type === 'movie' ? ' Movies' : ' Series'));
+    get(CINEMETA + '/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog.'); });
+  };
+}
+
+function catalog(type) {
+  return function () {
+    clear(type === 'movie' ? 'Movies' : 'Series');
+    get(CINEMETA + '/catalog/' + type + '/top.json', function (r) { r ? grid(r.metas) : msg('Could not load catalog. Check internet.'); });
+  };
+}
+
+// IMDb's suggestion service ranks titles by popularity (lower rank = more popular): The Walking Dead before spin-offs
+function imdbToMeta(x) {
+  var series = /^tv(Series|MiniSeries)$/.test(x.qid || '');
+  return { id: x.id, type: series ? 'series' : 'movie', name: x.l, releaseInfo: x.y ? String(x.y) : '',
+    poster: x.i && isHttp(x.i.imageUrl) ? x.i.imageUrl.replace(/\._V1_[^\/]*\.jpg$/, '._V1_SX300.jpg') : '' };
+}
+function recentList() { try { return JSON.parse(localStorage.recent) || []; } catch (e) { return []; } }
+function searchPage(q, filter) {
+  return function () {
+    clear();
+    var inp = el('input', 'srch f'); inp.placeholder = 'Search movies & shows\u2026'; inp.value = q || '';
+    inp.style.background = '#1b1b1f url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2.5\'%3E%3Ccircle cx=\'10.5\' cy=\'10.5\' r=\'7\'/%3E%3Cpath d=\'M16 16l5 5\'/%3E%3C/svg%3E") no-repeat 18px center';
+    inp.style.backgroundSize = '22px 22px';
+    function go(text, f) { text = (text || '').trim(); if (!text) return; var r = recentList().filter(function (x) { return x !== text; }); r.unshift(text); localStorage.recent = JSON.stringify(r.slice(0, 8)); history.replaceState(null, '', BASE + '/search?q=' + encodeURIComponent(text)); setTitle('Search: ' + text); stack[stack.length - 1] = searchPage(text, f || filter); stack[stack.length - 1]._title = 'Search: ' + text; stack[stack.length - 1](); }
+    inp.onok = function () { go(inp.value); };
+    inp.onkeyup = function (ev) { if ((ev.keyCode || 0) === 13 && MOBILE) go(inp.value); };
+    main.appendChild(inp);
+    var chips = el('div');
+    [['all', 'All'], ['movie', 'Movies'], ['series', 'Shows']].forEach(function (c) {
+      var ch = el('span', 'chip f' + ((filter || 'all') === c[0] ? ' sel' : ''), c[1]);
+      ch.onok = function () { stack[stack.length - 1] = searchPage(inp.value.trim(), c[0]); stack[stack.length - 1](); };
+      chips.appendChild(ch);
+    });
+    main.appendChild(chips);
+    if (!q) {
+      var rl = recentList();
+      if (rl.length) {
+        var box = el('div', 'recent'), head = el('div', 'sec', 'Recent searches'), clr = el('span', 'chip f', 'Clear');
+        clr.style.cssText = 'float:right;font-size:inherit'; clr.onok = function () { localStorage.removeItem('recent'); stack[stack.length - 1](); };
+        head.appendChild(clr); box.appendChild(head);
+        rl.forEach(function (t) { item(box, t, function () { go(t); }); });
+        main.appendChild(box);
+      }
+      return setFocus(inp);
+    }
+    var res = el('div'); main.appendChild(res);
+    search(q, res, filter)();
+  };
+}
+function search(q, into, filter) {
+  return function () {
+    if (!into) clear('Search: ' + q);
+    var n = 0, top = [], rest = [], ql = q.toLowerCase(), c0 = /[a-z0-9]/.test(ql.charAt(0)) ? ql.charAt(0) : 'x';
+    function done() {
+      if (++n < 3) return;
+      var seen = {}, all = [];
+      top.concat(rest).forEach(function (m) { if (m && m.id && !seen[m.id] && (!filter || filter === 'all' || m.type === filter)) { seen[m.id] = 1; all.push(m); } });
+      if (!into) return grid(all);
+      if (!all.length) return into.appendChild(el('p', 'muted', 'Nothing found.'));
+      all.forEach(function (m) { card(m, into); });
+    }
+    get('https://v2.sg.media-imdb.com/suggestion/' + c0 + '/' + encodeURIComponent(ql) + '.json', function (r) {
+      top = ((r && r.d) || []).filter(function (x) { return /^tt/.test(x.id) && /^(movie|tvSeries|tvMiniSeries|tvMovie)$/.test(x.qid || ''); })
+        .sort(function (a, b) { return (a.rank || 1e9) - (b.rank || 1e9); }).map(imdbToMeta);
+      done();
+    });
+    ['movie', 'series'].forEach(function (t) {
+      get(CINEMETA + '/catalog/' + t + '/top/search=' + encodeURIComponent(q) + '.json', function (r) { rest = rest.concat((r && r.metas) || []); done(); });
+    });
+  };
+}
+console.assert(imdbToMeta({ id: 'tt1', qid: 'tvSeries', l: 'X', y: 2010, i: { imageUrl: 'https://m.media-amazon.com/images/M/AB._V1_.jpg' } }).poster === 'https://m.media-amazon.com/images/M/AB._V1_SX300.jpg', 'imdbToMeta');
+
+function heroBox(m, cls) {
+  var hero = el('div', 'hero' + (cls ? ' ' + cls : '')), inner = el('div', 'in');
+  var bgl = el('div', 'bgl'); hero.appendChild(bgl);
+  if (isHttp(m.background)) bgl.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
+  hero.appendChild(el('div', 'shade')); hero.appendChild(inner);
+  inner.appendChild(el('h1', '', m.name));
+  var bits = [m.releaseInfo, m.type === 'series' ? 'Show' : 'Movie', m.runtime].concat((m.genres || []).slice(0, 2));
+  var meta = el('div', 'meta');
+  if (rating(m)) { var st = el('span', 'rt'); st.innerHTML = '<svg class="ic fill" viewBox="0 0 24 24">' + ICONS.star + '</svg>'; st.appendChild(document.createTextNode(rating(m))); meta.appendChild(st); }
+  bits.filter(function (b) { return b; }).forEach(function (b) { if (meta.childNodes.length) meta.appendChild(el('span', 'dot', '·')); meta.appendChild(document.createTextNode(String(b))); });
+  inner.appendChild(meta);
+  var d = m.description || '';
+  inner.appendChild(el('p', '', cls && d.length > 260 ? d.slice(0, 257) + '…' : d));
+  return { hero: hero, inner: inner };
+}
+
+function detail(type, id) {
+  return function () {
+    clear();
+    get(CINEMETA + '/meta/' + type + '/' + id + '.json', function (r) {
+      var m = r && r.meta;
+      if (!m) return msg('Could not load details.');
+      var hb = heroBox(m), inner = hb.inner;
+      main.appendChild(hb.hero);
+      var tp = titlePath(type, m.id, m.name), top = stack[stack.length - 1];
+      if (top) { top._url = BASE + tp; top._title = m.name; } history.replaceState(null, '', BASE + tp); setTitle(m.name);
+      if (m.cast && m.cast.length) { var cp = el('div', 'crew', 'Starring: '); cp.appendChild(el('b', '', m.cast.slice(0, 5).join(', '))); inner.insertBefore(cp, inner.lastChild.nextSibling); }
+      if (m.director && m.director.length) { var dp = el('div', 'crew', 'Director: '); dp.appendChild(el('b', '', [].concat(m.director).slice(0, 2).join(', '))); inner.appendChild(dp); }
+      var yt = (m.trailerStreams && m.trailerStreams[0] && m.trailerStreams[0].ytId) || (m.trailers && m.trailers[0] && m.trailers[0].source);
+      var trailerB = null;
+      if (yt) { trailerB = ibtn('chip', 'film', 'Trailer'); trailerB.onok = function () { openTrailer(yt); }; }
+      tmdbEnrich(m, type, hb);
+      var link = location.origin + BASE + titlePath(type, m.id, m.name), shareB = ibtn('chip', 'share', 'Share'), linkP = el('p', 'link');
+      shareB.onok = function () {
+        linkP.textContent = link;
+        if (navigator.share) { try { navigator.share({ title: m.name, url: link }); } catch (e) {} }
+        else if (navigator.clipboard) { navigator.clipboard.writeText(link).then(function () { linkP.textContent = link + '  ·  copied'; }, function () {}); }
+      };
+      if (type === 'movie') {
+        var b = ibtn('btn', 'play', 'Play');
+        b.onok = function () { autoPlay('movie', m.id, m.name, m); };
+        inner.appendChild(b); inner.appendChild(listBtn(m, 'chip')); if (trailerB) inner.appendChild(trailerB); inner.appendChild(shareB); inner.appendChild(linkP);
+        return setFocus(b);
+      }
+      var eps = (m.videos || []).slice().sort(function (a, b) { return (a.season - b.season) || (a.episode - b.episode); });
+      function epTitle(v) { return m.name + ' \u00b7 S' + v.season + ' E' + v.episode; }
+      function playEp(v) { autoPlay('series', v.id, epTitle(v), m, 'S' + v.season + ' E' + v.episode + (v.name || v.title ? ' \u00b7 ' + (v.name || v.title) : '')); }
+      // Play: continue the last watched episode, otherwise the first real episode
+      var last = watched().filter(function (x) { return x.metaId === m.id; })[0], startEp = null;
+      eps.forEach(function (v) { if (!startEp && v.season > 0) startEp = v; if (last && v.id === last.vid) startEp = v; });
+      if (startEp) {
+        var sb = ibtn('btn', 'play', last ? 'Continue  S' + startEp.season + ' E' + startEp.episode : 'Play  S' + startEp.season + ' E' + startEp.episode);
+        sb.onok = function () { playEp(startEp); };
+        inner.appendChild(sb);
+      }
+      inner.appendChild(listBtn(m, 'chip'));
+      if (trailerB) inner.appendChild(trailerB);
+      inner.appendChild(shareB); inner.appendChild(linkP);
+      var seasons = [];
+      eps.forEach(function (v) { if (seasons.indexOf(v.season) < 0) seasons.push(v.season); });
+      seasons.sort(function (a, b) { return (a === 0) - (b === 0) || a - b; }); // specials last
+      var chipsBox = el('div'), epBox = el('div');
+      inner.appendChild(chipsBox); main.appendChild(epBox);
+      function pick(sn, chip) {
+        [].forEach.call(chipsBox.childNodes, function (c) { c.className = c.className.replace(/ sel\b/g, ''); });
+        chip.className += ' sel';
+        epBox.innerHTML = '';
+        eps.forEach(function (v) {
+          if (v.season !== sn) return;
+          var e = el('div', 'ep f'), img = el('img'), when = v.released ? String(v.released).slice(0, 10) : '';
+          if (isHttp(v.thumbnail)) img.src = v.thumbnail;
+          e.appendChild(img); e.appendChild(el('b', '', (v.name || v.title || 'Episode ' + v.episode)));
+          e.appendChild(el('small', '', 'Episode ' + v.episode + (when ? '  \u00b7  ' + when : '')));
+          e.onok = function () { playEp(v); };
+          epBox.appendChild(e);
+        });
+      }
+      seasons.forEach(function (sn) {
+        var c = el('div', 'chip f', sn === 0 ? 'Specials' : 'Season ' + sn);
+        c.onok = function () { pick(sn, c); setFocus(epBox.firstChild); };
+        chipsBox.appendChild(c);
+      });
+      if (!seasons.length) return msg('No episodes listed.');
+      pick(seasons[0], chipsBox.firstChild);
+      setFocus(inner.querySelector('.btn') || chipsBox.firstChild);
+    });
+  };
+}
+
+function tmdbEnrich(m, type, hb) {
+  get(tmdb('/find/' + m.id, 'external_source=imdb_id'), function (f) {
+    var hit = f && (type === 'movie' ? f.movie_results : f.tv_results);
+    if (!hit || !hit[0]) return moreLikeThis(m, type);
+    get(tmdb('/' + tPath(type) + '/' + hit[0].id, 'append_to_response=credits,images,recommendations,translations&include_image_language=en,null'), function (d) {
+      if (!d) return moreLikeThis(m, type);
+      var inner = hb.inner, lg = d.images && d.images.logos && d.images.logos[0];
+      if (lg) { var h1 = inner.querySelector('h1'), li = el('img', 'tlogo'); li.src = TIMG + 'w500' + lg.file_path; li.alt = m.name; h1.innerHTML = ''; h1.appendChild(li); }
+      if (isHttp(m.background) === false && d.backdrop_path) hb.hero.querySelector('.bgl').style.backgroundImage = 'url(' + JSON.stringify(TIMG + 'w1280' + d.backdrop_path) + ')';
+      var ar = ((d.translations && d.translations.translations) || []).filter(function (t) { return t.iso_639_1 === 'ar' && t.data && t.data.overview; })[0];
+      var en = inner.querySelector('p');
+      if (ar && en) { var pa = el('p', 'arov', ar.data.overview); pa.dir = 'rtl'; inner.insertBefore(pa, en.nextSibling); }
+      var cast = ((d.credits && d.credits.cast) || []).slice(0, 16);
+      if (cast.length) {
+        var row = el('div', 'row'), strip = el('div', 'strip');
+        row.appendChild(el('h2', '', 'Cast')); row.appendChild(strip);
+        cast.forEach(function (c) {
+          var pc = el('div', 'person'), im = el('img');
+          if (c.profile_path) im.src = TIMG + 'w185' + c.profile_path;
+          pc.appendChild(im); pc.appendChild(el('b', '', c.name)); pc.appendChild(el('small', '', c.character || ''));
+          strip.appendChild(pc);
+        });
+        main.appendChild(row);
+      }
+      var recs = ((d.recommendations && d.recommendations.results) || []).map(function (x) { return fromTmdb(x, tPath(type)); }).filter(function (x) { return x && (x.poster || x.background); }).slice(0, 16);
+      if (!recs.length) return moreLikeThis(m, type);
+      var rr = el('div', 'row'), rs = el('div', 'strip');
+      rr.appendChild(el('h2', '', 'More Like This')); rr.appendChild(rs);
+      recs.forEach(function (x) { wcard(x, rs); });
+      main.appendChild(rr);
+    });
+  });
+}
+
+// Similar titles: same main genre, most popular first, the title itself left out (added at the end of the page)
+function moreLikeThis(m, type) {
+  var g = (m.genres || [])[0];
+  if (!g) return;
+  var row = el('div', 'row'), strip = el('div', 'strip');
+  row.appendChild(el('h2', '', 'More Like This')); row.appendChild(strip);
+  get(CINEMETA + '/catalog/' + type + '/top/genre=' + encodeURIComponent(g) + '.json', function (r) {
+    var list = ((r && r.metas) || []).filter(function (x) { return x.id !== m.id; }).slice(0, 15);
+    if (!list.length) return;
+    list.forEach(function (x) { card(x, strip); });
+    main.appendChild(row);
+  });
+}
+
+function streams(type, id, title, meta) {
+  return function () {
+    meta = meta || {};
+    clear(title || 'Streams');
+    var list = addons(), n = 0, hidden = 0, queue = [];
+    if (!list.length) return msg('No addons yet. Open Settings and add a stream addon URL.');
+    var status = el('p', 'muted', 'Searching ' + list.length + ' addon(s)... (can take ~20 seconds)'), box = el('div');
+    main.appendChild(status); main.appendChild(box);
+    loadSubs(type, id);
+    list.forEach(function (a) {
+      get(base(a) + '/stream/' + type + '/' + id + '.json', function (r) {
+        if (!r) main.appendChild(el('p', 'muted', 'Addon did not answer: ' + base(a)));
+        var all = (r && r.streams) || [], ok = playable(all);
+        hidden += all.length - ok.length;
+        queue = queue.concat(ok);
+        // stable sort: best format first, addon order kept within a rank
+        queue = queue.map(function (s, i) { return [s, i]; }).sort(function (x, y) { return streamRank(x[0]) - streamRank(y[0]) || x[1] - y[1]; }).map(function (p) { return p[0]; });
+        box.innerHTML = '';
+        queue.forEach(function (s, i) {
+          var rk = streamRank(s), it = el('div', 'item f'), tag = el('span', 'tag ' + (rk === 0 ? 'good' : rk >= 2 ? 'bad' : ''), fmtOf(s) + (isHevc(s) ? ' HEVC' : '') + (hints(s).notWebReady ? ' ⚠' : ''));
+          it.appendChild(tag);
+          it.appendChild(document.createTextNode(((s.name || '') + '  ' + (s.title || s.description || '')).replace(/\s+/g, ' ')));
+          it.onok = function () { nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster, bg: meta.background }; playQueue(queue, i, title); };
+          box.appendChild(it);
+        });
+        if (queue.length) setFocus(box.firstChild);
+        if (++n === list.length) status.textContent = queue.length + ' stream(s). Green = best chance on TV/phone, ⚠ = addon says browsers usually cannot play it. If one fails the next one starts automatically.' + (hidden ? ' ' + hidden + ' hidden (torrent or Hindi audio).' : '');
+      });
+    });
+  };
+}
+
+// M3U / M3U8 playlist player: playlists are saved on this device (URL), or opened from a local file
+function m3uLists() { try { return JSON.parse(localStorage.m3u) || []; } catch (e) { return []; } }
+function parseM3U(t) {
+  var out = [], meta = null;
+  t.replace(/\r/g, '').split('\n').forEach(function (l) {
+    l = l.trim();
+    if (!l) return;
+    if (l.indexOf('#EXTINF') === 0) {
+      var tail = l.slice(l.lastIndexOf('"') + 1);
+      meta = { name: tail.slice(tail.indexOf(',') + 1).trim() || 'Untitled', logo: (/tvg-logo="([^"]*)"/.exec(l) || [])[1], group: (/group-title="([^"]*)"/.exec(l) || [])[1] || 'Other' };
+    } else if (l.charAt(0) !== '#') {
+      if (isHttp(l)) { meta = meta || { name: l.split('/').pop(), group: 'Other' }; meta.url = l; out.push(meta); }
+      meta = null;
+    }
+  });
+  return out;
+}
+(function () {
+  var r = parseM3U('#EXTM3U\r\n#EXTINF:-1 tvg-logo="https://l/a.png" group-title="G, 1",Chan A\r\nhttps://s/a.m3u8\n#EXTINF:-1,B\nhttps://s/b.mp4\nnot-a-url\n');
+  console.assert(r.length === 2 && r[0].name === 'Chan A' && r[0].group === 'G, 1' && r[0].logo === 'https://l/a.png' && r[1].name === 'B' && r[1].group === 'Other', 'parseM3U');
+})();
+function m3uHome() {
+  clear('M3U Player');
+  main.appendChild(el('p', 'muted', 'Add an M3U / M3U8 playlist link. The playlist is saved on this device only.'));
+  var inp = el('input', 'f'), add = el('button', 'f', 'Add');
+  inp.placeholder = 'https://…/playlist.m3u';
+  inp.onok = add.onok = function () {
+    var u = inp.value.trim();
+    if (!isHttp(u)) return alert('URL must start with http:// or https://');
+    var a = m3uLists(); if (!a.some(function (x) { return x.url === u; })) a.push({ url: u, name: u.split('/').pop().split('?')[0] || u });
+    localStorage.m3u = JSON.stringify(a); m3uHome();
+  };
+  main.appendChild(inp); main.appendChild(add);
+  if (window.FileReader) { // phones / PCs: open a playlist file directly
+    var file = el('input'); file.type = 'file'; file.accept = '.m3u,.m3u8,audio/x-mpegurl,application/vnd.apple.mpegurl,text/plain';
+    file.style.cssText = 'display:block;margin:14px 0;font-size:inherit;color:#bbb';
+    file.onchange = function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () { show(m3uView(f.name, parseM3U(String(rd.result)))); };
+      rd.readAsText(f);
+    };
+    main.appendChild(file);
+  }
+  var first = null;
+  m3uLists().forEach(function (x, i) {
+    var it = ibtn('item', 'list', x.name), del = ibtn('chip', 'trash', 'Remove');
+    it.onok = function () { show(m3uLoad(x)); }; main.appendChild(it);
+    del.onok = function () { var a = m3uLists(); a.splice(i, 1); localStorage.m3u = JSON.stringify(a); m3uHome(); };
+    main.appendChild(del); first = first || it;
+  });
+  setFocus(first || inp);
+}
+function m3uLoad(x) {
+  return function () {
+    clear(x.name); msg('Loading playlist…');
+    var v = view, r = new XMLHttpRequest();
+    r.open('GET', x.url); r.timeout = 30000;
+    // A direct HLS stream link (#EXT-X- tags) is a single video, not a channel list: play it as is
+    function direct() { clear(x.name); msg('Playing stream… press Back to return.'); subs = []; pq = null; nowPlaying = null; play(x.url, x.name); }
+    r.onload = function () {
+      if (v !== view) return;
+      var t = r.responseText || '';
+      if (/#EXT-X-/.test(t) && !/#EXTINF:[^\n]*,[^\n]*\n\s*https?:/i.test(t.replace(/\r/g, '')) || r.status >= 400 && /\.m3u8(\?|$)/i.test(x.url)) return direct();
+      stack[stack.length - 1] = m3uView(x.name, parseM3U(t)); stack[stack.length - 1]();
+    };
+    // The video element does not need CORS, so a .m3u8 link the browser refuses to read may still play
+    r.onerror = r.ontimeout = function () { if (v !== view) return; if (/\.m3u8(\?|$)/i.test(x.url)) return direct(); msg('Could not load the playlist (offline, wrong link, or the server blocks browsers).'); };
+    r.send();
+  };
+}
+function m3uView(name, entries) {
+  return function () {
+    clear(name);
+    if (!entries.length) return msg('No playable entries found in this playlist.');
+    var groups = [], by = {};
+    entries.forEach(function (e) { if (!by[e.group]) { by[e.group] = []; groups.push(e.group); } by[e.group].push(e); });
+    var first = null;
+    groups.forEach(function (g) {
+      var row = el('div', 'row'), strip = el('div', 'strip');
+      row.appendChild(el('h2', '', g + '  (' + by[g].length + ')')); row.appendChild(strip); main.appendChild(row);
+      by[g].forEach(function (e) {
+        var c = el('div', 'ch f'), img = el('img');
+        if (isHttp(e.logo)) img.src = e.logo;
+        c.appendChild(img); c.appendChild(el('div', '', e.name));
+        c.onok = function () { subs = []; pq = null; nowPlaying = null; play(e.url, e.name); };
+        strip.appendChild(c); first = first || c;
+      });
+    });
+    setFocus(first);
+  };
+}
+
+// ---------- profiles (saved on this device) + continue watching ----------
+var profile = localStorage.profile || '', nowPlaying = null, resumeAt = 0, lastSave = 0;
+function profilesList() { try { return JSON.parse(localStorage.profiles) || []; } catch (e) { return []; } }
+function pkey(k) { return 'p:' + profile + ':' + k; }
+function myList() { try { return JSON.parse(localStorage[pkey('list')]) || []; } catch (e) { return []; } }
+function inList(id) { return myList().some(function (x) { return x.id === id; }); }
+function toggleList(m) {
+  if (!m.id) return false;
+  var l = myList(), had = inList(m.id);
+  l = had ? l.filter(function (x) { return x.id !== m.id; }) : [{ id: m.id, type: m.type, name: m.name, poster: m.poster, background: m.background, releaseInfo: m.releaseInfo, imdbRating: m.imdbRating }].concat(l);
+  localStorage[pkey('list')] = JSON.stringify(l.slice(0, 200));
+  return !had;
+}
+function listBtn(m, cls) {
+  var b = ibtn(cls || 'btn ghost', inList(m.id) ? 'check' : 'plus', 'My List');
+  b.onok = function () { var now = toggleList(m); setIbtn(b, now ? 'check' : 'plus', 'My List'); };
+  return b;
+}
+function myListPage() {
+  clear('My List');
+  var l = myList();
+  if (!l.length) return msg('Nothing here yet. Press "+ My List" on any movie or show.');
+  var first = null;
+  l.forEach(function (m) { var c = wcard(m, main); first = first || c; });
+  setFocus(first);
+}
+function watched() { if (!profile) return []; try { return JSON.parse(localStorage[pkey('cw')]) || []; } catch (e) { return []; } }
+function saveProgress() {
+  if (!nowPlaying || !profile) return;
+  var d = video.duration, t = video.currentTime;
+  if (!isFinite(d) || d < 120 || t < 15) return; // skip live streams, trailers and accidental starts
+  var list = watched().filter(function (x) { return x.vid !== nowPlaying.vid; });
+  if (t / d < 0.95) { var e = {}; for (var k in nowPlaying) e[k] = nowPlaying[k]; e.t = t; e.d = d; e.at = new Date().getTime(); list.unshift(e); }
+  localStorage[pkey('cw')] = JSON.stringify(list.slice(0, 30));
+}
+function profilesPage() {
+  clear("Who's watching?");
+  var first = null;
+  profilesList().forEach(function (n, i) {
+    var c = el('div', 'prof f'), pic = el('span', 'pic'); pic.innerHTML = ico('user'); c.appendChild(pic); c.appendChild(document.createTextNode(n));
+    c.onok = function () { profile = n; localStorage.profile = n; updateProfileBtn(); stack = []; show(home, '/'); };
+    main.appendChild(c); first = first || c;
+  });
+  main.appendChild(el('div', 'sec', 'Add profile'));
+  var inp = el('input', 'f'), add = el('button', 'f', 'Add');
+  inp.placeholder = 'Name';
+  inp.onok = add.onok = function () {
+    var n = inp.value.trim().slice(0, 20); if (!n) return;
+    var a = profilesList(); if (a.indexOf(n) < 0) a.push(n); localStorage.profiles = JSON.stringify(a); profilesPage();
+  };
+  main.appendChild(inp); main.appendChild(add);
+  profilesList().forEach(function (n, i) {
+    var del = ibtn('chip', 'trash', n);
+    del.onok = function () {
+      if (!confirm('Delete profile "' + n + '" and its watch history?')) return;
+      var a = profilesList(); a.splice(i, 1); localStorage.profiles = JSON.stringify(a);
+      localStorage.removeItem('p:' + n + ':cw');
+      if (profile === n) { profile = ''; localStorage.removeItem('profile'); updateProfileBtn(); }
+      profilesPage();
+    };
+    if (i === 0) main.appendChild(el('div', 'sec', 'Remove'));
+    main.appendChild(del);
+  });
+  setFocus(first || inp);
+}
+
+function settings() {
+  clear('Settings — Addons');
+  main.appendChild(el('p', 'muted', 'Paste a Stremio addon manifest URL (…/manifest.json). It must return direct http(s) streams.'));
+  var inp = el('input', 'f'); inp.placeholder = 'https://…/manifest.json';
+  var add = el('button', 'f', 'Add');
+  inp.onok = add.onok = function () {
+    var u = inp.value.trim();
+    if (!isHttp(u)) return alert('URL must start with http:// or https://');
+    var a = addons(); if (a.indexOf(u) < 0) a.push(u); saveAddons(a); settings();
+  };
+  main.appendChild(inp); main.appendChild(add);
+  addons().forEach(function (u, idx) {
+    var it = ibtn('item', 'trash', u); it.onok = function () { var a = addons(); a.splice(idx, 1); saveAddons(a); settings(); }; main.appendChild(it);
+  });
+  setFocus(inp);
+}
+
+// ---------- subtitles ----------
+// Drawn in our own overlay, synced to currentTime: TV video planes often ignore <track>, and old engines lack TextDecoder / Blob tracks.
+var subs = [], subIdx = -1, cues = [], subTimer = null;
+function langOf(s) { var l = String(s.lang || '').toLowerCase(); return /^(ara|ar|arabic)$/.test(l) ? 'ar' : /^(eng|en|english)$/.test(l) ? 'en' : l; }
+function subRank(s) { return /^(ara|ar|arabic)$/i.test(s.lang || '') ? 0 : /^(eng|en|english)$/i.test(s.lang || '') ? 1 : 2; }
+function loadSubs(type, id) {
+  subs = []; subIdx = -1;
+  addons().forEach(function (a) {
+    get(base(a) + '/subtitles/' + type + '/' + id + '.json', function (r) {
+      ((r && r.subtitles) || []).forEach(function (s) { if (isHttp(s.url)) subs.push(s); });
+      subs.sort(function (a, b) { return subRank(a) - subRank(b); }); // Arabic, English, rest
+      if (video.style.display === 'block' && subIdx < 0 && subs.length) setSub(0); // arrived after playback started
+    });
+  });
+}
+function subNote(t) { dbg.textContent = t; dbg.style.color = '#fff'; dbg.style.fontSize = MOBILE ? '13px' : '30px'; }
+function secs(h, m, s, ms) { return (+h) * 3600 + (+m) * 60 + (+s) + (+('0.' + ms)); }
+function parseSrt(t) {
+  var out = [];
+  t.replace(/^﻿/, '').replace(/\r/g, '').split(/\n\s*\n/).forEach(function (b) {
+    var m = b.match(/(\d+):(\d\d):(\d\d)[,.](\d+)\s*-->\s*(\d+):(\d\d):(\d\d)[,.](\d+)/);
+    if (!m) return;
+    var lines = b.split('\n'), i = 0;
+    while (i < lines.length && lines[i].indexOf('-->') < 0) i++;
+    out.push({ s: secs(m[1], m[2], m[3], m[4]), e: secs(m[5], m[6], m[7], m[8]), t: lines.slice(i + 1).join('\n').replace(/<[^>]+>/g, '') });
+  });
+  return out.sort(function (a, b) { return a.s - b.s; });
+}
+(function () { var c = parseSrt('1\r\n00:00:01,500 --> 00:01:02,000\r\n<i>hi</i>\r\n\r\n2\r\n00:01:03,000 --> 00:01:04,000\r\nyo'); console.assert(c.length === 2 && c[0].s === 1.5 && c[0].e === 62 && c[0].t === 'hi', 'parseSrt'); })();
+// UTF-8 first; if the file is not valid UTF-8 (U+FFFD appears) refetch as Windows-1256, common for Arabic SRTs
+function fetchSub(url, cb, cp) {
+  var x = new XMLHttpRequest();
+  x.open('GET', url); x.timeout = 30000;
+  if (x.overrideMimeType) x.overrideMimeType('text/plain; charset=' + (cp || 'utf-8'));
+  x.onload = function () { var t = x.responseText || ''; if (!cp && t.indexOf('�') >= 0) return fetchSub(url, cb, 'windows-1256'); cb(t); };
+  x.onerror = x.ontimeout = function () { cb(null); };
+  x.send();
+}
+function showCue() {
+  var t = video.currentTime, c = null;
+  for (var i = 0; i < cues.length && cues[i].s <= t; i++) if (t < cues[i].e) c = cues[i];
+  subEl.textContent = c ? c.t : '';
+  subEl.style.display = c ? 'block' : 'none';
+}
+function stopSubs() {
+  cues = []; if (subTimer) clearInterval(subTimer); subTimer = null; subEl.style.display = 'none';
+  var tr = video.getElementsByTagName('track'); while (tr.length) video.removeChild(tr[0]);
+}
+function srtToVtt(t) { return 'WEBVTT\n\n' + t.replace(/^\uFEFF/, '').replace(/\r/g, '').replace(/(\d\d:\d\d:\d\d),(\d\d\d)/g, '$1.$2'); }
+console.assert(srtToVtt('1\r\n00:00:01,500 --> 00:00:02,000\r\nhi').indexOf('00:00:01.500 --> 00:00:02.000\nhi') > 0, 'srtToVtt');
+function nativeTrack(text, lang) {
+  var t = document.createElement('track');
+  t.kind = 'subtitles'; t.srclang = lang || 'und'; t.label = lang || 'Subtitles'; t['default'] = true;
+  t.src = 'data:text/vtt;charset=utf-8,' + encodeURIComponent(srtToVtt(text));
+  video.appendChild(t);
+  setTimeout(function () { if (video.textTracks && video.textTracks[0]) video.textTracks[0].mode = 'showing'; }, 50);
+}
+function setSub(i) {
+  stopSubs();
+  subIdx = i;
+  if (i < 0 || !subs[i]) return subNote(subs.length ? 'Subtitles: off (' + subs.length + ' available)' : '');
+  var s = subs[i], label = (s.lang || '?') + ' ' + (i + 1) + '/' + subs.length;
+  subNote('Subtitles: loading ' + label + '...');
+  fetchSub(s.url, function (text) {
+    if (subIdx !== i) return;
+    cues = text ? parseSrt(text) : [];
+    if (!cues.length) {
+      for (var j = i + 1; j < subs.length; j++) if (langOf(subs[j]) === langOf(s)) return setSub(j);
+      return subNote('Subtitle ' + label + ' failed');
+    }
+    if (IS_IOS) { nativeTrack(text, s.lang); cues = []; return; } // shown by the iPhone player itself
+    subTimer = setInterval(showCue, 200);
+    subNote('Subtitles: ' + label + (MOBILE ? '' : '  (▲▼ to change)'));
+  });
+}
+
+// ---------- player ----------
+var pq = null, watchdog = null, hideTimer = null, toastTimer = null, openMenu = null, subSize = 46;
+var pl = $('pl');
+function fmtTime(s) {
+  if (!isFinite(s)) return 'LIVE';
+  s = Math.floor(s);
+  var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x;
+}
+console.assert(fmtTime(3725) === '1:02:05' && fmtTime(65) === '1:05', 'fmtTime');
+function isPlaying() { return pl.style.display === 'block'; }
+function toast(t) {
+  if (!t) return;
+  var e = $('ptoast'); e.textContent = t; e.className = 'show';
+  clearTimeout(toastTimer); toastTimer = setTimeout(function () { e.className = ''; }, 2200);
+}
+
+function playQueue(q, i, title) { pq = { q: q, i: i, title: title, tried: {} }; play(q[i].url, title); }
+var QORDER = ['1080P', '720P', '4K', '480P', '360P', 'Auto'];
+function isFast(s) { return /\u26a1|fast|\u0623\u0633\u0631\u0639|\u0627\u0644\u0623\u0633\u0631\u0639/i.test((s.name || '') + ' ' + (s.title || '')) ? 1 : 0; }
+// playable formats first, then the addon's "fastest server" picks, then 1080p > 720p > 4K > 480p
+function sortForAuto(list) {
+  return list.map(function (s, i) { return [s, i]; }).sort(function (a, b) {
+    return streamRank(a[0]) - streamRank(b[0]) || isFast(b[0]) - isFast(a[0]) || QORDER.indexOf(qualityOf(a[0])) - QORDER.indexOf(qualityOf(b[0])) || a[1] - b[1];
+  }).map(function (p) { return p[0]; });
+}
+console.assert(qualityOf({ name: 'x', url: 'https://a/b.mp4' }) === 'Auto', 'qualityOf');
+// Press Play -> player opens at once, finds the fastest source by itself; the user only ever picks a quality
+function autoPlay(type, id, title, meta, sub) {
+  meta = meta || {};
+  nowPlaying = { vid: id, type: type, label: title || meta.name, metaId: meta.id, mtype: meta.type || type, name: meta.name, poster: meta.poster, bg: meta.background };
+  loadSubs(type, id);
+  pq = { q: [], i: 0, title: title, tried: {}, auto: true };
+  openPlayer(title, sub);
+  pl.className = 'loading';
+  var list = addons(), n = 0, all = [];
+  if (!list.length) { history.back(); return alert('No addon set. Open Settings to add one.'); }
+  list.forEach(function (a) {
+    get(base(a) + '/stream/' + type + '/' + id + '.json', function (r) {
+      all = all.concat(playable((r && r.streams) || []));
+      if (++n < list.length || !isPlaying() || !pq) return;
+      if (!all.length) { history.back(); return alert('No playable sources found for this title.'); }
+      pq.q = sortForAuto(all); pq.i = 0; pq.tried[0] = 1;
+      startSrc(pq.q[0].url); renderQ();
+    });
+  });
+}
+// Unsupported formats either fire 'error' or just never start on some TVs: both move on to the next stream
+// External players play every format (MKV, HEVC, AC3) that phone browsers cannot
+function extUrl(url, app) {
+  if (app === 'infuse') return 'infuse://x-callback-url/play?url=' + encodeURIComponent(url);
+  if (IS_IOS) return 'vlc-x-callback://x-callback-url/stream?url=' + encodeURIComponent(url);
+  var m = /^(https?):\/\/(.*)$/.exec(url); // Android: system chooser (VLC, MX Player, ...)
+  return m ? 'intent://' + m[2] + '#Intent;scheme=' + m[1] + ';type=video/*;end' : url;
+}
+console.assert(extUrl('https://a.com/v.mkv?x=1').indexOf('intent://a.com/v.mkv?x=1#Intent;scheme=https;type=video/*;end') === 0 || IS_IOS, 'extUrl');
+function openExternal(app) { if (!pq || !pq.q.length) return; var u = pq.q[pq.i].url; video.pause(); location.href = extUrl(u, app); }
+
+function nextStream() {
+  clearTimeout(watchdog);
+  if (!pq || !pq.q.length) return;
+  // next untried source, preferring the same quality the viewer is on
+  var want = qualityOf(pq.q[pq.i]), j, pick = -1;
+  for (j = 0; j < pq.q.length; j++) if (!pq.tried[j] && qualityOf(pq.q[j]) === want) { pick = j; break; }
+  if (pick < 0) for (j = 0; j < pq.q.length; j++) if (!pq.tried[j]) { pick = j; break; }
+  if (pick >= 0) {
+    pq.i = pick; pq.tried[pick] = 1;
+    toast('Switching to another source\u2026');
+    startSrc(pq.q[pq.i].url, video.currentTime); renderQ();
+  } else {
+    if (MOBILE && pq.q.length && confirm('This video format does not play in the browser. Open it in ' + (IS_IOS ? 'VLC' : 'a video player app (VLC / MX Player)') + '?')) { pq.i = 0; return openExternal(); }
+    history.back();
+    alert('No stream could be played on this device. Try another quality or title.');
+  }
+}
+var hls = null, hlsTried = {};
+function tryPlay() { var p = video.play(); if (p && p['catch']) p['catch'](function () {}); } // autoplay rejections: the user presses play
+function destroyHls() { if (hls) { try { hls.destroy(); } catch (e) {} hls = null; } }
+function loadHlsLib(cb) {
+  if (window.Hls) return cb();
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js';
+  s.onload = cb; s.onerror = cb;
+  document.head.appendChild(s);
+}
+function nativeHls() { return !!video.canPlayType('application/vnd.apple.mpegurl'); }
+function isM3u8(u) { return /\.m3u8?(\?|$)/i.test(u); }
+console.assert(isM3u8('https://a/b/index.m3u8?t=1') && isM3u8('https://a/x.m3u8') && !isM3u8('https://a/b.mp4'), 'isM3u8');
+function useHls(url) {
+  hlsTried[url] = 1;
+  loadHlsLib(function () {
+    if (!isPlaying()) return;
+    if (!window.Hls || !Hls.isSupported()) { video.src = url; return tryPlay(); }
+    destroyHls();
+    hls = new Hls({ maxBufferLength: 30 });
+    hls.on(Hls.Events.ERROR, function (e, d) { if (d && d.fatal) { destroyHls(); nextStream(); } });
+    hls.loadSource(url); hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
+  });
+}
+function startSrc(url, at) {
+  pl.className = 'loading';
+  if (at) resumeAt = at;
+  destroyHls();
+  clearTimeout(watchdog);
+  watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 25000);
+  if (isM3u8(url) && !nativeHls()) return useHls(url);
+  video.src = url;
+  tryPlay();
+}
+// A link without a file extension may still be HLS: give hls.js one try before moving to the next source
+function onVideoError() {
+  var u = video.currentSrc || video.src;
+  if (u && !hlsTried[u] && !nativeHls() && !/^blob:/.test(u)) { clearTimeout(watchdog); watchdog = setTimeout(function () { if (video.readyState < 2 && isPlaying()) nextStream(); }, 20000); return useHls(u); }
+  nextStream();
+}
+function play(url, title) { openPlayer(title); startSrc(url); }
+function openPlayer(title, sub) {
+  if (!isPlaying()) { history.pushState(null, '', BASE + '/watch/' + slug(title || 'video')); setTitle('Watching ' + (title || '')); }
+  video.style.display = 'block'; pl.style.display = 'block';
+  $('pTitle').textContent = title || ''; $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
+  video.onerror = onVideoError;
+  resumeAt = 0;
+  if (nowPlaying) watched().forEach(function (x) { if (x.vid === nowPlaying.vid) resumeAt = x.t; });
+  video.onloadedmetadata = function () {
+    var sub = pl.getAttribute('data-sub');
+    $('pDur').textContent = (sub ? sub + ' \u00b7 ' : '') + (isFinite(video.duration) ? fmtTime(video.duration) : 'LIVE');
+    if (resumeAt > 0 && isFinite(video.duration)) { video.currentTime = Math.max(0, resumeAt - 5); resumeAt = 0; }
+    // Where the browser exposes audio tracks, prefer English
+    var at = video.audioTracks, i, en = -1;
+    if (at && at.length > 1) {
+      for (i = 0; i < at.length; i++) if (/^en/i.test(at[i].language) || /english/i.test(at[i].label)) { en = i; break; }
+      if (en >= 0) for (i = 0; i < at.length; i++) at[i].enabled = i === en;
+    }
+    renderAudio();
+  };
+  video.controls = IS_IOS; // iPhone/iPad: native controls, AirPlay, full screen
+  setSub(subs.length ? 0 : -1); // best match first: Arabic, then English
+  closeMenus(); renderQ(); renderSubs(); renderAudio(); wake();
+  if (MOBILE && screen.orientation && screen.orientation.lock) { try { screen.orientation.lock('landscape')['catch'](function () {}); } catch (e) {} }
+}
+function closePlayer() {
+  saveProgress(); nowPlaying = null; destroyHls(); hlsTried = {};
+  clearTimeout(watchdog); clearTimeout(hideTimer); pq = null; subIdx = -1; stopSubs(); closeMenus();
+  video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
+  video.style.display = 'none'; pl.style.display = 'none';
+  if (cur && pl.contains(cur)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
+  var f = stack[stack.length - 1]; if (f) setTitle(f._title);
+}
+
+// controls auto-hide; the remote's first key press only wakes them
+function wake() {
+  pl.className = pl.className.replace(/\bhid\b/g, '');
+  subEl.style.bottom = MOBILE ? '110px' : '230px';
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(function () {
+    if (video.paused || openMenu || IS_IOS) return;
+    pl.className += ' hid'; subEl.style.bottom = '';
+    if (cur && pl.contains(cur)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
+  }, 3500);
+}
+function pUpdate() {
+  var d = video.duration, p = isFinite(d) && d > 0 ? video.currentTime / d * 100 : 0;
+  $('pfill').style.width = p + '%'; $('pknob').style.left = p + '%';
+  try { if (video.buffered.length && isFinite(d)) $('pbuf').style.width = video.buffered.end(video.buffered.length - 1) / d * 100 + '%'; } catch (e) {}
+  $('ptime').textContent = fmtTime(video.currentTime) + ' / ' + fmtTime(d);
+}
+function seek(d) {
+  if (isFinite(video.duration)) { video.currentTime = Math.max(0, Math.min(video.duration - 1, video.currentTime + d)); toast((d > 0 ? '+' : '') + d + 's'); }
+  wake();
+}
+function togglePlay() { if (video.paused) video.play(); else video.pause(); wake(); }
+var PLAY_I = '<svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z" fill="currentColor"/></svg>', PAUSE_I = '<svg viewBox="0 0 24 24"><path d="M7 4v16M17 4v16" stroke-width="3"/></svg>';
+video.onplay = function () { $('cPlay').innerHTML = $('mPlay').innerHTML = PAUSE_I; wake(); };
+video.onpause = function () { $('cPlay').innerHTML = $('mPlay').innerHTML = PLAY_I; saveProgress(); wake(); };
+$('mPlay').onok = function () { togglePlay(); };
+$('mBack').onok = function () { seek(-10); };
+$('mFwd').onok = function () { seek(10); };
+video.onwaiting = function () { if (pl.className.indexOf('loading') < 0) pl.className += ' loading'; };
+video.oncanplay = video.onplaying = function () { clearTimeout(watchdog); pl.className = pl.className.replace(/\bloading\b/g, ''); };
+video.ontimeupdate = function () {
+  pUpdate();
+  var now = new Date().getTime();
+  if (now - lastSave > 10000) { lastSave = now; saveProgress(); }
+};
+video.onprogress = pUpdate;
+video.onvolumechange = function () { var w = document.getElementById('waves'); if (w) w.style.display = video.muted ? 'none' : ''; };
+$('cPlay').onok = togglePlay;
+$('cBack').onok = function () { seek(-10); };
+$('cFwd').onok = function () { seek(10); };
+$('cMute').onok = function () { video.muted = !video.muted; toast(video.muted ? 'Muted' : 'Sound on'); wake(); };
+$('cFs').onok = function () {
+  var d = document, e = d.documentElement;
+  if (d.fullscreenElement || d.webkitFullscreenElement) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); return; }
+  if (e.requestFullscreen) e.requestFullscreen(); else if (e.webkitRequestFullscreen) e.webkitRequestFullscreen(); else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+};
+$('pBack').onok = function () { history.back(); };
+// tap/click on the picture: show controls, or play/pause when they are already showing
+pl.onclick = function (ev) {
+  if (ev.target !== pl) return;
+  if (openMenu) return closeMenus();
+  if (/\bhid\b/.test(pl.className)) wake(); else if (!MOBILE) togglePlay(); else wake();
+};
+function barSeek(x) {
+  var r = $('pbar').getBoundingClientRect();
+  if (isFinite(video.duration)) { video.currentTime = video.duration * Math.max(0, Math.min(1, (x - r.left) / r.width)); pUpdate(); wake(); }
+}
+$('pbar').onclick = function (ev) { barSeek(ev.clientX); };
+$('pbar').addEventListener('touchmove', function (ev) { if (ev.touches[0]) { barSeek(ev.touches[0].clientX); ev.preventDefault(); } });
+document.addEventListener('mousemove', function () { if (isPlaying()) wake(); });
+document.addEventListener('touchstart', function () { if (isPlaying()) wake(); });
+
+// menus
+function closeMenus() {
+  openMenu = null;
+  $('qMenu').className = 'pmenu'; $('sMenu').className = 'pmenu';
+  $('qBtn').className = $('qBtn').className.replace(/ open\b/g, ''); $('sBtn').className = $('sBtn').className.replace(/ open\b/g, '');
+}
+function toggleMenu(btn, menu) {
+  var was = openMenu === menu;
+  closeMenus();
+  if (was) return setFocus(btn);
+  openMenu = menu; $(menu).className = 'pmenu open'; btn.className += ' open';
+  var sel = $(menu).querySelector('.opt.sel') || $(menu).querySelector('.f');
+  setFocus(sel); wake();
+}
+$('qBtn').onok = function () { toggleMenu($('qBtn'), 'qMenu'); };
+$('sBtn').onok = function () { toggleMenu($('sBtn'), 'sMenu'); };
+function opt(parent, text, sel, ok, tag) {
+  var o = el('div', 'opt f' + (sel ? ' sel' : ''));
+  if (tag) o.appendChild(tag);
+  o.appendChild(document.createTextNode(text));
+  o.onok = ok; parent.appendChild(o); return o;
+}
+function qualityOf(s) { var m = /(2160p|4k|1080p|720p|480p|360p)/i.exec((s.name || '') + ' ' + (s.title || '') + ' ' + fileName(s)); return m ? m[1].toUpperCase().replace('2160P', '4K') : 'Auto'; }
+function renderQ() {
+  var box = $('srvList'); box.innerHTML = '';
+  if (!pq || !pq.q.length) { $('qLabel').textContent = 'Auto'; opt(box, 'Auto', true, closeMenus); }
+  else {
+    var curQ = qualityOf(pq.q[pq.i]), groups = {}, order = [];
+    $('qLabel').textContent = pq.auto ? 'Auto' : curQ;
+    pq.q.forEach(function (s, j) { var q = qualityOf(s); if (!groups[q]) { groups[q] = []; order.push(q); } groups[q].push(j); });
+    order.sort(function (a, b) { return ['4K', '1080P', '720P', '480P', '360P', 'Auto'].indexOf(a) - ['4K', '1080P', '720P', '480P', '360P', 'Auto'].indexOf(b); });
+    if (MOBILE) {
+      opt(box, 'Open in ' + (IS_IOS ? 'VLC' : 'VLC / MX Player'), false, function () { openExternal(); });
+      if (IS_IOS) opt(box, 'Open in Infuse', false, function () { openExternal('infuse'); });
+    }
+    opt(box, 'Auto  (fastest)', pq.auto, function () {
+      pq.auto = true; closeMenus();
+      if (pq.i !== 0) { pq.i = 0; startSrc(pq.q[0].url, video.currentTime); }
+      renderQ(); toast('Auto quality');
+    });
+    order.forEach(function (q) {
+      if (q === 'Auto') return;
+      opt(box, q + (q === '4K' ? '  Ultra HD' : q === '1080P' ? '  Full HD' : q === '720P' ? '  HD' : ''), !pq.auto && q === curQ, function () {
+        closeMenus(); pq.auto = false;
+        if (q !== curQ) { pq.i = groups[q][0]; pq.tried[pq.i] = 1; startSrc(pq.q[pq.i].url, video.currentTime); }
+        renderQ(); toast(q);
+      });
+    });
+  }
+  var sp = $('spList'); sp.innerHTML = '';
+  [0.5, 0.75, 1, 1.25, 1.5, 2].forEach(function (r) {
+    var b = el('span', 'sp f' + (video.playbackRate === r ? ' sel' : ''), r + 'x');
+    b.onok = function () { video.playbackRate = video.defaultPlaybackRate = r; renderQ(); toast('Speed ' + r + 'x'); setFocus($('spList').childNodes[[0.5, 0.75, 1, 1.25, 1.5, 2].indexOf(r)]); };
+    sp.appendChild(b);
+  });
+}
+function renderSubs() {
+  var box = $('subList'); box.innerHTML = '';
+  opt(box, 'Off', subIdx < 0, function () { setSub(-1); renderSubs(); toast('Subtitles off'); });
+  if (!subs.length) box.appendChild(el('div', 'pempty', 'No subtitles found'));
+  var curLang = subIdx >= 0 && subs[subIdx] ? langOf(subs[subIdx]) : '';
+  [['ar', 'Arabic \u2014 \u0627\u0644\u0639\u0631\u0628\u064a\u0629'], ['en', 'English']].forEach(function (L) {
+    var first = -1;
+    for (var i = 0; i < subs.length; i++) if (langOf(subs[i]) === L[0]) { first = i; break; }
+    if (first < 0) return;
+    opt(box, L[1], curLang === L[0], function () { setSub(first); renderSubs(); });
+  });
+  var sz = $('szList'); sz.innerHTML = '';
+  [['S', 34], ['M', 46], ['L', 58], ['XL', 72]].forEach(function (z) {
+    var b = el('span', 'sp f' + (subSize === z[1] ? ' sel' : ''), z[0]);
+    b.onok = function () { subSize = z[1]; subEl.style.fontSize = (MOBILE ? Math.round(z[1] * 0.45) : z[1]) + 'px'; renderSubs(); toast('Subtitle size ' + z[0]); };
+    sz.appendChild(b);
+  });
+}
+function renderAudio() {
+  var box = $('aList'), at = video.audioTracks; box.innerHTML = '';
+  if (!at || at.length < 2) return box.appendChild(el('div', 'pempty', 'No other audio tracks'));
+  for (var i = 0; i < at.length; i++) (function (i) {
+    opt(box, at[i].label || at[i].language || 'Track ' + (i + 1), at[i].enabled, function () { for (var j = 0; j < at.length; j++) at[j].enabled = j === i; renderAudio(); toast('Audio: ' + (at[i].label || at[i].language || i + 1)); });
+  })(i);
+}
+// subtitle status messages show as player toasts
+subNote = function (t) { if (isPlaying() && /failed/i.test(t)) toast('Subtitle unavailable'); };
+
+// ---------- keys (VIDAA back key arrives as 8; 461/10009/27 cover other TVs and PC testing; 412-417 are remote media keys) ----------
+var kbdUsed = IS_TV;
+if (IS_TV) document.documentElement.className += ' kbd';
+document.addEventListener('keydown', function (ev) { var k = ev.keyCode; if (!kbdUsed && k >= 37 && k <= 40) { kbdUsed = true; document.documentElement.className += ' kbd'; } }, true);
+var KEYS = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Backspace: 8, Escape: 27, GoBack: 461, MediaPlayPause: 179, MediaRewind: 412, MediaFastForward: 417 };
+function isBack(k) { return k === 8 || k === 27 || k === 461 || k === 10009; }
+document.onkeydown = function (ev) {
+  var k = ev.keyCode || ev.which || KEYS[ev.key] || 0, playing = video.style.display === 'block';
+  if (playing) {
+    var arrows = k >= 37 && k <= 40, dx = k === 37 ? -1 : k === 39 ? 1 : 0, dy = k === 38 ? -1 : k === 40 ? 1 : 0;
+    var asleep = /\bhid\b/.test(pl.className);
+    wake();
+    if (k === 412) seek(-30); else if (k === 417) seek(30);
+    else if (k === 179 || k === 10252 || k === 415 || k === 19 || k === 32) togglePlay();
+    else if (k === 413) history.back();
+    else if (openMenu) { // inside Quality / Audio & Subtitles menus
+      if (isBack(k)) { var b = openMenu === 'qMenu' ? $('qBtn') : $('sBtn'); closeMenus(); setFocus(b); }
+      else if (arrows) move(dx, dy);
+      else if (k === 13) { if (cur && cur.onok) cur.onok(); }
+      else return;
+    } else if (cur && pl.contains(cur)) { // moving between player buttons
+      if (isBack(k)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
+      else if (arrows) move(dx, dy);
+      else if (k === 13) { if (cur.onok) cur.onok(); }
+      else return;
+    } else { // plain watching: arrows seek, OK pauses, Up/Down reach the buttons
+      if (k === 13) { if (!asleep || video.paused) togglePlay(); }
+      else if (k === 37) seek(-10); else if (k === 39) seek(10);
+      else if (k === 38) setFocus($('qBtn'));
+      else if (k === 40) setFocus($('cPlay'));
+      else if (isBack(k)) history.back();
+      else return;
+    }
+    return ev.preventDefault();
+  }
+  if (k === 37) move(-1, 0); else if (k === 39) move(1, 0);
+  else if (k === 38) move(0, -1); else if (k === 40) move(0, 1);
+  else if (k === 13) { if (cur && cur.onok) cur.onok(); }
+  else if (isBack(k)) { if (k === 8 && document.activeElement && document.activeElement.tagName === 'INPUT') return; history.back(); }
+  else return;
+  ev.preventDefault();
+};
+
+// ---------- top bar ----------
+var nav = el('span'), topR = el('span');
+nav.id = 'nav'; topR.id = 'topR';
+top_.appendChild(nav); top_.appendChild(topR);
+var NAV_ICON = { Home: 'home', Movies: 'film', Shows: 'tv', Catalogs: 'grid', 'My List': 'star', M3U: 'list' };
+function topBtn(text, ok, parent) {
+  var b = el('button', 'f');
+  if (NAV_ICON[text]) setIbtn(b, NAV_ICON[text], text); else b.textContent = text;
+  b.onok = function () {
+    if (b.parentNode === nav) { [].forEach.call(nav.childNodes, function (x) { x.className = x.className.replace(/ act\b/g, ''); }); b.className += ' act'; }
+    ok();
+  };
+  (parent || nav).appendChild(b);
+  return b;
+}
+topBtn('Home', function () { show(home, '/'); }).className += ' act';
+topBtn('Movies', function () { show(catalog('movie'), '/movies', 'Movies'); });
+topBtn('Shows', function () { show(catalog('series'), '/shows', 'Shows'); });
+topBtn('Catalogs', function () { show(catalogs, '/catalogs', 'Catalogs'); });
+topBtn('My List', function () { show(myListPage, '/my-list', 'My List'); });
+topBtn('M3U', function () { show(m3uHome, '/m3u', 'M3U Player'); });
+var q = el('input', 'f'); q.id = 'q'; q.placeholder = 'Search movies & series…';
+q.onok = function () { if (q.value.trim()) show(searchPage(q.value.trim())); };
+topR.appendChild(q);
+nav.appendChild(el('span', 'nsep'));
+var srchBtn = el('button', 'f ib'); srchBtn.innerHTML = ico('search'); srchBtn.title = 'Search';
+srchBtn.onok = function () { show(searchPage(), '/search', 'Search'); };
+nav.appendChild(srchBtn);
+var profBtn = el('button', 'f ib');
+profBtn.onok = function () { show(profilesPage, '/profiles', 'Profiles'); };
+nav.appendChild(profBtn);
+function updateProfileBtn() { profBtn.innerHTML = '<span class="av">' + ico('user') + '</span>'; profBtn.title = profile || 'Profile'; }
+updateProfileBtn();
+var setBtn = el('button', 'f ib'); setBtn.innerHTML = ico('gear'); setBtn.title = 'Settings';
+setBtn.onok = function () { show(settings, '/settings', 'Settings'); };
+nav.appendChild(setBtn);
+if (MOBILE) top_.appendChild(q); // (hidden on phones: the tab bar has its own search page)
+function tabGo(id, fn) {
+  $(id).onok = function () {
+    [].forEach.call($('tabbar').querySelectorAll('.tab'), function (t) { t.className = t.className.replace(/ act\b/g, ''); });
+    $(id).className += ' act'; fn();
+  };
+}
+tabGo('tHome', function () { show(home, '/'); });
+tabGo('tMov', function () { show(catalog('movie'), '/movies', 'Movies'); });
+tabGo('tSer', function () { show(catalog('series'), '/shows', 'Shows'); });
+tabGo('tList', function () { show(myListPage, '/my-list', 'My List'); });
+tabGo('tSearch', function () { show(searchPage(), '/search', 'Search'); });
+tabGo('tProf', function () { show(profilesPage, '/profiles', 'Profiles'); });
+
+// keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
+if (!MOBILE) { main.style.top = '0'; main.style.paddingTop = top_.offsetHeight + 'px'; } // header floats over the content
+// Start: a shared title link (#/movie/tt...) opens that title on top of Home; first visit asks who is watching
+(function () {
+  var path = location.pathname.slice(BASE.length).replace(/\/+$/, '') || '/', qs = location.search, m;
+  var old = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
+  if (!profile) return show(profilesPage, '/profiles', 'Profiles');
+  show(home, '/');
+  if (old) return openTitle(old[1], old[2]);
+  if ((m = /^\/(movie|show)\/(?:[a-z0-9-]*-)?(tt\d+)$/.exec(path))) return openTitle(m[1] === 'show' ? 'series' : 'movie', m[2]);
+  var pages = { '/movies': [catalog('movie'), 'Movies'], '/shows': [catalog('series'), 'Shows'], '/catalogs': [catalogs, 'Catalogs'],
+    '/my-list': [myListPage, 'My List'], '/m3u': [m3uHome, 'M3U Player'], '/profiles': [profilesPage, 'Profiles'], '/settings': [settings, 'Settings'],
+    '/top/movies': [best('movie'), 'Best Movies of All Time'], '/top/shows': [best('series'), 'Best Shows of All Time'], '/top/imdb-250': [best('imdb'), 'IMDb Top 250'] };
+  if (pages[path]) return show(pages[path][0], path, pages[path][1]);
+  if (path === '/search') { var q = (/[?&]q=([^&]*)/.exec(qs) || [])[1]; q = q ? decodeURIComponent(q.replace(/\+/g, ' ')) : ''; return show(searchPage(q), '/search' + (q ? '?q=' + encodeURIComponent(q) : ''), q ? 'Search: ' + q : 'Search'); }
+  if ((m = /^\/genre\/(movies|shows)\/([a-z-]+)$/.exec(path))) {
+    var g = GENRES.filter(function (x) { return slug(x) === m[2]; })[0];
+    if (g) return show(genrePage(m[1] === 'shows' ? 'series' : 'movie', g), path, g + (m[1] === 'shows' ? ' Shows' : ' Movies'));
+  }
+  if (path !== '/') history.replaceState(null, '', BASE + '/');
+})();
+</script>
+</body>
+</html>

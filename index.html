@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<script>document.write('<base href="' + (/^\/3bodyflix(\/|$)/.test(location.pathname) ? '/3bodyflix/' : '/') + '">');</script>
 <meta name="viewport" content="width=1920">
 <title>3BodyFlix</title>
 <link rel="icon" href="logo.svg?v=2" type="image/svg+xml">
@@ -465,6 +466,28 @@ html:not(.kbd) .wc.on .ph{box-shadow:none}
 .mobile .badge.t10 i{font-size:6px}
 .mobile .badge.t10 b{font-size:12px}
 .mobile .topline{font-size:15px}
+/* ===== v20: banner motion ===== */
+.feat-host,.feat{position:relative}
+.hero{overflow:hidden;background:none !important}
+.hero .bgl{position:absolute;top:0;left:0;right:0;bottom:0;background-size:cover;background-position:center top}
+.feat .bgl{-webkit-animation:kenburns 9s ease-out both;animation:kenburns 9s ease-out both;-webkit-transform-origin:70% 30%;transform-origin:70% 30%}
+@-webkit-keyframes kenburns{from{-webkit-transform:scale(1.12)}to{-webkit-transform:scale(1)}}
+@keyframes kenburns{from{transform:scale(1.12)}to{transform:scale(1)}}
+.hero .shade,.hero .in,.hero .dots{z-index:1}
+.feat.leaving{position:absolute !important;top:0;left:0;right:0;z-index:0;-webkit-animation:fadeOut .9s ease both;animation:fadeOut .9s ease both}
+.feat.entering{position:relative;z-index:1;-webkit-animation:fadeIn .9s ease both;animation:fadeIn .9s ease both}
+@-webkit-keyframes fadeOut{from{opacity:1}to{opacity:0}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.feat .in > *{-webkit-animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both;animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both}
+.feat .in > :nth-child(1){-webkit-animation-delay:.15s;animation-delay:.15s}
+.feat .in > :nth-child(2){-webkit-animation-delay:.25s;animation-delay:.25s}
+.feat .in > :nth-child(3){-webkit-animation-delay:.35s;animation-delay:.35s}
+.feat .in > :nth-child(4){-webkit-animation-delay:.45s;animation-delay:.45s}
+.feat .in > :nth-child(n+5){-webkit-animation-delay:.55s;animation-delay:.55s}
+.dots i.a{position:relative;overflow:hidden;background:#555}
+.dots i.a:after{content:"";position:absolute;top:0;left:0;bottom:0;width:100%;background:#f2f2f4;-webkit-transform-origin:left;transform-origin:left;-webkit-animation:slidebar 7s linear both;animation:slidebar 7s linear both}
+@-webkit-keyframes slidebar{from{-webkit-transform:scaleX(0)}to{-webkit-transform:scaleX(1)}}
+@keyframes slidebar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 </style>
 </head>
 <body>
@@ -494,8 +517,8 @@ html:not(.kbd) .wc.on .ph{box-shadow:none}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v18 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v18';
+window.onerror = function (m, s, l) { var d = document.getElementById('dbg'); d.textContent = 'v20 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v20';
 </script>
 <script>
 var CINEMETA = 'https://v3-cinemeta.strem.io';
@@ -602,7 +625,7 @@ function toImdb(m, cb) {
   x.onerror = function () { cb(null); };
   x.send();
 }
-function openAny(m) { toImdb(m, function (id) { if (id) openTitle(m.type, id); else alert('Details for this title are not available yet.'); }); }
+function openAny(m) { toImdb(m, function (id) { if (id) openTitle(m.type, id, m.name); else alert('Details for this title are not available yet.'); }); }
 
 // ---------- remote-control navigation (spatial: nearest focusable in the arrow direction) ----------
 function focusables() {
@@ -645,11 +668,22 @@ function move(dx, dy) {
 // ---------- views ----------
 // Each screen is a history entry, so the browser's own Back (which VIDAA may keep for itself) goes back inside the app
 // hash = shareable address of the screen (#/movie/tt..., #/series/tt...); other screens drop it
-function show(fn, hash) { if (stack.length) history.pushState(null, '', hash || location.pathname + location.search); stack.push(fn); fn(); }
-function openTitle(type, id) { show(detail(type, id), '#/' + type + '/' + id); }
+// Every screen has a readable address (/movies, /show/breaking-bad-tt0903747 ...) and tab title
+var BASE = /^\/3bodyflix(\/|$)/.test(location.pathname) ? '/3bodyflix' : '';
+function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60); }
+console.assert(slug('The Walking Dead: Dead City!') === 'the-walking-dead-dead-city', 'slug');
+function titlePath(type, id, name) { return '/' + (type === 'series' ? 'show' : 'movie') + '/' + (name ? slug(name) + '-' : '') + id; }
+function setTitle(t) { document.title = t ? t + ' \u00b7 3BodyFlix' : '3BodyFlix \u2014 Movies & Shows'; }
+function show(fn, path, title) {
+  var url = path ? BASE + path : location.pathname + location.search;
+  if (stack.length) history.pushState(null, '', url); else history.replaceState(null, '', url);
+  fn._url = url; fn._title = title; setTitle(title);
+  stack.push(fn); fn();
+}
+function openTitle(type, id, name) { show(detail(type, id), titlePath(type, id, name), name); }
 var trailerEl = $('trailer');
 function openTrailer(yt) {
-  history.pushState(null, '');
+  history.pushState(null, '', location.pathname.replace(/\/$/, '') + '/trailer');
   var f = el('iframe');
   f.setAttribute('allow', 'autoplay; fullscreen'); f.setAttribute('allowfullscreen', '');
   f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(yt) + '?autoplay=1&rel=0&playsinline=1';
@@ -659,7 +693,7 @@ function openTrailer(yt) {
 function back() {
   if (trailerEl.style.display === 'block') { trailerEl.innerHTML = ''; trailerEl.style.display = 'none'; closeBtn.style.display = 'none'; return; }
   if (video.style.display === 'block') return closePlayer();
-  if (stack.length > 1) { stack.pop(); stack[stack.length - 1](); }
+  if (stack.length > 1) { stack.pop(); var f = stack[stack.length - 1]; setTitle(f._title); f(); }
 }
 window.onpopstate = back;
 
@@ -748,7 +782,12 @@ function home() {
       list.forEach(function (x, j) { var d = el('i', j === i ? 'a' : ''); d.onclick = function () { idx = j; render(j, false); }; dots.appendChild(d); });
       pz.onok = function () { paused = !paused; pz.innerHTML = ico(paused ? 'play' : 'pause'); };
       dots.appendChild(pz); hb.hero.appendChild(dots);
-      feat.innerHTML = ''; feat.appendChild(hb.hero);
+      var old = feat.firstChild;
+      if (old && !focus) { // crossfade: the new slide fades in over the old one, then the old one is dropped
+        old.className += ' leaving'; hb.hero.className += ' entering';
+        feat.insertBefore(hb.hero, old);
+        setTimeout(function () { if (old.parentNode) old.parentNode.removeChild(old); }, 900);
+      } else { feat.innerHTML = ''; feat.appendChild(hb.hero); }
       if (focus) setFocus(playB);
     }
     render(0, !(cur && main.contains(cur)));
@@ -839,12 +878,12 @@ function catalogs() {
     entries.forEach(function (e) { var c = e[2] ? ibtn('chip', e[2], e[0]) : el('div', 'chip f', e[0]); c.onok = e[1]; main.appendChild(c); first = first || c; });
   }
   sec('Top Lists', [
-    ['Best Movies of All Time', function () { show(best('movie')); }, 'trophy'],
-    ['Best Series of All Time', function () { show(best('series')); }, 'trophy'],
-    ['IMDb Top 250 Movies', function () { show(best('imdb')); }, 'star']
+    ['Best Movies of All Time', function () { show(best('movie'), '/top/movies', 'Best Movies of All Time'); }, 'trophy'],
+    ['Best Series of All Time', function () { show(best('series'), '/top/shows', 'Best Shows of All Time'); }, 'trophy'],
+    ['IMDb Top 250 Movies', function () { show(best('imdb'), '/top/imdb-250', 'IMDb Top 250'); }, 'star']
   ]);
-  sec('Movie Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('movie', g)); }]; }));
-  sec('Series Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('series', g)); }]; }));
+  sec('Movie Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('movie', g), '/genre/movies/' + slug(g), g + ' Movies'); }]; }));
+  sec('Series Genres', GENRES.map(function (g) { return [g, function () { show(genrePage('series', g), '/genre/shows/' + slug(g), g + ' Shows'); }]; }));
   setFocus(first);
 }
 function genrePage(type, g) {
@@ -874,7 +913,7 @@ function searchPage(q, filter) {
     var inp = el('input', 'srch f'); inp.placeholder = 'Search movies & shows\u2026'; inp.value = q || '';
     inp.style.background = '#1b1b1f url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2.5\'%3E%3Ccircle cx=\'10.5\' cy=\'10.5\' r=\'7\'/%3E%3Cpath d=\'M16 16l5 5\'/%3E%3C/svg%3E") no-repeat 18px center';
     inp.style.backgroundSize = '22px 22px';
-    function go(text, f) { text = (text || '').trim(); if (!text) return; var r = recentList().filter(function (x) { return x !== text; }); r.unshift(text); localStorage.recent = JSON.stringify(r.slice(0, 8)); stack[stack.length - 1] = searchPage(text, f || filter); stack[stack.length - 1](); }
+    function go(text, f) { text = (text || '').trim(); if (!text) return; var r = recentList().filter(function (x) { return x !== text; }); r.unshift(text); localStorage.recent = JSON.stringify(r.slice(0, 8)); history.replaceState(null, '', BASE + '/search?q=' + encodeURIComponent(text)); setTitle('Search: ' + text); stack[stack.length - 1] = searchPage(text, f || filter); stack[stack.length - 1]._title = 'Search: ' + text; stack[stack.length - 1](); }
     inp.onok = function () { go(inp.value); };
     inp.onkeyup = function (ev) { if ((ev.keyCode || 0) === 13 && MOBILE) go(inp.value); };
     main.appendChild(inp);
@@ -926,7 +965,8 @@ console.assert(imdbToMeta({ id: 'tt1', qid: 'tvSeries', l: 'X', y: 2010, i: { im
 
 function heroBox(m, cls) {
   var hero = el('div', 'hero' + (cls ? ' ' + cls : '')), inner = el('div', 'in');
-  if (isHttp(m.background)) hero.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
+  var bgl = el('div', 'bgl'); hero.appendChild(bgl);
+  if (isHttp(m.background)) bgl.style.backgroundImage = 'url(' + JSON.stringify(m.background) + ')';
   hero.appendChild(el('div', 'shade')); hero.appendChild(inner);
   inner.appendChild(el('h1', '', m.name));
   var bits = [m.releaseInfo, m.type === 'series' ? 'Show' : 'Movie', m.runtime].concat((m.genres || []).slice(0, 2));
@@ -947,13 +987,15 @@ function detail(type, id) {
       if (!m) return msg('Could not load details.');
       var hb = heroBox(m), inner = hb.inner;
       main.appendChild(hb.hero);
+      var tp = titlePath(type, m.id, m.name), top = stack[stack.length - 1];
+      if (top) { top._url = BASE + tp; top._title = m.name; } history.replaceState(null, '', BASE + tp); setTitle(m.name);
       if (m.cast && m.cast.length) { var cp = el('div', 'crew', 'Starring: '); cp.appendChild(el('b', '', m.cast.slice(0, 5).join(', '))); inner.insertBefore(cp, inner.lastChild.nextSibling); }
       if (m.director && m.director.length) { var dp = el('div', 'crew', 'Director: '); dp.appendChild(el('b', '', [].concat(m.director).slice(0, 2).join(', '))); inner.appendChild(dp); }
       var yt = (m.trailerStreams && m.trailerStreams[0] && m.trailerStreams[0].ytId) || (m.trailers && m.trailers[0] && m.trailers[0].source);
       var trailerB = null;
       if (yt) { trailerB = ibtn('chip', 'film', 'Trailer'); trailerB.onok = function () { openTrailer(yt); }; }
       tmdbEnrich(m, type, hb);
-      var link = location.origin + location.pathname + '#/' + type + '/' + m.id, shareB = ibtn('chip', 'share', 'Share'), linkP = el('p', 'link');
+      var link = location.origin + BASE + titlePath(type, m.id, m.name), shareB = ibtn('chip', 'share', 'Share'), linkP = el('p', 'link');
       shareB.onok = function () {
         linkP.textContent = link;
         if (navigator.share) { try { navigator.share({ title: m.name, url: link }); } catch (e) {} }
@@ -1018,7 +1060,7 @@ function tmdbEnrich(m, type, hb) {
       if (!d) return moreLikeThis(m, type);
       var inner = hb.inner, lg = d.images && d.images.logos && d.images.logos[0];
       if (lg) { var h1 = inner.querySelector('h1'), li = el('img', 'tlogo'); li.src = TIMG + 'w500' + lg.file_path; li.alt = m.name; h1.innerHTML = ''; h1.appendChild(li); }
-      if (isHttp(m.background) === false && d.backdrop_path) hb.hero.style.backgroundImage = 'url(' + JSON.stringify(TIMG + 'w1280' + d.backdrop_path) + ')';
+      if (isHttp(m.background) === false && d.backdrop_path) hb.hero.querySelector('.bgl').style.backgroundImage = 'url(' + JSON.stringify(TIMG + 'w1280' + d.backdrop_path) + ')';
       var ar = ((d.translations && d.translations.translations) || []).filter(function (t) { return t.iso_639_1 === 'ar' && t.data && t.data.overview; })[0];
       var en = inner.querySelector('p');
       if (ar && en) { var pa = el('p', 'arov', ar.data.overview); pa.dir = 'rtl'; inner.insertBefore(pa, en.nextSibling); }
@@ -1223,7 +1265,7 @@ function profilesPage() {
   var first = null;
   profilesList().forEach(function (n, i) {
     var c = el('div', 'prof f'), pic = el('span', 'pic'); pic.innerHTML = ico('user'); c.appendChild(pic); c.appendChild(document.createTextNode(n));
-    c.onok = function () { profile = n; localStorage.profile = n; updateProfileBtn(); stack = []; show(home); };
+    c.onok = function () { profile = n; localStorage.profile = n; updateProfileBtn(); stack = []; show(home, '/'); };
     main.appendChild(c); first = first || c;
   });
   main.appendChild(el('div', 'sec', 'Add profile'));
@@ -1460,7 +1502,7 @@ function onVideoError() {
 }
 function play(url, title) { openPlayer(title); startSrc(url); }
 function openPlayer(title, sub) {
-  if (!isPlaying()) history.pushState(null, '');
+  if (!isPlaying()) { history.pushState(null, '', BASE + '/watch/' + slug(title || 'video')); setTitle('Watching ' + (title || '')); }
   video.style.display = 'block'; pl.style.display = 'block';
   $('pTitle').textContent = title || ''; $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
   video.onerror = onVideoError;
@@ -1489,6 +1531,7 @@ function closePlayer() {
   video.onerror = null; video.pause(); video.removeAttribute('src'); video.load();
   video.style.display = 'none'; pl.style.display = 'none';
   if (cur && pl.contains(cur)) { cur.className = cur.className.replace(/ on\b/g, ''); cur = null; }
+  var f = stack[stack.length - 1]; if (f) setTitle(f._title);
 }
 
 // controls auto-hide; the remote's first key press only wakes them
@@ -1695,26 +1738,26 @@ function topBtn(text, ok, parent) {
   (parent || nav).appendChild(b);
   return b;
 }
-topBtn('Home', function () { show(home); }).className += ' act';
-topBtn('Movies', function () { show(catalog('movie')); });
-topBtn('Shows', function () { show(catalog('series')); });
-topBtn('Catalogs', function () { show(catalogs); });
-topBtn('My List', function () { show(myListPage); });
-topBtn('M3U', function () { show(m3uHome); });
+topBtn('Home', function () { show(home, '/'); }).className += ' act';
+topBtn('Movies', function () { show(catalog('movie'), '/movies', 'Movies'); });
+topBtn('Shows', function () { show(catalog('series'), '/shows', 'Shows'); });
+topBtn('Catalogs', function () { show(catalogs, '/catalogs', 'Catalogs'); });
+topBtn('My List', function () { show(myListPage, '/my-list', 'My List'); });
+topBtn('M3U', function () { show(m3uHome, '/m3u', 'M3U Player'); });
 var q = el('input', 'f'); q.id = 'q'; q.placeholder = 'Search movies & series…';
 q.onok = function () { if (q.value.trim()) show(searchPage(q.value.trim())); };
 topR.appendChild(q);
 nav.appendChild(el('span', 'nsep'));
 var srchBtn = el('button', 'f ib'); srchBtn.innerHTML = ico('search'); srchBtn.title = 'Search';
-srchBtn.onok = function () { show(searchPage()); };
+srchBtn.onok = function () { show(searchPage(), '/search', 'Search'); };
 nav.appendChild(srchBtn);
 var profBtn = el('button', 'f ib');
-profBtn.onok = function () { show(profilesPage); };
+profBtn.onok = function () { show(profilesPage, '/profiles', 'Profiles'); };
 nav.appendChild(profBtn);
 function updateProfileBtn() { profBtn.innerHTML = '<span class="av">' + ico('user') + '</span>'; profBtn.title = profile || 'Profile'; }
 updateProfileBtn();
 var setBtn = el('button', 'f ib'); setBtn.innerHTML = ico('gear'); setBtn.title = 'Settings';
-setBtn.onok = function () { show(settings); };
+setBtn.onok = function () { show(settings, '/settings', 'Settings'); };
 nav.appendChild(setBtn);
 if (MOBILE) top_.appendChild(q); // (hidden on phones: the tab bar has its own search page)
 function tabGo(id, fn) {
@@ -1723,20 +1766,34 @@ function tabGo(id, fn) {
     $(id).className += ' act'; fn();
   };
 }
-tabGo('tHome', function () { show(home); });
-tabGo('tMov', function () { show(catalog('movie')); });
-tabGo('tSer', function () { show(catalog('series')); });
-tabGo('tList', function () { show(myListPage); });
-tabGo('tSearch', function () { show(searchPage()); });
-tabGo('tProf', function () { show(profilesPage); });
+tabGo('tHome', function () { show(home, '/'); });
+tabGo('tMov', function () { show(catalog('movie'), '/movies', 'Movies'); });
+tabGo('tSer', function () { show(catalog('series'), '/shows', 'Shows'); });
+tabGo('tList', function () { show(myListPage, '/my-list', 'My List'); });
+tabGo('tSearch', function () { show(searchPage(), '/search', 'Search'); });
+tabGo('tProf', function () { show(profilesPage, '/profiles', 'Profiles'); });
 
 // keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
 if (!MOBILE) { main.style.top = '0'; main.style.paddingTop = top_.offsetHeight + 'px'; } // header floats over the content
 // Start: a shared title link (#/movie/tt...) opens that title on top of Home; first visit asks who is watching
-var route = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
-if (route) history.replaceState(null, '', location.pathname + location.search);
-show(profile ? home : profilesPage);
-if (route) openTitle(route[1], route[2]);
+(function () {
+  var path = location.pathname.slice(BASE.length).replace(/\/+$/, '') || '/', qs = location.search, m;
+  var old = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
+  if (!profile) return show(profilesPage, '/profiles', 'Profiles');
+  show(home, '/');
+  if (old) return openTitle(old[1], old[2]);
+  if ((m = /^\/(movie|show)\/(?:[a-z0-9-]*-)?(tt\d+)$/.exec(path))) return openTitle(m[1] === 'show' ? 'series' : 'movie', m[2]);
+  var pages = { '/movies': [catalog('movie'), 'Movies'], '/shows': [catalog('series'), 'Shows'], '/catalogs': [catalogs, 'Catalogs'],
+    '/my-list': [myListPage, 'My List'], '/m3u': [m3uHome, 'M3U Player'], '/profiles': [profilesPage, 'Profiles'], '/settings': [settings, 'Settings'],
+    '/top/movies': [best('movie'), 'Best Movies of All Time'], '/top/shows': [best('series'), 'Best Shows of All Time'], '/top/imdb-250': [best('imdb'), 'IMDb Top 250'] };
+  if (pages[path]) return show(pages[path][0], path, pages[path][1]);
+  if (path === '/search') { var q = (/[?&]q=([^&]*)/.exec(qs) || [])[1]; q = q ? decodeURIComponent(q.replace(/\+/g, ' ')) : ''; return show(searchPage(q), '/search' + (q ? '?q=' + encodeURIComponent(q) : ''), q ? 'Search: ' + q : 'Search'); }
+  if ((m = /^\/genre\/(movies|shows)\/([a-z-]+)$/.exec(path))) {
+    var g = GENRES.filter(function (x) { return slug(x) === m[2]; })[0];
+    if (g) return show(genrePage(m[1] === 'shows' ? 'series' : 'movie', g), path, g + (m[1] === 'shows' ? ' Shows' : ' Movies'));
+  }
+  if (path !== '/') history.replaceState(null, '', BASE + '/');
+})();
 </script>
 </body>
 </html>
