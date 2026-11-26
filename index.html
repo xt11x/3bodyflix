@@ -768,11 +768,11 @@ img.avs{display:block;width:100%;height:100%;object-fit:cover}
 <div id="dbg">v16 · no JS yet</div>
 <script>
 // Diagnostics for the TV: shows script errors on screen (old engines may reject newer syntax)
-window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v31 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
-document.getElementById('dbg').textContent = 'v31';
+window.onerror = function (m, s, l) { if (s && s.split('?')[0].split('#')[0] !== location.href.split('?')[0].split('#')[0]) return; var d = document.getElementById('dbg'); d.textContent = 'v32 ERROR: ' + m + ' @' + l; d.style.display = 'block'; }; // only shown when something breaks
+document.getElementById('dbg').textContent = 'v32';
 </script>
 <script>
-var APP_VERSION = 'v31';
+var APP_VERSION = 'v32';
 (function () {
   try {
     var x = new XMLHttpRequest();
@@ -1059,6 +1059,37 @@ var ROWS = [
   ['Crime Series', 'series', 'top/genre=Crime'],
   ['Drama Series', 'series', 'top/genre=Drama']
 ];
+function homeRows() {
+  // [title, TMDB path, media type, extra query, how many, top-N badges]
+  var TROWS = [
+    ['Top 10 Movies Today', '/trending/movie/day', 'movie', '', 10, true],
+    ['Trending This Week', '/trending/all/week', null, ''],
+    ['Popular Movies', '/movie/popular', 'movie', ''],
+    ['Popular Shows', '/tv/popular', 'tv', ''],
+    ['Arabic Movies', '/discover/movie', 'movie', 'with_original_language=ar&sort_by=popularity.desc'],
+    ['Arabic Series', '/discover/tv', 'tv', 'with_original_language=ar&sort_by=popularity.desc'],
+    ['Turkish Series', '/discover/tv', 'tv', 'with_original_language=tr&sort_by=popularity.desc'],
+    ['Now Playing in Theaters', '/movie/now_playing', 'movie', ''],
+    ['Top 10 Shows Today', '/trending/tv/day', 'tv', '', 10, true],
+    ['Top Rated Movies', '/movie/top_rated', 'movie', ''],
+    ['Top Rated Shows', '/tv/top_rated', 'tv', ''],
+    ['Airing Today', '/tv/airing_today', 'tv', ''],
+    ['Coming Soon', '/movie/upcoming', 'movie', ''],
+    ['Action', '/discover/movie', 'movie', 'with_genres=28&sort_by=popularity.desc'],
+    ['Comedy', '/discover/movie', 'movie', 'with_genres=35&sort_by=popularity.desc'],
+    ['Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc'],
+    ['Crime Shows', '/discover/tv', 'tv', 'with_genres=80&sort_by=popularity.desc'],
+    ['Sci-Fi & Fantasy Shows', '/discover/tv', 'tv', 'with_genres=10765&sort_by=popularity.desc']
+  ];
+  if (isKids()) TROWS = [
+    ['Popular Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc&certification_country=US&certification.lte=PG'],
+    ['Family Movies', '/discover/movie', 'movie', 'with_genres=10751&sort_by=popularity.desc&certification_country=US&certification.lte=PG'],
+    ['Kids Shows', '/discover/tv', 'tv', 'with_genres=10762&sort_by=popularity.desc'],
+    ['Animated Shows', '/discover/tv', 'tv', 'with_genres=16&with_genres=10762&sort_by=popularity.desc']
+  ];
+  return TROWS;
+}
+function browseRow(r) { return function () { clear(r[0]); tmdbGrid(r[1], r[3], r[1].indexOf('/trending') === 0 ? 1 : 3, r[2]); }; }
 function home() {
   clear();
   var feat = el('div'); main.appendChild(feat);
@@ -1126,35 +1157,9 @@ function home() {
   }
   var ml = myList();
   if (ml.length) { var rl = newRow('My List', function () { show(myListPage, '/my-list', 'My List'); }); rl.strip.innerHTML = ''; ml.slice(0, 20).forEach(function (m) { wcard(m, rl.strip); }); }
-  // [title, TMDB path, media type, extra query, how many, top-N badges]
-  var TROWS = [
-    ['Top 10 Movies Today', '/trending/movie/day', 'movie', '', 10, true],
-    ['Trending This Week', '/trending/all/week', null, ''],
-    ['Popular Movies', '/movie/popular', 'movie', ''],
-    ['Popular Shows', '/tv/popular', 'tv', ''],
-    ['Arabic Movies', '/discover/movie', 'movie', 'with_original_language=ar&sort_by=popularity.desc'],
-    ['Arabic Series', '/discover/tv', 'tv', 'with_original_language=ar&sort_by=popularity.desc'],
-    ['Turkish Series', '/discover/tv', 'tv', 'with_original_language=tr&sort_by=popularity.desc'],
-    ['Now Playing in Theaters', '/movie/now_playing', 'movie', ''],
-    ['Top 10 Shows Today', '/trending/tv/day', 'tv', '', 10, true],
-    ['Top Rated Movies', '/movie/top_rated', 'movie', ''],
-    ['Top Rated Shows', '/tv/top_rated', 'tv', ''],
-    ['Airing Today', '/tv/airing_today', 'tv', ''],
-    ['Coming Soon', '/movie/upcoming', 'movie', ''],
-    ['Action', '/discover/movie', 'movie', 'with_genres=28&sort_by=popularity.desc'],
-    ['Comedy', '/discover/movie', 'movie', 'with_genres=35&sort_by=popularity.desc'],
-    ['Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc'],
-    ['Crime Shows', '/discover/tv', 'tv', 'with_genres=80&sort_by=popularity.desc'],
-    ['Sci-Fi & Fantasy Shows', '/discover/tv', 'tv', 'with_genres=10765&sort_by=popularity.desc']
-  ];
-  if (isKids()) TROWS = [
-    ['Popular Animation', '/discover/movie', 'movie', 'with_genres=16&sort_by=popularity.desc&certification_country=US&certification.lte=PG'],
-    ['Family Movies', '/discover/movie', 'movie', 'with_genres=10751&sort_by=popularity.desc&certification_country=US&certification.lte=PG'],
-    ['Kids Shows', '/discover/tv', 'tv', 'with_genres=10762&sort_by=popularity.desc'],
-    ['Animated Shows', '/discover/tv', 'tv', 'with_genres=16&with_genres=10762&sort_by=popularity.desc']
-  ];
+  var TROWS = homeRows();
   TROWS.forEach(function (r) {
-    var R = newRow(r[0], function () { show(function () { clear(r[0]); tmdbGrid(r[1], r[3], r[1].indexOf('/trending') === 0 ? 1 : 3, r[2]); }, '/browse/' + slug(r[0]), r[0]); });
+    var R = newRow(r[0], function () { show(browseRow(r), '/browse/' + slug(r[0]), r[0]); });
     get(tmdb(r[1], r[3]), function (res) {
       var metas = ((res && res.results) || []).map(function (x) { return fromTmdb(x, r[2]); }).filter(function (x) { return x && (x.poster || x.background); }).slice(0, r[4] || 20);
       if (!metas.length) return main.removeChild(R.row); // drop rows that came back empty
@@ -2476,7 +2481,8 @@ function onVideoError() {
 }
 function play(url, title) { openPlayer(title); startSrc(url); }
 function openPlayer(title, sub) {
-  if (!isPlaying()) { history.pushState(null, '', BASE + '/watch/' + slug(title || 'video')); setTitle('Watching ' + (title || '')); }
+  if (!isPlaying()) { try { sessionStorage.watchFrom = location.pathname.slice(BASE.length) + location.search; } catch (e) {}
+    history.pushState(null, '', BASE + '/watch/' + slug(title || 'video')); setTitle('Watching ' + (title || '')); }
   video.style.display = 'block'; pl.style.display = 'block'; hideExtSheet();
   $('nBtn').style.display = nextEpFn ? '' : 'none';
   $('pTitle').textContent = sub && /^S\d+ E\d+/.test(sub) ? String(title || '').replace(/ · S\d+ E\d+$/, '') : (title || ''); $('pDur').textContent = sub || ''; pl.setAttribute('data-sub', sub || '');
@@ -2792,9 +2798,18 @@ tabGo('tProf', function () { show(profilesPage, '/profiles', 'Profiles'); });
 
 // keep content just below the top bar whatever its height (it can wrap on narrow non-phone screens)
 if (!MOBILE) { main.style.top = '0'; main.style.paddingTop = top_.offsetHeight + 'px'; } // header floats over the content
+function scrollKey() { return 'y:' + location.pathname + location.search; }
+var scrollSaveT = null;
+function saveScrollSoon() {
+  if (scrollSaveT) return;
+  scrollSaveT = setTimeout(function () { scrollSaveT = null; try { sessionStorage[scrollKey()] = Math.round(scrollY_()); } catch (e) {} }, 250);
+}
+window.addEventListener('scroll', saveScrollSoon); main.addEventListener('scroll', saveScrollSoon);
 // Start: a shared title link (#/movie/tt...) opens that title on top of Home; first visit asks who is watching
+var savedY = 0; try { savedY = +sessionStorage[scrollKey()] || 0; } catch (e) {}
 (function () {
   var path = location.pathname.slice(BASE.length).replace(/\/+$/, '') || '/', qs = location.search, m;
+  if (/^\/watch\//.test(path)) { var wf = ''; try { wf = sessionStorage.watchFrom || ''; } catch (e) {} path = (wf.split('?')[0] || '/'); qs = wf.indexOf('?') >= 0 ? wf.slice(wf.indexOf('?')) : ''; savedY = 0; if (path !== '/') history.replaceState(null, '', BASE + path + qs); }
   var old = /^#\/(movie|series)\/(tt\d+)$/.exec(location.hash);
   if (AUTH.token) api('GET', 'me', null, function (st, me) { // pull the latest copy from the account
     if (st === 200 && me.user) { AUTH.user = me.user; localStorage.authUser = JSON.stringify(me.user); }
@@ -2812,11 +2827,24 @@ if (!MOBILE) { main.style.top = '0'; main.style.paddingTop = top_.offsetHeight +
     '/top/movies': [best('movie'), 'Best Movies of All Time'], '/top/shows': [best('series'), 'Best Shows of All Time'], '/top/imdb-250': [best('imdb'), 'IMDb Top 250'] };
   if (pages[path]) return show(pages[path][0], path, pages[path][1]);
   if (path === '/search') { var q = (/[?&]q=([^&]*)/.exec(qs) || [])[1]; q = q ? decodeURIComponent(q.replace(/\+/g, ' ')) : ''; return show(searchPage(q), '/search' + (q ? '?q=' + encodeURIComponent(q) : ''), q ? 'Search: ' + q : 'Search'); }
+  if ((m = /^\/browse\/([a-z0-9-]+)$/.exec(path))) {
+    var br = homeRows().filter(function (r) { return slug(r[0]) === m[1]; })[0];
+    if (br) return show(browseRow(br), path, br[0]);
+  }
   if ((m = /^\/genre\/(movies|shows)\/([a-z-]+)$/.exec(path))) {
     var g = GENRES.filter(function (x) { return slug(x) === m[2]; })[0];
     if (g) return show(genrePage(m[1] === 'shows' ? 'series' : 'movie', g), path, g + (m[1] === 'shows' ? ' Shows' : ' Movies'));
   }
   if (path !== '/') history.replaceState(null, '', BASE + '/');
+})();
+if (savedY > 0) (function () { // rows load in over a few seconds: keep nudging until the old spot exists, stop if the viewer moves
+  var moved = false, tries = 0;
+  function stop() { moved = true; }
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (e) { window.addEventListener(e, stop, true); });
+  var t = setInterval(function () {
+    if (moved || ++tries > 24 || Math.abs(scrollY_() - savedY) < 5) { clearInterval(t); return; }
+    setScrollY(savedY);
+  }, 250);
 })();
 </script>
 </body>
